@@ -1,0 +1,2985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VC Risk Radar — evidence-first diligence engine</title>
+<meta name="description" content="Recomputes every headline startup metric from its primitives and shows where the stated figures disagree with the arithmetic." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+
+/* ═══════════════════════════════════════════════════
+   RESET & ROOT
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #080a0d;
+  --bg1:       #0e1117;
+  --bg2:       #141820;
+  --bg3:       #1a2030;
+  --border0:   rgba(255,255,255,0.05);
+  --border1:   rgba(255,255,255,0.09);
+  --border2:   rgba(255,255,255,0.15);
+  --border3:   rgba(255,255,255,0.22);
+  --t0:        #eef0f4;
+  --t1:        #8896b0;
+  --t2:        #505d74;
+  --t3:        #2c3545;
+  --blue:      #3b82f6;
+  --blue-d:    rgba(59,130,246,0.10);
+  --blue-b:    rgba(59,130,246,0.28);
+  --green:     #22c55e;
+  --green-d:   rgba(34,197,94,0.09);
+  --green-b:   rgba(34,197,94,0.28);
+  --amber:     #f59e0b;
+  --amber-d:   rgba(245,158,11,0.09);
+  --amber-b:   rgba(245,158,11,0.28);
+  --red:       #ef4444;
+  --red-d:     rgba(239,68,68,0.09);
+  --red-b:     rgba(239,68,68,0.28);
+  --purple:    #a78bfa;
+  --purple-d:  rgba(167,139,250,0.09);
+  --sans:      'DM Sans', system-ui, sans-serif;
+  --mono:      'DM Mono', 'Fira Code', monospace;
+  --serif:     'Instrument Serif', Georgia, serif;
+  --r:  8px;
+  --r2: 12px;
+  --r3: 16px;
+  --r4: 22px;
+  --sidebar-w: 268px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% -30%, rgba(59,130,246,0.07), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(167,139,250,0.04), transparent);
+  color: var(--t0);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border3); }
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT SHELL
+═══════════════════════════════════════════════════ */
+.shell { display: flex; min-height: 100vh; }
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  background: var(--bg1);
+  border-right: 1px solid var(--border0);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.sb-logo {
+  padding: 22px 18px 16px;
+  border-bottom: 1px solid var(--border0);
+  flex-shrink: 0;
+}
+.sb-logo-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 3px;
+}
+.sb-logo-icon {
+  width: 30px; height: 30px;
+  background: var(--blue);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.sb-logo-name { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
+.sb-logo-sub  { font-size: 10px; color: var(--t2); font-family: var(--mono); letter-spacing: 0.4px; }
+
+.sb-progress {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border0);
+  flex-shrink: 0;
+}
+.sb-progress-row {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--t2);
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 7px;
+}
+.track { height: 3px; background: var(--border1); border-radius: 3px; overflow: hidden; }
+.fill  { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.5s ease; }
+
+.sb-nav { flex: 1; overflow-y: auto; padding: 10px 0; }
+.sb-nav-label {
+  font-size: 9px; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--t3); padding: 8px 18px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 12px; color: var(--t1);
+  border-left: 2px solid transparent;
+  transition: all 0.13s;
+}
+.nav-item:hover { background: var(--bg3); color: var(--t0); }
+.nav-item.active { background: var(--blue-d); color: var(--blue); border-left-color: var(--blue); }
+.nav-item.done   { color: var(--green); }
+.nav-count {
+  font-size: 9px; font-family: var(--mono); color: var(--t3);
+  margin-left: auto; padding-left: 4px;
+}
+.nav-item.active .nav-count { color: var(--blue); opacity: 0.7; }
+.nav-item.done .nav-count { color: var(--green); opacity: 0.7; }
+.nav-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--border2); flex-shrink: 0;
+}
+.nav-item.active .nav-dot { background: var(--blue); }
+.nav-item.done   .nav-dot { background: var(--green); }
+.nav-label { flex: 1; line-height: 1.3; }
+.nav-chk { font-size: 11px; opacity: 0; color: var(--green); transition: opacity 0.2s; }
+.nav-item.done .nav-chk { opacity: 1; }
+
+.sb-footer {
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--border0);
+  flex-shrink: 0;
+}
+.api-lbl { font-size: 9px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.8px; color: var(--t2); margin-bottom: 6px; }
+.api-sel {
+  width: 100%; background: var(--bg); border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t0); font-family: var(--mono);
+  font-size: 10px; padding: 6px 9px; outline: none; margin-bottom: 8px;
+  cursor: pointer; transition: border-color 0.13s;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23505d74' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 9px center;
+  padding-right: 24px;
+}
+.api-sel:focus { border-color: var(--blue-b); }
+.api-row { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; }
+.api-inp {
+  flex: 1; background: var(--bg); border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t0); font-family: var(--mono);
+  font-size: 10px; padding: 6px 9px; outline: none; transition: border-color 0.13s;
+}
+.api-inp:focus { border-color: var(--blue-b); }
+.api-inp::placeholder { color: var(--t3); }
+.api-eye {
+  background: var(--bg); border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t1);
+  font-size: 13px; padding: 5px 7px; cursor: pointer;
+  transition: all 0.13s; display: flex; align-items: center;
+}
+.api-eye:hover { border-color: var(--border2); color: var(--t0); }
+.api-status { font-size: 10px; font-family: var(--mono); }
+.api-status.ok  { color: var(--green); }
+.api-status.off { color: var(--t3); }
+.api-hint { font-size: 9px; color: var(--t3); font-family: var(--mono); line-height: 1.5; margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════════════════ */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  height: 52px;
+  background: rgba(8,10,13,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border0);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  gap: 16px;
+}
+.tb-left { display: flex; align-items: center; gap: 8px; }
+.tb-section { font-size: 11px; color: var(--t2); font-family: var(--mono); }
+.tb-sep { color: var(--t3); }
+.tb-company { font-size: 13px; font-weight: 500; }
+.tb-right { display: flex; align-items: center; gap: 8px; }
+
+/* PAGES */
+.page { display: none; animation: fadeIn 0.22s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ═══════════════════════════════════════════════════
+   BTN SYSTEM
+═══════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 15px;
+  border-radius: var(--r); font-size: 12px; font-weight: 500;
+  cursor: pointer; border: none; font-family: var(--sans);
+  transition: all 0.13s; white-space: nowrap; letter-spacing: -0.1px;
+}
+.btn-ghost {
+  background: transparent; color: var(--t1);
+  border: 1px solid var(--border1);
+}
+.btn-ghost:hover { background: var(--bg3); color: var(--t0); border-color: var(--border2); }
+.btn-primary {
+  background: var(--blue); color: #fff;
+  border: 1px solid transparent;
+}
+.btn-primary:hover { background: #2563eb; }
+.btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-success {
+  background: var(--green-d); color: var(--green);
+  border: 1px solid var(--green-b);
+}
+.btn-lg {
+  padding: 12px 30px; font-size: 14px; border-radius: var(--r2);
+}
+
+/* ═══════════════════════════════════════════════════
+   INTRO PAGE
+═══════════════════════════════════════════════════ */
+.intro-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(100vh - 52px);
+  padding: 60px 32px;
+  text-align: center;
+}
+.intro-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 13px; border: 1px solid var(--border1);
+  border-radius: 99px; font-size: 10px; font-family: var(--mono);
+  color: var(--t1); background: var(--bg1); margin-bottom: 28px;
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.pulse {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  animation: pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+.intro-h1 {
+  font-family: var(--serif);
+  font-size: 54px; font-weight: 400;
+  line-height: 1.08; letter-spacing: -1.5px;
+  margin-bottom: 18px; max-width: 640px;
+}
+.intro-h1 em { font-style: italic; color: var(--blue); }
+.intro-sub {
+  font-size: 15px; color: var(--t1); line-height: 1.7;
+  max-width: 480px; margin: 0 auto 36px; font-weight: 300;
+}
+
+.stat-row {
+  display: flex; gap: 36px; justify-content: center;
+  margin-bottom: 36px; flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat-n { font-family: var(--mono); font-size: 30px; font-weight: 500; display: block; margin-bottom: 3px; }
+.stat-l { font-size: 10px; color: var(--t2); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
+
+.feature-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; max-width: 680px; margin: 0 auto 36px; text-align: left;
+}
+.feat-card {
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-radius: var(--r2); padding: 14px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.feat-card:hover { border-color: var(--border1); transform: translateY(-2px); }
+.feat-icon { font-size: 18px; margin-bottom: 8px; display: block; }
+.feat-title { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.feat-desc { font-size: 11px; color: var(--t1); line-height: 1.5; }
+
+.intro-note { font-size: 10px; color: var(--t2); font-family: var(--mono); margin-top: 10px; }
+
+/* ═══════════════════════════════════════════════════
+   SETUP PAGE
+═══════════════════════════════════════════════════ */
+.content-wrap { max-width: 680px; margin: 0 auto; padding: 36px 28px 80px; }
+.pg-eyebrow { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--blue); display: block; margin-bottom: 7px; }
+.pg-title { font-family: var(--serif); font-size: 28px; font-weight: 400; letter-spacing: -0.4px; margin-bottom: 6px; }
+.pg-desc { font-size: 13px; color: var(--t1); line-height: 1.6; margin-bottom: 28px; }
+
+.form-lbl {
+  display: block; font-size: 10px; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--t1); margin-bottom: 7px; font-weight: 500;
+}
+.form-inp {
+  width: 100%; background: var(--bg1); border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t0);
+  font-size: 14px; padding: 11px 14px; outline: none;
+  transition: border-color 0.13s; font-family: var(--sans); margin-bottom: 20px;
+}
+.form-inp:focus { border-color: var(--blue-b); box-shadow: 0 0 0 3px var(--blue-d); }
+.form-inp::placeholder { color: var(--t3); }
+
+.type-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 32px;
+}
+.type-card {
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-radius: var(--r2); padding: 13px 9px; text-align: center;
+  cursor: pointer; transition: all 0.13s; position: relative;
+}
+.type-card:hover { background: var(--bg2); border-color: var(--border1); transform: translateY(-1px); }
+.type-card.sel { border-color: var(--blue-b); background: var(--blue-d); box-shadow: 0 0 0 1px var(--blue-d); }
+.type-em { font-size: 20px; display: block; margin-bottom: 6px; }
+.type-n  { font-size: 11px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
+.type-s  { font-size: 10px; color: var(--t2); line-height: 1.3; }
+
+.form-row { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+
+/* ═══════════════════════════════════════════════════
+   SECTION / FIELDS PAGE
+═══════════════════════════════════════════════════ */
+.section-wrap { max-width: 920px; margin: 0 auto; padding: 32px 28px 100px; }
+
+.sec-header {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 28px; padding-bottom: 22px;
+  border-bottom: 1px solid var(--border0);
+}
+.sec-icon {
+  width: 42px; height: 42px; border-radius: var(--r2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.sec-title { font-family: var(--serif); font-size: 22px; font-weight: 400; letter-spacing: -0.3px; margin-bottom: 3px; }
+.sec-desc  { font-size: 12px; color: var(--t1); line-height: 1.5; }
+
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field-item { display: flex; flex-direction: column; gap: 5px; }
+.field-item.wide { grid-column: 1 / -1; }
+
+.field-lbl {
+  font-size: 10px; font-weight: 500; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.6px; color: var(--t1);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.req-tag {
+  font-size: 9px; padding: 1px 5px; border-radius: 4px;
+  background: rgba(239,68,68,0.12); color: #fca5a5;
+  font-family: var(--mono); font-weight: 500;
+}
+.field-hint { font-size: 10px; color: var(--t2); font-family: var(--mono); line-height: 1.4; }
+.field-inp {
+  background: var(--bg2); border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t0);
+  font-size: 13px; padding: 9px 11px; outline: none;
+  transition: border-color 0.13s; font-family: var(--sans); width: 100%;
+}
+.field-inp:focus { border-color: var(--blue-b); box-shadow: 0 0 0 3px var(--blue-d); }
+.field-inp::placeholder { color: var(--t3); }
+
+/* Section progress & field groups */
+.sec-step-bar {
+  display: flex; gap: 4px; margin-bottom: 24px;
+}
+.sec-step-dot {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: var(--border1); transition: background 0.3s;
+}
+.sec-step-dot.done { background: var(--green); }
+.sec-step-dot.active { background: var(--blue); }
+
+.sec-field-progress {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 10px; font-size: 10px; font-family: var(--mono); color: var(--t2);
+}
+.sec-field-track {
+  flex: 1; max-width: 140px; height: 3px;
+  background: var(--border1); border-radius: 2px; overflow: hidden;
+}
+.sec-field-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.35s ease; }
+
+.field-group { margin-bottom: 28px; }
+.field-group-title {
+  font-size: 9px; font-family: var(--mono); text-transform: uppercase;
+  letter-spacing: 1.1px; color: var(--t2); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.field-group-title::after { content: ''; flex: 1; height: 1px; background: var(--border0); }
+.field-group-hint { font-size: 10px; color: var(--t3); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.field-card {
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-radius: var(--r2); padding: 14px 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field-card:hover { border-color: var(--border1); }
+.field-card.filled { border-color: rgba(34,197,94,0.2); }
+.field-card:focus-within { border-color: var(--blue-b); box-shadow: 0 0 0 3px var(--blue-d); }
+
+.bool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bool-card .field-lbl { margin-bottom: 4px; }
+.bool-card .field-hint { margin-bottom: 10px; }
+
+.bool-grp { display: flex; gap: 0; border-radius: var(--r); overflow: hidden; border: 1px solid var(--border1); }
+.bool-btn {
+  flex: 1; padding: 10px 6px; border-radius: 0;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  background: var(--bg2); border: none; border-right: 1px solid var(--border1);
+  color: var(--t2); transition: all 0.13s; font-family: var(--sans);
+  letter-spacing: 0.1px;
+}
+.bool-btn:last-child { border-right: none; }
+.bool-btn:hover { background: var(--bg3); color: var(--t0); }
+.bool-btn.yes { background: var(--green-d); color: var(--green); }
+.bool-btn.no  { background: var(--red-d);   color: var(--red); }
+.bool-btn.unk { background: var(--bg3);     color: var(--t1); }
+.bool-kbd {
+  display: block; font-size: 8px; font-family: var(--mono);
+  opacity: 0.45; margin-top: 2px; font-weight: 400;
+}
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.chip {
+  padding: 4px 10px; border-radius: 99px; font-size: 10px;
+  font-family: var(--mono); cursor: pointer;
+  background: var(--bg2); border: 1px solid var(--border1);
+  color: var(--t1); transition: all 0.12s;
+}
+.chip:hover { border-color: var(--blue-b); color: var(--blue); background: var(--blue-d); }
+.chip.active { border-color: var(--blue-b); color: var(--blue); background: var(--blue-d); }
+
+.field-select {
+  background: var(--bg2); border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t0);
+  font-size: 13px; padding: 9px 32px 9px 11px; outline: none;
+  transition: border-color 0.13s; font-family: var(--sans); width: 100%;
+  cursor: pointer; -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23505d74' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 11px center;
+}
+.field-select:focus { border-color: var(--blue-b); box-shadow: 0 0 0 3px var(--blue-d); }
+
+.sec-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+  padding: 10px 14px; background: var(--bg1);
+  border: 1px solid var(--border0); border-radius: var(--r2);
+}
+.sec-toolbar-left { font-size: 11px; color: var(--t2); }
+.sec-toolbar-right { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-sm { padding: 5px 11px; font-size: 10px; }
+
+.sector-note {
+  font-size: 11px; color: var(--t1); padding: 10px 14px;
+  background: var(--blue-d); border: 1px solid var(--blue-b);
+  border-radius: var(--r); margin-bottom: 20px; line-height: 1.5;
+}
+
+.sector-group {
+  margin-bottom: 20px; border: 1px solid var(--border0);
+  border-radius: var(--r2); overflow: hidden; background: var(--bg1);
+}
+.sector-group.relevant { border-color: var(--blue-b); box-shadow: 0 0 0 1px var(--blue-d); }
+.sector-group-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; cursor: pointer; user-select: none;
+  background: var(--bg2); border-bottom: 1px solid var(--border0);
+  transition: background 0.13s;
+}
+.sector-group-head:hover { background: var(--bg3); }
+.sector-group.relevant .sector-group-head { background: var(--blue-d); }
+.sector-group-em { font-size: 16px; }
+.sector-group-title { font-size: 12px; font-weight: 600; flex: 1; }
+.sector-group-meta { font-size: 9px; font-family: var(--mono); color: var(--t2); }
+.sector-group-badge {
+  font-size: 8px; font-family: var(--mono); text-transform: uppercase;
+  letter-spacing: 0.6px; padding: 2px 7px; border-radius: 99px;
+  background: var(--blue-d); color: var(--blue); border: 1px solid var(--blue-b);
+}
+.sector-group-chevron { font-size: 10px; color: var(--t2); transition: transform 0.2s; }
+.sector-group.collapsed .sector-group-chevron { transform: rotate(-90deg); }
+.sector-group.collapsed .sector-group-body { display: none; }
+.sector-group-body { padding: 14px; }
+.sector-group-body .field-grid,
+.sector-group-body .bool-grid { gap: 10px; }
+
+.relevant-tag {
+  font-size: 8px; padding: 1px 6px; border-radius: 99px;
+  background: var(--blue-d); color: var(--blue); border: 1px solid var(--blue-b);
+  font-family: var(--mono); font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.opt-tag {
+  font-size: 8px; padding: 1px 6px; border-radius: 99px;
+  background: var(--bg3); color: var(--t2); border: 1px solid var(--border1);
+  font-family: var(--mono); font-weight: 500;
+}
+.field-card.relevant-field { border-color: rgba(59,130,246,0.25); }
+.field-card.relevant-field::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+  background: var(--blue); border-radius: var(--r2) 0 0 var(--r2);
+}
+.field-card { position: relative; overflow: hidden; }
+
+.sec-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 32px; padding: 16px 0;
+  border-top: 1px solid var(--border0);
+  position: sticky; bottom: 0;
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+  z-index: 50;
+}
+.sec-nav-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sec-counter { font-size: 10px; color: var(--t2); font-family: var(--mono); }
+.sec-kbd-hint { font-size: 9px; color: var(--t3); font-family: var(--mono); }
+
+.mobile-menu {
+  display: none; background: none; border: 1px solid var(--border1);
+  border-radius: var(--r); color: var(--t1); font-size: 16px;
+  padding: 4px 9px; cursor: pointer; margin-right: 4px;
+}
+.mobile-menu:hover { border-color: var(--border2); color: var(--t0); }
+.sidebar.open { transform: translateX(0) !important; }
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 199;
+}
+.sidebar-overlay.show { display: block; }
+
+/* ═══════════════════════════════════════════════════
+   LOADING PAGE
+═══════════════════════════════════════════════════ */
+.loading-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: calc(100vh - 52px);
+  padding: 40px; text-align: center;
+}
+.radar-anim { width: 76px; height: 76px; position: relative; margin: 0 auto 24px; }
+.r-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid var(--blue-b);
+  animation: rexpand 2.2s ease-out infinite; opacity: 0;
+}
+.r-ring:nth-child(1) { inset: 0;        animation-delay: 0s; }
+.r-ring:nth-child(2) { inset: 17%;      animation-delay: 0.6s; }
+.r-ring:nth-child(3) { inset: 34%;      animation-delay: 1.2s; }
+@keyframes rexpand { 0%{opacity:.75;transform:scale(.25)} 100%{opacity:0;transform:scale(1)} }
+.r-core {
+  position: absolute; width: 10px; height: 10px;
+  background: var(--blue); border-radius: 50%;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  box-shadow: 0 0 12px var(--blue);
+}
+.ld-title { font-family: var(--serif); font-size: 24px; font-weight: 400; margin-bottom: 6px; letter-spacing: -0.3px; }
+.ld-msg   { font-size: 12px; color: var(--t1); font-family: var(--mono); margin-bottom: 26px; min-height: 18px; }
+.ld-steps { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 380px; margin-bottom: 22px; text-align: left; }
+.ld-step {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 11px; color: var(--t2); font-family: var(--mono);
+  padding: 8px 13px; border-radius: var(--r);
+  background: var(--bg1); border: 1px solid var(--border0);
+  transition: all 0.3s;
+}
+.ld-step.active { color: var(--blue);  border-color: var(--blue-b);  background: var(--blue-d); }
+.ld-step.done   { color: var(--green); border-color: var(--green-b); background: var(--green-d); }
+.ld-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.stream-box {
+  width: 100%; max-width: 460px; background: var(--bg1);
+  border: 1px solid var(--border1); border-radius: var(--r2);
+  padding: 14px 16px; text-align: left;
+  font-size: 11px; font-family: var(--mono); color: var(--t1);
+  min-height: 54px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESULT PAGE
+═══════════════════════════════════════════════════ */
+.result-wrap { max-width: 940px; margin: 0 auto; padding: 32px 28px 100px; }
+
+.res-hero {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 20px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.res-company { font-family: var(--serif); font-size: 30px; font-weight: 400; letter-spacing: -0.5px; margin-bottom: 4px; }
+.res-meta { font-size: 11px; color: var(--t2); font-family: var(--mono); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.verdict-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 20px; border-radius: 99px;
+  font-size: 13px; font-weight: 600; letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+.vp-invest  { background: var(--green-d); color: var(--green); border: 1px solid var(--green-b); }
+.vp-caution { background: var(--amber-d); color: var(--amber); border: 1px solid var(--amber-b); }
+.vp-avoid   { background: var(--red-d);   color: var(--red);   border: 1px solid var(--red-b); }
+
+.score-card {
+  display: flex; align-items: center; gap: 24px;
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-radius: var(--r3); padding: 22px 24px;
+  margin-bottom: 22px; flex-wrap: wrap;
+}
+.score-big { text-align: center; flex-shrink: 0; }
+.score-num {
+  font-family: var(--mono); font-size: 52px; font-weight: 500;
+  line-height: 1; margin-bottom: 4px; display: block;
+}
+.score-lbl { font-size: 9px; color: var(--t2); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
+.score-divider { width: 1px; align-self: stretch; background: var(--border0); flex-shrink: 0; }
+.exec-sum { flex: 1; font-size: 13px; line-height: 1.75; color: var(--t1); min-width: 200px; }
+.exec-sum strong { color: var(--t0); font-weight: 500; }
+
+.block { margin-bottom: 22px; }
+.block-title {
+  font-size: 9px; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--t2); margin-bottom: 11px;
+  display: flex; align-items: center; gap: 9px;
+}
+.block-title::after { content:''; flex:1; height:1px; background: var(--border0); }
+
+/* DIMENSIONS */
+.dim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.dim-card {
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-radius: var(--r2); padding: 13px;
+}
+.dim-lbl { font-size: 9px; color: var(--t2); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; line-height: 1.4; }
+.dim-num-row { display: flex; align-items: baseline; gap: 3px; margin-bottom: 6px; }
+.dim-num { font-family: var(--mono); font-size: 22px; font-weight: 500; }
+.dim-max { font-family: var(--mono); font-size: 10px; color: var(--t2); }
+.dim-bar { height: 2px; background: var(--border1); border-radius: 2px; overflow: hidden; margin-bottom: 7px; }
+.dim-fill { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+.dim-note { font-size: 10px; color: var(--t2); font-family: var(--mono); line-height: 1.4; }
+
+/* FLAGS */
+.flags-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.flags-col { display: flex; flex-direction: column; gap: 6px; }
+.flag-col-title { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+.flag-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 9px 11px; border-radius: var(--r);
+  font-size: 12px; line-height: 1.5;
+}
+.fi-red   { background: var(--red-d);   border: 1px solid var(--red-b);   color: #fca5a5; }
+.fi-green { background: var(--green-d); border: 1px solid var(--green-b); color: #86efac; }
+.fi-db    { background: var(--red-d);   border: 1px solid rgba(239,68,68,.45); color: #fca5a5; font-weight: 600; }
+.fi-icon  { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+
+/* ANALYSIS BLOCK */
+.analysis-blk {
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-left: 2px solid var(--blue); border-radius: var(--r2);
+  padding: 18px 20px; font-size: 13px; line-height: 1.8;
+  color: var(--t1); white-space: pre-wrap;
+}
+
+/* METRICS TABLE */
+.tbl-wrap {
+  border: 1px solid var(--border0); border-radius: var(--r2);
+  overflow: hidden; overflow-x: auto;
+}
+.metrics-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.metrics-tbl th {
+  font-size: 9px; font-family: var(--mono); text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--t2); text-align: left;
+  padding: 9px 13px; border-bottom: 1px solid var(--border0);
+  background: var(--bg1); white-space: nowrap;
+}
+.metrics-tbl td {
+  padding: 10px 13px; border-bottom: 1px solid var(--border0);
+  color: var(--t1); vertical-align: middle;
+}
+.metrics-tbl tr:last-child td { border-bottom: none; }
+.metrics-tbl tr:hover td { background: var(--bg2); }
+.metrics-tbl td:first-child { font-weight: 500; color: var(--t0); font-size: 12px; }
+.mono-val { font-family: var(--mono); font-size: 11px; }
+.sig-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-family: var(--mono);
+  padding: 2px 7px; border-radius: 4px;
+}
+.sig-badge .d { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.sb-green { background: var(--green-d); color: var(--green); }
+.sb-amber { background: var(--amber-d); color: var(--amber); }
+.sb-red   { background: var(--red-d);   color: var(--red); }
+.sb-gray  { background: var(--bg2);     color: var(--t2); }
+
+/* REC BLOCK */
+.rec-blk {
+  background: var(--bg1); border: 1px solid var(--border0);
+  border-radius: var(--r2); padding: 18px 20px;
+  font-size: 13px; line-height: 1.8; color: var(--t1); white-space: pre-wrap;
+}
+
+.res-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 32px; padding-top: 22px; border-top: 1px solid var(--border0);
+  flex-wrap: wrap; gap: 10px;
+}
+.res-nav-right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 22px; right: 22px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--r2); padding: 11px 15px;
+  font-size: 12px; color: var(--t0); z-index: 9999;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.5);
+  transform: translateY(70px); opacity: 0;
+  transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; max-width: 360px;
+}
+.toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.toast.err  { border-left: 3px solid var(--red); }
+.toast.ok   { border-left: 3px solid var(--green); }
+
+/* PRINT */
+@media print {
+  .sidebar, .topbar, .res-nav, .tb-right { display: none !important; }
+  .main { margin-left: 0; }
+  .result-wrap { padding: 20px; }
+  body { background: white; color: #111; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 780px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { transform: translateX(-268px); width: 268px; transition: transform 0.25s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .mobile-menu { display: inline-flex; align-items: center; }
+  .dim-grid { grid-template-columns: repeat(2,1fr); }
+  .flags-2col { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: repeat(2,1fr); }
+  .type-grid { grid-template-columns: repeat(2,1fr); }
+  .field-grid { grid-template-columns: 1fr; }
+  .bool-grid { grid-template-columns: 1fr; }
+  .intro-h1 { font-size: 36px; }
+  .section-wrap { padding: 24px 16px 100px; }
+  .content-wrap { padding: 24px 16px 80px; }
+}
+
+/* ═══════════════════════════════════════════════════
+   v3.0 ADDITIONS — evidence, derivation, verification
+═══════════════════════════════════════════════════ */
+
+/* --- Stage picker --- */
+.stage-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:22px; }
+@media(max-width:760px){ .stage-grid{ grid-template-columns:repeat(2,1fr); } }
+.stage-card {
+  background:var(--bg1); border:1px solid var(--border1); border-radius:var(--r2);
+  padding:13px 12px; cursor:pointer; transition:border-color .15s, background .15s;
+}
+.stage-card:hover { border-color:var(--border2); }
+.stage-card.sel { border-color:var(--blue); background:var(--blue-d); }
+.stage-n { font-size:13px; font-weight:600; margin-bottom:2px; }
+.stage-s { font-size:10.5px; color:var(--t2); font-family:var(--mono); }
+
+/* --- Intake (document paste) --- */
+.intake-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:900px){ .intake-grid{ grid-template-columns:1fr; } }
+.intake-box { background:var(--bg1); border:1px solid var(--border1); border-radius:var(--r2); padding:14px; }
+.intake-box h4 { font-size:12px; font-weight:600; margin-bottom:3px; }
+.intake-box p  { font-size:11px; color:var(--t2); margin-bottom:9px; line-height:1.5; }
+.intake-ta {
+  width:100%; min-height:150px; resize:vertical;
+  background:var(--bg); border:1px solid var(--border1); border-radius:var(--r);
+  color:var(--t0); font-family:var(--mono); font-size:11.5px; padding:10px; line-height:1.6;
+}
+.intake-ta:focus { outline:none; border-color:var(--blue); }
+.drop-zone {
+  border:1px dashed var(--border2); border-radius:var(--r); padding:18px; text-align:center;
+  color:var(--t2); font-size:11.5px; cursor:pointer; transition:border-color .15s,background .15s;
+}
+.drop-zone:hover, .drop-zone.over { border-color:var(--blue); background:var(--blue-d); color:var(--t1); }
+.file-pill {
+  display:inline-flex; align-items:center; gap:6px; background:var(--bg2);
+  border:1px solid var(--border1); border-radius:99px; padding:4px 10px;
+  font-size:10.5px; font-family:var(--mono); margin:4px 4px 0 0;
+}
+.file-pill button { background:none; border:none; color:var(--t2); cursor:pointer; font-size:12px; line-height:1; }
+
+/* --- Provenance badge on a field --- */
+.prov {
+  display:inline-flex; align-items:center; gap:4px;
+  font-family:var(--mono); font-size:9px; letter-spacing:.2px;
+  background:var(--purple-d); color:var(--purple);
+  border:1px solid rgba(167,139,250,.28); border-radius:4px;
+  padding:1px 5px; margin-left:6px; vertical-align:middle;
+}
+.prov.manual { background:transparent; color:var(--t3); border-color:var(--border1); }
+
+/* --- Derived metrics live panel --- */
+.derived-panel {
+  background:var(--bg1); border:1px solid var(--border1); border-radius:var(--r2);
+  padding:13px 14px; margin-bottom:16px;
+}
+.derived-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+.derived-head h4 { font-size:12px; font-weight:600; }
+.derived-head span { font-size:10px; color:var(--t2); font-family:var(--mono); }
+.derived-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:8px; }
+.dv {
+  background:var(--bg); border:1px solid var(--border0); border-radius:var(--r); padding:8px 10px;
+}
+.dv-lbl { font-size:10px; color:var(--t2); margin-bottom:2px; }
+.dv-val { font-family:var(--mono); font-size:15px; font-weight:500; letter-spacing:-.4px; }
+.dv-form { font-size:9.5px; color:var(--t3); font-family:var(--mono); margin-top:2px; }
+.dv.g .dv-val { color:var(--green); } .dv.a .dv-val { color:var(--amber); }
+.dv.r .dv-val { color:var(--red); }   .dv.n .dv-val { color:var(--t1); }
+
+/* --- Consistency ledger --- */
+.ledger { width:100%; border-collapse:collapse; font-size:11.5px; }
+.ledger th {
+  text-align:left; padding:8px 10px; font-size:10px; color:var(--t2);
+  font-weight:500; border-bottom:1px solid var(--border1); white-space:nowrap;
+}
+.ledger td { padding:9px 10px; border-bottom:1px solid var(--border0); vertical-align:top; }
+.ledger td.m { font-family:var(--mono); }
+.ledger tr.bad td { background:rgba(239,68,68,.05); }
+.ledger tr.warn td { background:rgba(245,158,11,.045); }
+
+/* --- Contradiction cards --- */
+.contra {
+  border-radius:var(--r2); padding:12px 14px; margin-bottom:9px;
+  border:1px solid var(--red-b); background:var(--red-d);
+}
+.contra.minor { border-color:var(--amber-b); background:var(--amber-d); }
+.contra-h { display:flex; gap:8px; align-items:baseline; margin-bottom:4px; }
+.contra-h strong { font-size:12.5px; font-weight:600; }
+.contra-h .sev {
+  font-family:var(--mono); font-size:9px; letter-spacing:.4px;
+  border:1px solid currentColor; border-radius:3px; padding:0 4px; opacity:.8;
+}
+.contra p { font-size:11.5px; color:var(--t1); line-height:1.55; }
+.contra .ask { font-size:11.5px; color:var(--t0); margin-top:6px; }
+.contra .ask::before { content:'Ask the founder: '; color:var(--t2); }
+
+/* --- Gate banner --- */
+.gate {
+  border:1px solid var(--red-b); background:var(--red-d); border-radius:var(--r3);
+  padding:16px 18px; margin-bottom:18px;
+}
+.gate h3 { font-size:14px; color:var(--red); margin-bottom:7px; }
+.gate ul { margin:0; padding-left:17px; }
+.gate li { font-size:12px; color:var(--t0); margin-bottom:4px; line-height:1.55; }
+
+/* --- Score band --- */
+.band-wrap { padding:6px 0 2px; }
+.band-num { font-family:var(--mono); font-size:44px; font-weight:300; letter-spacing:-2px; line-height:1; }
+.band-rng { font-family:var(--mono); font-size:11px; color:var(--t2); margin-top:4px; }
+.band-track {
+  position:relative; height:6px; border-radius:3px; margin:14px 0 6px;
+  background:linear-gradient(90deg, var(--red) 0%, var(--amber) 45%, var(--green) 100%);
+  opacity:.28;
+}
+.band-fill { position:absolute; top:-3px; height:12px; border-radius:6px; background:var(--t0); opacity:.85; }
+.band-tick { position:absolute; top:-7px; width:2px; height:20px; background:var(--t0); }
+.band-scale { display:flex; justify-content:space-between; font-family:var(--mono); font-size:9.5px; color:var(--t3); }
+
+/* --- Dimension table with weights --- */
+.dimtbl { width:100%; border-collapse:collapse; font-size:11.5px; }
+.dimtbl th { text-align:left; padding:7px 9px; font-size:10px; color:var(--t2); font-weight:500; border-bottom:1px solid var(--border1); }
+.dimtbl td { padding:9px; border-bottom:1px solid var(--border0); }
+.dimtbl td.n { font-family:var(--mono); text-align:right; }
+.minibar { height:4px; border-radius:2px; background:var(--bg3); overflow:hidden; min-width:60px; }
+.minibar i { display:block; height:100%; border-radius:2px; }
+
+/* --- Suppressed / not-meaningful --- */
+.suppressed {
+  font-size:11px; color:var(--t2); background:var(--bg1);
+  border:1px dashed var(--border1); border-radius:var(--r); padding:9px 11px; margin-bottom:7px;
+}
+.suppressed b { color:var(--t1); font-weight:500; }
+
+/* --- Run metadata footer --- */
+.runmeta {
+  font-family:var(--mono); font-size:10px; color:var(--t3); line-height:1.7;
+  border-top:1px solid var(--border0); padding-top:12px; margin-top:22px;
+}
+.runmeta span { color:var(--t2); }
+
+/* --- Warning strip --- */
+.warnstrip {
+  display:flex; gap:9px; align-items:flex-start;
+  border:1px solid var(--amber-b); background:var(--amber-d); border-radius:var(--r);
+  padding:10px 12px; font-size:11.5px; color:#fcd34d; margin-bottom:14px; line-height:1.55;
+}
+
+/* --- Question list --- */
+.qlist { counter-reset:q; }
+.qitem {
+  display:flex; gap:11px; padding:10px 0; border-bottom:1px solid var(--border0);
+}
+.qitem:last-child { border-bottom:none; }
+.qnum {
+  flex-shrink:0; width:20px; height:20px; border-radius:5px; background:var(--bg2);
+  border:1px solid var(--border1); display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:10px; color:var(--t1);
+}
+.qtext { font-size:12px; line-height:1.55; }
+.qtag { font-family:var(--mono); font-size:9.5px; color:var(--t3); display:block; margin-top:2px; }
+
+/* --- Tabs on result --- */
+.rtabs { display:flex; gap:2px; border-bottom:1px solid var(--border1); margin-bottom:18px; overflow-x:auto; }
+.rtab {
+  padding:9px 14px; font-size:12px; color:var(--t2); cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; background:none; border-top:none; border-left:none; border-right:none;
+  font-family:var(--sans);
+}
+.rtab:hover { color:var(--t1); }
+.rtab.active { color:var(--t0); border-bottom-color:var(--blue); }
+.rpane { display:none; } .rpane.active { display:block; }
+
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-logo-icon">⬡</div>
+        <div class="sb-logo-name">VC Risk Radar</div>
+      </div>
+      <div class="sb-logo-sub">evidence engine · rubric v3.0.0</div>
+    </div>
+
+    <div class="sb-progress">
+      <div class="sb-progress-row">
+        <span>Input coverage</span><span id="pct-val">0%</span>
+      </div>
+      <div class="track"><div class="fill" id="pct-fill" style="width:0%"></div></div>
+      <div class="sb-progress-row" style="margin-top:9px">
+        <span>Consistency</span><span id="consist-val">—</span>
+      </div>
+    </div>
+
+    <nav class="sb-nav" id="sb-nav">
+      <div class="sb-nav-label">Evidence sections</div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="api-lbl">Memo writer (optional)</div>
+      <select class="api-sel" id="api-provider">
+        <option value="local">Deterministic only — no AI</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="groq">Groq</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+      <div class="api-lbl" style="margin-top:10px">API key</div>
+      <div class="api-row">
+        <input class="api-inp" id="api-key" type="password" placeholder="No key needed" autocomplete="off" spellcheck="false" />
+        <button class="api-eye" id="api-eye" type="button" title="Show or hide the key">👁</button>
+      </div>
+      <div class="api-status ok" id="api-status">⬤ Deterministic engine ready</div>
+      <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere. A key is only used to draft the written memo.</div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="mobile-menu" onclick="toggleSidebar(true)">☰</button>
+        <span class="tb-company" id="tb-company">New assessment</span>
+        <span class="tb-sep">/</span>
+        <span class="tb-section" id="tb-section">Start</span>
+      </div>
+      <div class="tb-right" id="tb-right"></div>
+    </div>
+
+    <!-- ── INTRO ── -->
+    <div class="page active" id="page-intro">
+      <div class="intro-wrap">
+        <div class="intro-badge"><div class="pulse"></div>Deterministic · versioned · auditable</div>
+        <h1 class="intro-h1">Check whether the<br>numbers reconcile</h1>
+        <p class="intro-sub">Founders send you a deck, a model, and an update. Radar recomputes every headline metric from its primitives, shows you where the stated figures disagree with the arithmetic, and turns the gaps into the questions to ask on the next call.</p>
+
+        <div class="stat-row">
+          <div class="stat"><span class="stat-n">21</span><span class="stat-l">Derived metrics</span></div>
+          <div class="stat"><span class="stat-n">18</span><span class="stat-l">Consistency checks</span></div>
+          <div class="stat"><span class="stat-n">4</span><span class="stat-l">Stage rubrics</span></div>
+          <div class="stat"><span class="stat-n">0</span><span class="stat-l">Black boxes</span></div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feat-card"><span class="feat-icon">🧮</span><div class="feat-title">Nothing derivable is asked</div><div class="feat-desc">You enter new, expansion, churned and contracted ARR. Radar computes NRR, GRR, quick ratio, burn multiple, Rule of 40, CAC payback and ARR per employee.</div></div>
+          <div class="feat-card"><span class="feat-icon">⚠️</span><div class="feat-title">Stated vs. computed</div><div class="feat-desc">If the deck says 134% NRR and the cohort maths says 118%, that gap is the finding. Eighteen checks run on every assessment.</div></div>
+          <div class="feat-card"><span class="feat-icon">📐</span><div class="feat-title">Stage-calibrated bars</div><div class="feat-desc">Seed companies are not graded against Series B thresholds, and retention metrics are suppressed below the customer count where they carry signal.</div></div>
+          <div class="feat-card"><span class="feat-icon">🔁</span><div class="feat-title">Reproducible output</div><div class="feat-desc">Every run carries a rubric version and an input hash. The same inputs produce the same score today and in nine months at the IC.</div></div>
+          <div class="feat-card"><span class="feat-icon">🔎</span><div class="feat-title">Provenance on every field</div><div class="feat-desc">Extracted values keep the line of source text they came from, so an associate can trace any number back without reopening the data room.</div></div>
+          <div class="feat-card"><span class="feat-icon">📋</span><div class="feat-title">Output is a question list</div><div class="feat-desc">Not a verdict. A ranked set of what to verify in the data room, what to negotiate, and what to make a closing condition.</div></div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn btn-primary btn-lg" onclick="goSetup()">Start an assessment</button>
+          <button class="btn btn-ghost btn-lg" id="resume-btn" style="display:none" onclick="resumeDraft()">Resume saved draft</button>
+          <button class="btn btn-ghost btn-lg" onclick="loadDemo()">Load a worked example</button>
+        </div>
+        <p class="intro-note">Radar is a workflow tool. It does not give investment advice and its score is not a recommendation to buy or sell a security.</p>
+      </div>
+    </div>
+
+    <!-- ── SETUP ── -->
+    <div class="page" id="page-setup">
+      <div class="content-wrap">
+        <div class="pg-eyebrow">Step 1 of 4</div>
+        <h2 class="pg-title">What are you looking at?</h2>
+        <p class="pg-desc">Stage sets the benchmark thresholds and the dimension weights. Business model selects which metrics are scored and which are suppressed.</p>
+
+        <div class="field-group-title">Stage</div>
+        <div class="stage-grid" id="stage-grid"></div>
+
+        <div class="field-group-title">Business model</div>
+        <div class="type-grid" id="type-grid"></div>
+        <p class="sector-note" id="calib-note"></p>
+
+        <div class="form-row">
+          <label class="form-lbl" for="cname">Company name</label>
+          <input class="form-inp" id="cname" placeholder="e.g. Northwind Data" oninput="S.name=this.value;saveDraft()" />
+        </div>
+        <div class="form-row">
+          <label class="form-lbl" for="asof">Data as of</label>
+          <input class="form-inp" id="asof" type="month" oninput="S.asof=this.value;saveDraft()" />
+        </div>
+
+        <div class="sec-nav">
+          <button class="btn btn-ghost" onclick="showPage('intro')">Back</button>
+          <div class="sec-nav-right">
+            <button class="btn btn-primary" onclick="goIntake()">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INTAKE ── -->
+    <div class="page" id="page-intake">
+      <div class="content-wrap">
+        <div class="pg-eyebrow">Step 2 of 4</div>
+        <h2 class="pg-title">Give it the source material</h2>
+        <p class="pg-desc">Paste whatever the company actually sent you. Radar pulls the numbers out, keeps the line each one came from, and pre-fills the form. You review and correct every value before anything is scored.</p>
+
+        <div class="warnstrip" id="intake-warn">
+          <span>⚠</span>
+          <div>Extraction needs a model key, which sends the pasted text to that provider. Everything else in Radar — the derivations, the checks, the score — runs in your browser and sends nothing. Skip this step to enter figures by hand.</div>
+        </div>
+
+        <div class="intake-grid">
+          <div class="intake-box">
+            <h4>Deck, memo or founder update</h4>
+            <p>Plain text. Slide notes, an email update, a data room summary.</p>
+            <textarea class="intake-ta" id="intake-deck" placeholder="Paste the narrative material here…"></textarea>
+          </div>
+          <div class="intake-box">
+            <h4>Financials</h4>
+            <p>Paste a P&amp;L, ARR waterfall or metrics tab. CSV or tab-separated works.</p>
+            <textarea class="intake-ta" id="intake-fin" placeholder="Month,ARR,New,Expansion,Churn…"></textarea>
+            <div class="drop-zone" id="dropzone" style="margin-top:10px">Or drop a .csv / .txt / .md file here</div>
+            <div id="file-list"></div>
+          </div>
+        </div>
+
+        <div class="sec-nav">
+          <button class="btn btn-ghost" onclick="showPage('setup')">Back</button>
+          <div class="sec-nav-right">
+            <button class="btn btn-ghost" onclick="startSections()">Skip — enter by hand</button>
+            <button class="btn btn-primary" id="extract-btn" onclick="runExtraction()">Extract figures</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTIONS ── -->
+    <div class="page" id="page-section">
+      <div class="section-wrap" id="section-content" tabindex="0"></div>
+    </div>
+
+    <!-- ── VERIFY ── -->
+    <div class="page" id="page-verify">
+      <div class="content-wrap" id="verify-content"></div>
+    </div>
+
+    <!-- ── LOADING ── -->
+    <div class="page" id="page-loading">
+      <div class="loading-wrap">
+        <div class="radar-anim">
+          <div class="r-ring"></div><div class="r-ring"></div><div class="r-ring"></div><div class="r-core"></div>
+        </div>
+        <h2 class="ld-title" id="ld-title">Computing</h2>
+        <p class="ld-msg" id="ld-msg">Recomputing headline metrics from primitives…</p>
+        <div class="ld-steps" id="ld-steps">
+          <div class="ld-step" id="ls-0"><div class="ld-dot"></div>Normalising inputs and units</div>
+          <div class="ld-step" id="ls-1"><div class="ld-dot"></div>Deriving metrics from primitives</div>
+          <div class="ld-step" id="ls-2"><div class="ld-dot"></div>Running consistency checks</div>
+          <div class="ld-step" id="ls-3"><div class="ld-dot"></div>Suppressing low-sample metrics</div>
+          <div class="ld-step" id="ls-4"><div class="ld-dot"></div>Scoring against stage thresholds</div>
+          <div class="ld-step" id="ls-5"><div class="ld-dot"></div>Evaluating hard gates</div>
+          <div class="ld-step" id="ls-6"><div class="ld-dot"></div>Building the question list</div>
+          <div class="ld-step" id="ls-7"><div class="ld-dot"></div>Drafting the memo</div>
+        </div>
+        <div class="stream-box" id="stream-box">Idle</div>
+      </div>
+    </div>
+
+    <!-- ── RESULT ── -->
+    <div class="page" id="page-result">
+      <div class="result-wrap" id="result-content"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   VC RISK RADAR v3.0 — evidence-first diligence engine
+   ---------------------------------------------------------------
+   Design rules enforced in this build:
+   1. Never ask for a number that can be derived from other inputs.
+   2. Separate what the company CLAIMS from what the financials SHOW.
+   3. Score deterministically, from a versioned rubric, with weights.
+   4. Suppress metrics that are not statistically meaningful at scale.
+   5. Never render untrusted text with innerHTML without escaping.
+   6. Output a question list, not a verdict.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── ESCAPING: every interpolation of user or model text goes through esc() ── */
+const ESC_MAP = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ESC_MAP[c]);
+
+/* ── FORMATTERS ── */
+const nf = new Intl.NumberFormat('en-US');
+function money(v) {
+  if (v == null || !isFinite(v)) return '—';
+  const a = Math.abs(v), sign = v < 0 ? '-' : '';
+  if (a >= 1e9) return sign + '$' + (a / 1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return sign + '$' + (a / 1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return sign + '$' + Math.round(a / 1e3) + 'k';
+  return sign + '$' + Math.round(a);
+}
+const pctv = (v, d = 1) => v == null || !isFinite(v) ? '—' : v.toFixed(d) + '%';
+const xv   = (v, d = 2) => v == null || !isFinite(v) ? '—' : v.toFixed(d) + 'x';
+const numv = (v, d = 2) => v == null || !isFinite(v) ? '—' : v.toFixed(d);
+const monv = (v, d = 1) => v == null || !isFinite(v) ? '—' : v.toFixed(d) + ' mo';
+
+/* ═══════════════════════════════════════════════════════════════
+   STAGES & BUSINESS MODELS
+   ═══════════════════════════════════════════════════════════════ */
+const STAGES = [
+  { id:'preseed', n:'Pre-seed',  s:'< $250k ARR' },
+  { id:'seed',    n:'Seed',      s:'$250k – $2M ARR' },
+  { id:'a',       n:'Series A',  s:'$2M – $10M ARR' },
+  { id:'b',       n:'Series B+', s:'$10M+ ARR' },
+];
+
+const MODELS = [
+  { id:'saas',        em:'☁️', n:'B2B SaaS',        s:'Subscription software', calib:'full' },
+  { id:'ai_app',      em:'🤖', n:'AI application',  s:'App layer on a model',  calib:'full' },
+  { id:'marketplace', em:'⚡', n:'Marketplace',     s:'Two-sided, take rate',  calib:'partial' },
+  { id:'fintech',     em:'💳', n:'Fintech',         s:'Regulated financial',   calib:'partial' },
+];
+const CALIB_NOTE = {
+  full:    'Rubric v3.0 is calibrated on B2B SaaS and AI application companies. Thresholds below are the primary ones we stand behind.',
+  partial: 'Thresholds for this model are adapted, not independently calibrated. Treat dimension scores as directional and rely on the consistency checks, which are model-independent.',
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   EVIDENCE SECTIONS — PRIMITIVES ONLY
+   Anything computable from these fields is NOT a field. See DERIVED.
+   ═══════════════════════════════════════════════════════════════ */
+const SECTIONS = [
+  {
+    id:'revenue', label:'Revenue & retention', em:'📊', ibg:'#0e1a2e',
+    desc:'The ARR waterfall. Everything on the retention side is computed from these four movement figures.',
+    fields:[
+      { g:'Position', id:'arr_now',   lbl:'ARR today',              t:'num', unit:'$', req:true,
+        hint:'Contracted recurring revenue only. Exclude one-off services and unsigned pipeline.' },
+      { g:'Position', id:'arr_12mo',  lbl:'ARR 12 months ago',      t:'num', unit:'$', req:true,
+        hint:'Same definition, same date last year. Growth is computed from this — do not enter a growth rate.' },
+      { g:'Movement (last 12 months)', id:'new_arr_l12',        lbl:'New-logo ARR added', t:'num', unit:'$',
+        hint:'ARR from customers who were not customers 12 months ago.' },
+      { g:'Movement (last 12 months)', id:'expansion_arr_l12',  lbl:'Expansion ARR',      t:'num', unit:'$',
+        hint:'Upsell and seat growth inside existing accounts.' },
+      { g:'Movement (last 12 months)', id:'churned_arr_l12',    lbl:'Churned ARR',        t:'num', unit:'$',
+        hint:'ARR lost to full cancellations. Enter as a positive number.' },
+      { g:'Movement (last 12 months)', id:'contraction_arr_l12',lbl:'Contraction ARR',    t:'num', unit:'$',
+        hint:'ARR lost to downgrades on retained accounts. Positive number.' },
+      { g:'Revenue quality', id:'gross_margin', lbl:'Gross margin', t:'num', unit:'%', req:true, chips:[45,60,75,85],
+        hint:'(Revenue − COGS) ÷ Revenue. COGS includes hosting, inference, support and delivery.' },
+      { g:'Revenue quality', id:'cogs_hosting',  lbl:'Annual hosting / inference cost', t:'num', unit:'$',
+        hint:'Used to cross-check the stated gross margin.' },
+      { g:'Revenue quality', id:'cogs_support',  lbl:'Annual support & delivery cost',  t:'num', unit:'$',
+        hint:'Customer success, implementation, professional services headcount and vendors.' },
+      { g:'Revenue quality', id:'services_pct',  lbl:'Non-recurring revenue share',     t:'num', unit:'%',
+        hint:'Share of total revenue from implementation or services. Above 15% and the ARR label is doing work.' },
+      { g:'Revenue quality', id:'pct_annual',    lbl:'ARR on annual or longer terms',   t:'num', unit:'%', chips:[25,50,75,95],
+        hint:'Monthly-only contracts make NRR look better than the real commitment level.' },
+      { g:'Collections', id:'deferred_revenue', lbl:'Deferred revenue balance', t:'num', unit:'$',
+        hint:'Cash collected for services not yet delivered.' },
+      { g:'Collections', id:'ar_over_90',       lbl:'Receivables over 90 days', t:'num', unit:'$',
+        hint:'Booked revenue that has not been collected. A quiet churn indicator.' },
+    ]
+  },
+  {
+    id:'capital', label:'Capital & burn', em:'🔥', ibg:'#1e1308',
+    desc:'Runway, burn efficiency and dilution overhang are all derived from these. Do not enter a runway figure.',
+    fields:[
+      { g:'Position', id:'cash_on_hand', lbl:'Cash and equivalents', t:'num', unit:'$', req:true,
+        hint:'Bank balance today, excluding undrawn debt facilities.' },
+      { g:'Position', id:'net_burn',     lbl:'Net monthly burn',     t:'num', unit:'$', req:true,
+        hint:'Average over the last three months. Net of revenue collected, not gross spend.' },
+      { g:'Position', id:'total_raised', lbl:'Total equity raised',  t:'num', unit:'$', req:true,
+        hint:'Cumulative primary equity in. Excludes debt and unconverted SAFEs.' },
+      { g:'Structure', id:'pre_money',         lbl:'Pre-money at last round', t:'num', unit:'$',
+        hint:'Used to size the SAFE overhang and preference stack.' },
+      { g:'Structure', id:'safes_outstanding', lbl:'SAFEs and notes not yet converted', t:'num', unit:'$',
+        hint:'Face value outstanding. This dilutes the next round, not the last one.' },
+      { g:'Structure', id:'debt_outstanding',  lbl:'Venture debt outstanding', t:'num', unit:'$',
+        hint:'Principal outstanding. Sits ahead of equity in a liquidation.' },
+      { g:'Structure', id:'months_since_round',lbl:'Months since last round closed', t:'num', unit:'months' },
+    ]
+  },
+  {
+    id:'gtm', label:'Customers & go-to-market', em:'🎯', ibg:'#0a1e13',
+    desc:'CAC, payback, LTV:CAC, ACV and magic number are all computed from the spend and count figures here.',
+    fields:[
+      { g:'Base', id:'customers_now',  lbl:'Paying customers today',        t:'num', unit:'', req:true,
+        hint:'Paying logos, not seats or users. Sets whether retention metrics are meaningful.' },
+      { g:'Base', id:'customers_12mo', lbl:'Paying customers 12 months ago',t:'num', unit:'' },
+      { g:'Base', id:'logos_lost_l12', lbl:'Logos lost in last 12 months',  t:'num', unit:'' },
+      { g:'Concentration', id:'top1_pct',  lbl:'Largest customer share of ARR', t:'num', unit:'%' },
+      { g:'Concentration', id:'top5_pct',  lbl:'Top 5 share of ARR',            t:'num', unit:'%' },
+      { g:'Concentration', id:'top10_pct', lbl:'Top 10 share of ARR',           t:'num', unit:'%' },
+      { g:'Acquisition spend', id:'sm_spend_l12',     lbl:'Sales & marketing spend, last 12 months', t:'num', unit:'$',
+        hint:'Fully loaded: salaries, commission, ad spend, events, tooling.' },
+      { g:'Acquisition spend', id:'new_customers_l12',lbl:'New customers won, last 12 months', t:'num', unit:'',
+        hint:'With S&M spend this gives blended CAC. Do not enter a CAC figure.' },
+      { g:'Acquisition spend', id:'sm_spend_prior_q', lbl:'S&M spend, prior quarter', t:'num', unit:'$' },
+      { g:'Acquisition spend', id:'new_arr_prior_q',  lbl:'Net new ARR, most recent quarter', t:'num', unit:'$',
+        hint:'With prior-quarter S&M this gives the magic number.' },
+      { g:'Sales motion', id:'win_rate',          lbl:'Win rate on qualified opportunities', t:'num', unit:'%', chips:[10,20,30,45] },
+      { g:'Sales motion', id:'sales_cycle',       lbl:'Median sales cycle', t:'num', unit:'days' },
+      { g:'Sales motion', id:'pipeline_coverage', lbl:'Pipeline coverage against next-quarter target', t:'num', unit:'x' },
+      { g:'Sales motion', id:'quota_attainment',  lbl:'Reps at or above quota', t:'num', unit:'%', chips:[30,50,70,90],
+        hint:'Leave blank if there are fewer than three quota-carrying reps.' },
+      { g:'Sales motion', id:'pct_paid',          lbl:'New ARR from paid acquisition', t:'num', unit:'%' },
+    ]
+  },
+  {
+    id:'team', label:'Team', em:'🧑‍🚀', ibg:'#1a1108',
+    desc:'Verifiable facts only. This build removes the behavioural and linguistic signals from v2 — they had no validated predictive power.',
+    fields:[
+      { g:'Size', id:'headcount_now',  lbl:'Headcount today',            t:'num', unit:'', req:true },
+      { g:'Size', id:'headcount_12mo', lbl:'Headcount 12 months ago',    t:'num', unit:'' },
+      { g:'Size', id:'headcount_eng',  lbl:'Engineering headcount',      t:'num', unit:'' },
+      { g:'Size', id:'headcount_sales',lbl:'Sales & marketing headcount',t:'num', unit:'' },
+      { g:'Size', id:'avg_loaded_comp',lbl:'Average fully loaded cost per employee', t:'num', unit:'$',
+        hint:'Salary, tax, benefits, equipment. Defaults to $165,000 if blank. Used to sanity-check burn.' },
+      { g:'Founders', id:'founders_count',      lbl:'Number of founders', t:'num', unit:'' },
+      { g:'Founders', id:'founder_max_equity',  lbl:'Largest founder stake', t:'num', unit:'%',
+        hint:'A very lopsided split among active co-founders is a known source of later conflict.' },
+      { g:'Founders', id:'founder_domain_years',lbl:'Years in this domain before founding', t:'num', unit:'years' },
+      { g:'Founders', id:'prior_exit',     lbl:'A founder has a prior acquisition or IPO', t:'bool',
+        hint:'Verifiable outcome, not a claim of prior startup experience.' },
+      { g:'Founders', id:'founder_departed',lbl:'A co-founder has left since inception', t:'bool',
+        hint:'If yes, ask how their equity was handled — unresolved founder equity is a cap table problem.' },
+      { g:'Retention', id:'eng_departures_l12', lbl:'Engineering departures, last 12 months', t:'num', unit:'',
+        hint:'Turnover rate is computed against engineering headcount.' },
+    ]
+  },
+  {
+    id:'market', label:'Market & competition', em:'🌍', ibg:'#081a14',
+    desc:'TAM is computed bottom-up from named accounts and realised ACV. A typed-in market size is not accepted as an input to scoring.',
+    fields:[
+      { g:'Bottom-up sizing', id:'target_accounts', lbl:'Accounts that match the ICP', t:'num', unit:'',
+        hint:'A defensible count of organisations that could buy this today. Not a market-report figure.' },
+      { g:'Bottom-up sizing', id:'reachable_pct',   lbl:'Realistically reachable in 5 years', t:'num', unit:'%', chips:[2,5,10,20] },
+      { g:'Competition', id:'primary_competitor',  lbl:'Primary competitor', t:'txt' },
+      { g:'Competition', id:'win_rate_vs_primary', lbl:'Win rate in head-to-head deals', t:'num', unit:'%' },
+      { g:'Competition', id:'pricing_move', lbl:'Last pricing action', t:'select',
+        options:['Raised prices','Held prices','Discounted to win','Never tested'] },
+      { g:'Competition', id:'switching_cost', lbl:'Cost for a customer to switch away', t:'select',
+        options:['High — data or workflow lock-in','Medium — some migration effort','Low — swappable'] },
+      { g:'Competition', id:'regulated_market', lbl:'Operates under a licensing or regulatory regime', t:'bool',
+        hint:'A barrier and a risk at the same time. Scored neutrally, surfaced as a diligence item.' },
+    ]
+  },
+  {
+    id:'govern', label:'Governance, cap table & technical risk', em:'⚖️', ibg:'#1e0a1e',
+    desc:'Four of these are hard gates. A gate does not lower the score — it stops the assessment until resolved.',
+    fields:[
+      { g:'Gates', id:'ip_assignments', lbl:'Every employee and contractor has signed IP assignment', t:'bool', gate:'no',
+        hint:'Gate. One unsigned contractor can mean the company does not own its own product.' },
+      { g:'Gates', id:'contractor_ip',  lbl:'Any risk a contractor retains rights to core IP', t:'bool', gate:'yes',
+        hint:'Gate. Answer yes if this has not been affirmatively checked.' },
+      { g:'Gates', id:'chain_title',    lbl:'Clean chain of title through every historical transfer', t:'bool', gate:'no',
+        hint:'Gate. Covers predecessor entities, university licences and acquired code.' },
+      { g:'Gates', id:'captable_documented', lbl:'Cap table is fully documented with no verbal promises', t:'bool', gate:'no',
+        hint:'Gate. Undocumented equity promises surface at the worst possible moment.' },
+      { g:'Terms', id:'liq_pref',   lbl:'Liquidation preference on the senior series', t:'num', unit:'x', chips:[1,1.5,2] },
+      { g:'Terms', id:'participating', lbl:'Preference is participating', t:'bool' },
+      { g:'Terms', id:'option_pool', lbl:'Unallocated option pool', t:'num', unit:'%', chips:[5,10,15,20] },
+      { g:'Terms', id:'founder_vesting', lbl:'Founders are on an unexpired vesting schedule', t:'bool' },
+      { g:'Terms', id:'litigation', lbl:'Material pending litigation', t:'bool' },
+      { g:'Books', id:'audited_financials', lbl:'Financial statement quality', t:'select',
+        options:['Audited','Reviewed','Compiled','Internal only'] },
+      { g:'Technical', id:'soc2', lbl:'SOC 2 status', t:'select',
+        options:['Type II','Type I','In progress','None'] },
+      { g:'Technical', id:'uptime_90d', lbl:'Measured uptime, last 90 days', t:'num', unit:'%', chips:[99,99.5,99.9,99.99],
+        hint:'Measured, not the contractual SLA number.' },
+      { g:'Technical', id:'p1_incidents', lbl:'Severity-1 incidents, last 12 months', t:'num', unit:'' },
+      { g:'Technical', id:'infra_single_vendor', lbl:'A single infrastructure vendor outage takes the product down', t:'bool' },
+      { g:'Technical', id:'model_single_vendor', lbl:'A single model provider outage takes the product down', t:'bool',
+        hint:'Relevant for AI applications. Also a pricing-power question, not only an availability one.' },
+      { g:'Technical', id:'dpas_signed', lbl:'Data processing agreements in place with enterprise customers', t:'bool' },
+    ]
+  },
+  {
+    id:'claims', label:'What the company states', em:'🗣️', ibg:'#131025',
+    desc:'Enter the headline numbers exactly as the deck, model or founder update presents them. Nothing here is scored. Every field is compared against the figure computed from the primitives above, and any gap becomes a finding.',
+    claims:true,
+    fields:[
+      { g:'Headline', id:'stated_arr',     lbl:'ARR as stated in the deck', t:'num', unit:'$',
+        hint:'The single most common diligence catch is a deck ARR that does not match the financial model.' },
+      { g:'Headline', id:'stated_growth',  lbl:'Growth rate as stated',     t:'num', unit:'%' },
+      { g:'Headline', id:'stated_runway',  lbl:'Runway as stated',          t:'num', unit:'months' },
+      { g:'Retention', id:'stated_nrr',    lbl:'NRR as stated',             t:'num', unit:'%' },
+      { g:'Retention', id:'stated_grr',    lbl:'GRR as stated',             t:'num', unit:'%' },
+      { g:'Efficiency', id:'stated_rule40',        lbl:'Rule of 40 as stated',   t:'num', unit:'' },
+      { g:'Efficiency', id:'stated_burn_multiple', lbl:'Burn multiple as stated',t:'num', unit:'' },
+      { g:'Efficiency', id:'stated_magic_number',  lbl:'Magic number as stated', t:'num', unit:'' },
+      { g:'Unit economics', id:'stated_cac',         lbl:'CAC as stated',          t:'num', unit:'$' },
+      { g:'Unit economics', id:'stated_cac_payback', lbl:'CAC payback as stated',  t:'num', unit:'months' },
+      { g:'Unit economics', id:'stated_ltv_cac',     lbl:'LTV:CAC as stated',      t:'num', unit:'x' },
+      { g:'Unit economics', id:'stated_acv',         lbl:'ACV as stated',          t:'num', unit:'$' },
+      { g:'Market', id:'stated_tam', lbl:'TAM as stated', t:'num', unit:'$',
+        hint:'Compared against accounts × realised ACV. A gap of more than 10x means the figure is top-down.' },
+    ]
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   RUBRIC v3.0.0 — versioned, stage-aware, explicit weights
+   Anchors are always ascending in value. dir says which end is good.
+   ═══════════════════════════════════════════════════════════════ */
+const RUBRIC = {
+  version: '3.0.0',
+  updated: '2026-09-14',
+
+  /* Dimension weights must sum to 1 within each stage. */
+  weights: {
+    preseed: { team:0.32, market:0.26, govern:0.14, gtm:0.10, revenue:0.09, capital:0.09 },
+    seed:    { team:0.24, revenue:0.20, market:0.18, capital:0.16, gtm:0.12, govern:0.10 },
+    a:       { revenue:0.26, capital:0.20, gtm:0.18, team:0.14, market:0.12, govern:0.10 },
+    b:       { revenue:0.28, capital:0.22, gtm:0.18, market:0.12, team:0.10, govern:0.10 },
+  },
+
+  /* Minimum sample sizes below which a metric is computed but NOT scored. */
+  minN: {
+    retention:      20,   // customers 12 months ago, for NRR / GRR / quick ratio
+    unit_economics: 10,   // new customers won, for CAC and payback
+    quota:           3,   // quota-carrying reps
+    growth_base: 100000,  // ARR 12mo ago, below which a growth % is noise
+    arr_per_fte:     5,   // headcount
+    magic_number: 1000000,// ARR, below which quarterly magic number is noise
+  },
+
+  /* Per-stage anchors. [poor, acceptable, good, excellent] mapped to [0,45,72,100]. */
+  thresholds: {
+    growth_yoy:   { dir:'hi', dim:'revenue', preseed:null,             seed:[50,150,250,400], a:[40,80,150,250],  b:[20,40,70,120] },
+    nrr:          { dir:'hi', dim:'revenue', preseed:null,             seed:[85,95,105,125],  a:[90,100,112,130], b:[95,105,115,135] },
+    grr:          { dir:'hi', dim:'revenue', preseed:null,             seed:[70,82,90,96],    a:[75,85,92,97],    b:[80,88,94,98] },
+    quick_ratio:  { dir:'hi', dim:'revenue', preseed:null,             seed:[1,2,4,7],        a:[1,2,4,6],        b:[1,1.8,3,5] },
+    gross_margin: { dir:'hi', dim:'revenue', preseed:[35,55,70,82],    seed:[40,58,72,84],    a:[45,62,75,86],    b:[50,66,78,88] },
+    logo_ret:     { dir:'hi', dim:'revenue', preseed:null,             seed:[65,78,88,95],    a:[70,82,90,96],    b:[75,86,92,97] },
+    services_pct: { dir:'lo', dim:'revenue', preseed:[5,15,30,50],     seed:[5,15,30,50],     a:[5,12,25,45],     b:[3,10,20,40] },
+
+    runway:       { dir:'hi', dim:'capital', preseed:[6,12,18,30],     seed:[6,12,20,30],     a:[6,12,20,30],     b:[9,15,24,36] },
+    burn_multiple:{ dir:'lo', dim:'capital', preseed:null,             seed:[1,2,3.5,6],      a:[1,1.5,2.5,4],    b:[0.8,1.3,2,3.5] },
+    hype_ratio:   { dir:'lo', dim:'capital', preseed:null,             seed:[1.5,3,7,15],     a:[1,2,4,9],        b:[1,1.5,3,6] },
+    arr_per_fte:  { dir:'hi', dim:'capital', preseed:null,             seed:[40000,70000,110000,160000], a:[70000,110000,150000,220000], b:[100000,150000,210000,300000] },
+    rule40:       { dir:'hi', dim:'capital', preseed:null,             seed:[-40,-10,20,45],  a:[-20,0,25,50],    b:[0,20,40,60] },
+
+    cac_payback:  { dir:'lo', dim:'gtm', preseed:null,                 seed:[6,14,24,36],     a:[6,12,20,30],     b:[6,12,18,26] },
+    ltv_cac:      { dir:'hi', dim:'gtm', preseed:null,                 seed:[1.2,2,3,5],      a:[1.5,2.5,3.5,6],  b:[1.8,2.8,4,7] },
+    magic_number: { dir:'hi', dim:'gtm', preseed:null,                 seed:[0.3,0.6,0.9,1.4],a:[0.4,0.7,1,1.5],  b:[0.4,0.7,1,1.5] },
+    win_rate:     { dir:'hi', dim:'gtm', preseed:[8,15,25,40],         seed:[8,15,25,40],     a:[10,18,28,42],    b:[12,20,30,45] },
+    quota_att:    { dir:'hi', dim:'gtm', preseed:null,                 seed:[30,45,65,85],    a:[35,50,68,85],    b:[40,55,70,88] },
+    pipeline_cov: { dir:'hi', dim:'gtm', preseed:[1.5,2.5,3.5,5],      seed:[1.5,2.5,3.5,5],  a:[2,3,4,6],        b:[2,3,4,6] },
+    pct_paid:     { dir:'lo', dim:'gtm', preseed:[25,45,70,90],        seed:[25,45,70,90],    a:[25,45,70,90],    b:[25,45,70,90] },
+    top5_conc:    { dir:'lo', dim:'gtm', preseed:[35,55,75,90],        seed:[25,40,60,80],    a:[20,35,55,75],    b:[15,28,45,65] },
+    sales_cycle:  { dir:'lo', dim:'gtm', preseed:[30,60,120,200],      seed:[30,60,120,200],  a:[30,60,110,180],  b:[30,55,100,170] },
+
+    domain_years: { dir:'hi', dim:'team', preseed:[0,2,6,12],          seed:[0,2,6,12],       a:[1,3,7,12],       b:[1,3,7,12] },
+    eng_turnover: { dir:'lo', dim:'team', preseed:[5,12,22,35],        seed:[5,12,22,35],     a:[5,12,20,32],     b:[5,10,18,30] },
+    founder_conc: { dir:'lo', dim:'team', preseed:[50,65,82,94],       seed:[50,65,82,94],    a:[50,65,82,94],    b:[50,65,82,94] },
+    headcount_eff:{ dir:'hi', dim:'team', preseed:null,                seed:[0.3,0.8,1.5,3],  a:[0.3,0.8,1.5,3],  b:[0.3,0.8,1.5,3] },
+
+    tam_bottomup: { dir:'hi', dim:'market', preseed:[5e6,5e7,3e8,1e9], seed:[1e7,1e8,5e8,2e9],a:[5e7,3e8,1e9,5e9],b:[1e8,5e8,2e9,1e10] },
+    penetration:  { dir:'lo', dim:'market', preseed:[1,5,15,35],       seed:[1,5,15,35],      a:[2,8,20,40],      b:[3,10,25,45] },
+    win_vs_primary:{dir:'hi', dim:'market', preseed:[20,35,50,70],     seed:[20,35,50,70],    a:[25,40,55,72],    b:[25,40,55,72] },
+
+    option_pool:  { dir:'band', dim:'govern', ideal:[9,20], hard:[3,30], preseed:1, seed:1, a:1, b:1 },
+    liq_pref:     { dir:'lo', dim:'govern', preseed:[1,1.5,2,3],       seed:[1,1.5,2,3],      a:[1,1.5,2,3],      b:[1,1.5,2,3] },
+    safe_overhang:{ dir:'lo', dim:'govern', preseed:[5,15,30,50],      seed:[5,12,25,40],     a:[3,10,20,35],     b:[2,8,15,28] },
+    uptime:       { dir:'hi', dim:'govern', preseed:[98,99.3,99.9,99.99], seed:[98,99.3,99.9,99.99], a:[98.5,99.5,99.9,99.99], b:[99,99.7,99.95,99.99] },
+  },
+
+  /* Categorical scorers: value → 0-100. */
+  categorical: {
+    soc2:      { dim:'govern', map:{ 'Type II':100, 'Type I':70, 'In progress':45, 'None':20 }, stageFloor:{ preseed:0, seed:0, a:1, b:1 } },
+    books:     { dim:'govern', map:{ 'Audited':100, 'Reviewed':78, 'Compiled':52, 'Internal only':30 } },
+    switching: { dim:'market', map:{ 'High — data or workflow lock-in':100, 'Medium — some migration effort':60, 'Low — swappable':25 } },
+    pricing:   { dim:'market', map:{ 'Raised prices':100, 'Held prices':62, 'Discounted to win':25, 'Never tested':45 } },
+  },
+
+  /* Boolean modifiers: applied as point adjustments to a dimension, bounded. */
+  booleans: [
+    { id:'prior_exit',          dim:'team',   good:true,  pts:8,  note:'Founder has a prior acquisition or IPO' },
+    { id:'founder_departed',    dim:'team',   good:false, pts:-7, note:'A co-founder has already left' },
+    { id:'founder_vesting',     dim:'govern', good:true,  pts:5,  note:'Founders still vesting' },
+    { id:'litigation',          dim:'govern', good:false, pts:-12,note:'Material pending litigation' },
+    { id:'participating',       dim:'govern', good:false, pts:-8, note:'Participating preference on the senior series' },
+    { id:'infra_single_vendor', dim:'govern', good:false, pts:-6, note:'Single infrastructure vendor is a single point of failure' },
+    { id:'model_single_vendor', dim:'govern', good:false, pts:-6, note:'Single model provider is a single point of failure' },
+    { id:'dpas_signed',         dim:'govern', good:true,  pts:4,  note:'Data processing agreements in place' },
+  ],
+
+  /* Hard gates. A gate halts the assessment; it does not merely reduce the score. */
+  gates: [
+    { id:'ip_assignments',      when:false, title:'IP assignments are not complete',
+      why:'If any employee or contractor has not assigned their work, the company may not own the product it is selling. This is resolvable but it is resolved before terms, not after.' },
+    { id:'contractor_ip',       when:true,  title:'A contractor may retain rights to core IP',
+      why:'Ownership of the core technology is unconfirmed. Every other metric in this report is contingent on it.' },
+    { id:'chain_title',         when:false, title:'Chain of title on IP is not clean',
+      why:'A break anywhere in the historical transfer chain — a predecessor entity, a university licence, acquired code — leaves the current ownership unproven.' },
+    { id:'captable_documented', when:false, title:'The cap table is not fully documented',
+      why:'Verbal or undocumented equity promises surface during a financing or an exit, when they are most expensive to settle.' },
+  ],
+};
+
+/* ── STATE ── */
+let S = {
+  name:'', stage:'seed', model:'saas', asof:'', section:0,
+  vals:{}, bools:{}, sel:{}, prov:{}, result:null, files:[],
+};
+/* ═══════════════════════════════════════════════════════════════
+   DERIVATION ENGINE
+   Every headline metric is computed here. None of them is an input.
+   ═══════════════════════════════════════════════════════════════ */
+
+const gv = id => { const v = parseFloat(S.vals[id]); return Number.isFinite(v) ? v : null; };
+const gb = id => S.bools[id] === undefined ? null : S.bools[id];
+const gs = id => S.sel[id] || null;
+const gt = id => (S.vals[id] || '').toString().trim() || null;
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+const has = (...xs) => xs.every(x => x != null && isFinite(x));
+
+function derive() {
+  const D = {}, F = {};
+  const put = (k, v, f) => { if (v != null && isFinite(v)) { D[k] = v; F[k] = f; } };
+
+  const arr = gv('arr_now'), arr0 = gv('arr_12mo');
+  const nw = gv('new_arr_l12'), ex = gv('expansion_arr_l12');
+  const ch = gv('churned_arr_l12'), co = gv('contraction_arr_l12');
+  const gm = gv('gross_margin'), cash = gv('cash_on_hand'), burn = gv('net_burn');
+  const raised = gv('total_raised'), cust = gv('customers_now'), cust0 = gv('customers_12mo');
+  const hc = gv('headcount_now'), hc0 = gv('headcount_12mo'), hcEng = gv('headcount_eng');
+  const comp = gv('avg_loaded_comp') || 165000;
+
+  /* — Growth and retention — */
+  if (has(arr, arr0) && arr0 > 0) put('growth_yoy', (arr / arr0 - 1) * 100, 'ARR today ÷ ARR 12 months ago − 1');
+  if (has(nw, ex, ch, co)) put('net_new_arr', nw + ex - ch - co, 'new + expansion − churned − contraction');
+  else if (has(arr, arr0)) put('net_new_arr', arr - arr0, 'ARR today − ARR 12 months ago');
+
+  if (has(arr0, ex, ch, co) && arr0 > 0)
+    put('nrr', (arr0 + ex - ch - co) / arr0 * 100, '(opening ARR + expansion − churn − contraction) ÷ opening ARR');
+  if (has(arr0, ch, co) && arr0 > 0)
+    put('grr', (arr0 - ch - co) / arr0 * 100, '(opening ARR − churn − contraction) ÷ opening ARR');
+  if (has(nw, ex, ch, co) && (ch + co) > 0)
+    put('quick_ratio', (nw + ex) / (ch + co), '(new + expansion) ÷ (churned + contraction)');
+
+  if (has(cust0, gv('logos_lost_l12')) && cust0 > 0) {
+    const lr = gv('logos_lost_l12') / cust0 * 100;
+    put('logo_churn', lr, 'logos lost ÷ logos 12 months ago');
+    put('logo_ret', 100 - lr, '100 − logo churn rate');
+  }
+
+  /* — Capital efficiency — */
+  if (has(cash, burn) && burn > 0) put('runway', cash / burn, 'cash ÷ net monthly burn');
+  if (has(burn) && D.net_new_arr > 0) put('burn_multiple', (burn * 12) / D.net_new_arr, 'annualised net burn ÷ net new ARR');
+  if (has(raised, arr) && arr > 0) put('hype_ratio', raised / arr, 'total equity raised ÷ ARR');
+  if (has(arr, hc) && hc > 0) put('arr_per_fte', arr / hc, 'ARR ÷ headcount');
+  if (has(arr, burn) && arr > 0) put('fcf_margin', -(burn * 12) / arr * 100, '−(annualised net burn) ÷ ARR (a net-burn proxy for FCF)');
+  if (D.growth_yoy != null && D.fcf_margin != null) put('rule40', D.growth_yoy + D.fcf_margin, 'growth % + FCF margin %');
+  if (has(D.net_new_arr, hc, hc0, comp) && (hc - hc0) > 0)
+    put('headcount_eff', D.net_new_arr / ((hc - hc0) * comp), 'net new ARR ÷ (net new headcount × loaded cost)');
+
+  /* — Unit economics — */
+  if (has(arr, cust) && cust > 0) put('acv', arr / cust, 'ARR ÷ paying customers');
+  const sm = gv('sm_spend_l12'), nc = gv('new_customers_l12');
+  if (has(sm, nc) && nc > 0) put('cac', sm / nc, 'S&M spend ÷ new customers won');
+  if (has(D.cac, D.acv, gm) && D.acv > 0 && gm > 0)
+    put('cac_payback', D.cac / (D.acv * gm / 100 / 12), 'CAC ÷ monthly gross profit per customer');
+  if (has(D.acv, gm, D.logo_churn) && D.logo_churn > 0)
+    put('ltv', (D.acv * gm / 100) / (D.logo_churn / 100), 'annual gross profit per customer ÷ logo churn rate');
+  if (has(D.ltv, D.cac) && D.cac > 0) put('ltv_cac', D.ltv / D.cac, 'LTV ÷ CAC (gross-profit basis, logo churn)');
+  const smq = gv('sm_spend_prior_q'), nnq = gv('new_arr_prior_q');
+  if (has(smq, nnq) && smq > 0) put('magic_number', (nnq * 4) / smq, 'annualised quarterly net new ARR ÷ prior-quarter S&M');
+
+  /* — Team — */
+  if (has(hcEng, gv('eng_departures_l12')) && hcEng > 0)
+    put('eng_turnover', gv('eng_departures_l12') / hcEng * 100, 'engineering departures ÷ engineering headcount');
+  if (has(hc, hc0) && hc0 > 0) put('headcount_growth', (hc / hc0 - 1) * 100, 'headcount today ÷ headcount 12 months ago − 1');
+  if (gv('founders_count') > 1 && gv('founder_max_equity') != null)
+    put('founder_conc', gv('founder_max_equity'), 'largest founder stake among multiple founders');
+
+  /* — Market — */
+  const ta = gv('target_accounts');
+  if (has(ta, D.acv)) put('tam_bottomup', ta * D.acv, 'ICP account count × realised ACV');
+  if (has(D.tam_bottomup, gv('reachable_pct')))
+    put('sam', D.tam_bottomup * gv('reachable_pct') / 100, 'bottom-up TAM × reachable share');
+  if (has(arr, D.tam_bottomup) && D.tam_bottomup > 0)
+    put('penetration', arr / D.tam_bottomup * 100, 'ARR ÷ bottom-up TAM');
+
+  /* — Structure — */
+  if (has(gv('safes_outstanding'), gv('pre_money')) && gv('pre_money') > 0)
+    put('safe_overhang', gv('safes_outstanding') / gv('pre_money') * 100, 'unconverted SAFEs ÷ pre-money valuation');
+
+  /* — Cross-check helpers — */
+  if (has(gv('cogs_hosting'), gv('cogs_support'), arr) && arr > 0)
+    put('gm_implied', (1 - (gv('cogs_hosting') + gv('cogs_support')) / arr) * 100, '1 − (hosting + support cost) ÷ ARR');
+  if (has(hc, comp, arr, gm))
+    put('burn_implied', (hc * comp / 12) - (arr / 12 * gm / 100), '(headcount × loaded cost ÷ 12) − monthly gross profit');
+  if (has(gv('ar_over_90'), arr) && arr > 0)
+    put('ar_share', gv('ar_over_90') / arr * 100, 'receivables over 90 days ÷ ARR');
+
+  /* Pass-through values used directly in scoring */
+  if (gm != null) put('gross_margin', gm, 'entered directly');
+  if (gv('top5_pct') != null) put('top5_conc', gv('top5_pct'), 'entered directly');
+  if (gv('win_rate') != null) put('win_rate', gv('win_rate'), 'entered directly');
+  if (gv('quota_attainment') != null) put('quota_att', gv('quota_attainment'), 'entered directly');
+  if (gv('pipeline_coverage') != null) put('pipeline_cov', gv('pipeline_coverage'), 'entered directly');
+  if (gv('pct_paid') != null) put('pct_paid', gv('pct_paid'), 'entered directly');
+  if (gv('sales_cycle') != null) put('sales_cycle', gv('sales_cycle'), 'entered directly');
+  if (gv('services_pct') != null) put('services_pct', gv('services_pct'), 'entered directly');
+  if (gv('founder_domain_years') != null) put('domain_years', gv('founder_domain_years'), 'entered directly');
+  if (gv('option_pool') != null) put('option_pool', gv('option_pool'), 'entered directly');
+  if (gv('liq_pref') != null) put('liq_pref', gv('liq_pref'), 'entered directly');
+  if (gv('uptime_90d') != null) put('uptime', gv('uptime_90d'), 'entered directly');
+  if (gv('win_rate_vs_primary') != null) put('win_vs_primary', gv('win_rate_vs_primary'), 'entered directly');
+  if (gv('reachable_pct') != null) put('penetration_target', gv('reachable_pct'), 'entered directly');
+
+  return { D, F };
+}
+
+/* Labels for derived metrics, used in the UI and the export. */
+const DLABEL = {
+  growth_yoy:'Growth YoY', net_new_arr:'Net new ARR', nrr:'Net revenue retention', grr:'Gross revenue retention',
+  quick_ratio:'Quick ratio', logo_churn:'Logo churn', logo_ret:'Logo retention', runway:'Runway',
+  burn_multiple:'Burn multiple', hype_ratio:'Capital raised per $1 of ARR', arr_per_fte:'ARR per employee',
+  fcf_margin:'FCF margin (burn proxy)', rule40:'Rule of 40', headcount_eff:'ARR per dollar of new headcount',
+  acv:'Realised ACV', cac:'Blended CAC', cac_payback:'CAC payback', ltv:'LTV (gross profit)', ltv_cac:'LTV:CAC',
+  magic_number:'Magic number', eng_turnover:'Engineering turnover', headcount_growth:'Headcount growth',
+  founder_conc:'Largest founder stake', tam_bottomup:'Bottom-up TAM', sam:'Serviceable market',
+  penetration:'Current penetration', safe_overhang:'SAFE overhang', gm_implied:'Gross margin implied by COGS',
+  burn_implied:'Burn implied by headcount', ar_share:'Aged receivables share', gross_margin:'Gross margin',
+  top5_conc:'Top 5 customer concentration', win_rate:'Win rate', quota_att:'Quota attainment',
+  pipeline_cov:'Pipeline coverage', pct_paid:'Paid acquisition share', sales_cycle:'Sales cycle',
+  services_pct:'Non-recurring revenue share', domain_years:'Founder domain years', option_pool:'Option pool',
+  liq_pref:'Liquidation preference', uptime:'Uptime', win_vs_primary:'Win rate vs primary competitor',
+  penetration_target:'Reachable share of market',
+};
+const DUNIT = {
+  growth_yoy:'%', nrr:'%', grr:'%', logo_churn:'%', logo_ret:'%', fcf_margin:'%', rule40:'', penetration:'%',
+  net_new_arr:'$', runway:'mo', burn_multiple:'', hype_ratio:'x', arr_per_fte:'$', headcount_eff:'x',
+  acv:'$', cac:'$', cac_payback:'mo', ltv:'$', ltv_cac:'x', magic_number:'', quick_ratio:'x',
+  eng_turnover:'%', headcount_growth:'%', founder_conc:'%', tam_bottomup:'$', sam:'$', safe_overhang:'%',
+  gm_implied:'%', burn_implied:'$', ar_share:'%', gross_margin:'%', top5_conc:'%', win_rate:'%',
+  quota_att:'%', pipeline_cov:'x', pct_paid:'%', sales_cycle:'d', services_pct:'%', domain_years:'y',
+  option_pool:'%', liq_pref:'x', uptime:'%', win_vs_primary:'%', penetration_target:'%',
+};
+function dfmt(k, v) {
+  const u = DUNIT[k];
+  if (v == null || !isFinite(v)) return '—';
+  if (u === '$') return money(v);
+  if (u === '%') return v.toFixed(1) + '%';
+  if (u === 'x') return v.toFixed(2) + 'x';
+  if (u === 'mo') return v.toFixed(1) + ' mo';
+  if (u === 'd') return Math.round(v) + ' d';
+  if (u === 'y') return Math.round(v) + ' y';
+  return v.toFixed(2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONSISTENCY CHECKS
+   The product. Stated figures vs figures computed from primitives.
+   ═══════════════════════════════════════════════════════════════ */
+function runChecks(D) {
+  const out = [];
+  const add = (o) => out.push(o);
+
+  /* Compare a stated field with a computed value. */
+  function cmp(statedId, computedKey, opts) {
+    const st = gv(statedId), cp = D[computedKey];
+    if (!has(st, cp)) return;
+    const o = opts || {};
+    const abs = Math.abs(st - cp);
+    const rel = Math.abs(cp) > 0 ? abs / Math.abs(cp) * 100 : 0;
+    const overBy = o.pts ? abs : rel;
+    const tol = o.tol, hard = o.hard != null ? o.hard : tol * 2.5;
+    if (overBy <= tol) {
+      add({ id:statedId, sev:'ok', title:o.title, stated:o.f(st), computed:o.f(cp), delta:'within tolerance' });
+      return;
+    }
+    const sev = overBy > hard ? 'major' : 'minor';
+    add({
+      id:statedId, sev, title:o.title, stated:o.f(st), computed:o.f(cp),
+      delta:(o.pts ? abs.toFixed(1) + ' pts' : rel.toFixed(0) + '%') + (st > cp ? ' overstated' : ' understated'),
+      text:o.text ? o.text(st, cp) : `The stated figure is ${o.f(st)}; recomputing it from the underlying inputs gives ${o.f(cp)}.`,
+      ask:o.ask,
+    });
+  }
+
+  /* 1 — the ARR waterfall must close */
+  const arr = gv('arr_now'), arr0 = gv('arr_12mo');
+  const nw = gv('new_arr_l12'), ex = gv('expansion_arr_l12'), ch = gv('churned_arr_l12'), co = gv('contraction_arr_l12');
+  if (has(arr, arr0, nw, ex, ch, co)) {
+    const implied = arr0 + nw + ex - ch - co;
+    const gap = arr - implied, rel = arr > 0 ? Math.abs(gap) / arr * 100 : 0;
+    if (rel <= 3) add({ id:'waterfall', sev:'ok', title:'ARR waterfall closes', stated:money(arr), computed:money(implied), delta:'within 3%' });
+    else add({
+      id:'waterfall', sev: rel > 10 ? 'major' : 'minor', title:'The ARR waterfall does not close',
+      stated:money(arr), computed:money(implied), delta:money(gap) + ' unexplained',
+      text:`Opening ARR plus new and expansion, less churn and contraction, gives ${money(implied)}. Closing ARR is stated as ${money(arr)}. ${money(Math.abs(gap))} is unaccounted for.`,
+      ask:'Which movement line is missing from the waterfall — reactivations, FX, a reclassification between services and subscription, or an acquisition?',
+    });
+  }
+
+  /* 2-12 — stated vs computed */
+  /* 2 — deck ARR vs financial ARR */
+  if (has(gv('stated_arr'), arr)) {
+    const st = gv('stated_arr'), rel = arr > 0 ? Math.abs(st - arr) / arr * 100 : 0;
+    if (rel <= 2) add({ id:'stated_arr', sev:'ok', title:'Deck ARR matches the financials', stated:money(st), computed:money(arr), delta:'within 2%' });
+    else add({
+      id:'stated_arr', sev: rel > 6 ? 'major' : 'minor', title:'Deck ARR does not match the financials',
+      stated:money(st), computed:money(arr), delta:rel.toFixed(0) + '% ' + (st > arr ? 'higher in the deck' : 'lower in the deck'),
+      text:`The headline ARR in the materials is ${money(st)}. The figure carried in the financials is ${money(arr)}.`,
+      ask:'Which definition produces the deck number — is it including signed-but-not-started contracts, annualised last month, or gross bookings?',
+    });
+  }
+  cmp('stated_nrr','nrr',{ tol:3, hard:8, pts:true, title:'Net revenue retention', f:v=>v.toFixed(1)+'%',
+    ask:'Which cohort and which period does the stated NRR cover, and does it include or exclude customers who churned entirely?' });
+  cmp('stated_grr','grr',{ tol:3, hard:8, pts:true, title:'Gross revenue retention', f:v=>v.toFixed(1)+'%',
+    ask:'Does the stated GRR net off downgrades, or only full cancellations?' });
+  cmp('stated_growth','growth_yoy',{ tol:5, hard:15, pts:true, title:'Growth rate', f:v=>v.toFixed(1)+'%',
+    ask:'Is the stated growth measured on ARR, on recognised revenue, or on bookings?' });
+  cmp('stated_runway','runway',{ tol:12, hard:30, title:'Runway', f:v=>v.toFixed(1)+' months',
+    ask:'Does the stated runway assume the current burn, or a plan that includes hires and spend not yet committed?' });
+  cmp('stated_rule40','rule40',{ tol:6, hard:15, pts:true, title:'Rule of 40', f:v=>v.toFixed(1),
+    ask:'Which profitability measure feeds the stated Rule of 40 — FCF margin, EBITDA margin, or net margin?' });
+  cmp('stated_burn_multiple','burn_multiple',{ tol:18, hard:45, title:'Burn multiple', f:v=>v.toFixed(2),
+    ask:'Is the stated burn multiple computed on net new ARR or on new-logo ARR alone?' });
+  cmp('stated_magic_number','magic_number',{ tol:20, hard:50, title:'Magic number', f:v=>v.toFixed(2),
+    ask:'Which quarter and which S&M definition produce the stated magic number?' });
+  cmp('stated_acv','acv',{ tol:18, hard:45, title:'Average contract value', f:v=>money(v),
+    ask:'Is the stated ACV a blended average, a new-business average, or a list-price figure?' });
+  cmp('stated_cac','cac',{ tol:25, hard:60, title:'Customer acquisition cost', f:v=>money(v),
+    ask:'Does the stated CAC include fully loaded S&M salaries and commission, or only paid media?' });
+  cmp('stated_cac_payback','cac_payback',{ tol:25, hard:60, title:'CAC payback', f:v=>v.toFixed(1)+' months',
+    ask:'Is the stated payback computed on gross profit or on revenue? Revenue-basis payback understates the real recovery period.' });
+  cmp('stated_ltv_cac','ltv_cac',{ tol:30, hard:70, title:'LTV:CAC', f:v=>v.toFixed(2)+'x',
+    ask:'What churn assumption and what time horizon are behind the stated LTV? An LTV built on a 10-year life is not a measurement.' });
+
+  /* 13 — concentration must be monotonic */
+  const t1 = gv('top1_pct'), t5 = gv('top5_pct'), t10 = gv('top10_pct');
+  if (has(t1, t5) && t1 > t5 + 0.5) add({ id:'conc_order', sev:'major', title:'Customer concentration figures are inconsistent',
+    stated:`top 1 = ${t1}%`, computed:`top 5 = ${t5}%`, delta:'impossible ordering',
+    text:'The largest single customer cannot represent a larger share of ARR than the top five combined.',
+    ask:'Which of the two concentration figures is correct, and can the top ten be shown line by line?' });
+  if (has(t5, t10) && t5 > t10 + 0.5) add({ id:'conc_order2', sev:'major', title:'Customer concentration figures are inconsistent',
+    stated:`top 5 = ${t5}%`, computed:`top 10 = ${t10}%`, delta:'impossible ordering',
+    text:'The top five cannot exceed the top ten.', ask:'Please provide the top ten customers by ARR with their contract dates.' });
+  if (t10 != null && t10 > 100.5) add({ id:'conc_over', sev:'major', title:'Concentration exceeds 100% of ARR',
+    stated:`${t10}%`, computed:'≤100%', delta:'impossible', text:'A subset of customers cannot exceed total ARR.',
+    ask:'Is the concentration figure measured against ARR or against total revenue including services?' });
+
+  /* 14 — gross margin vs COGS */
+  if (has(gv('gross_margin'), D.gm_implied)) {
+    const d = Math.abs(gv('gross_margin') - D.gm_implied);
+    if (d <= 5) add({ id:'gm_check', sev:'ok', title:'Gross margin reconciles to COGS', stated:pctv(gv('gross_margin')), computed:pctv(D.gm_implied), delta:'within 5 pts' });
+    else add({ id:'gm_check', sev: d > 12 ? 'major' : 'minor', title:'Gross margin does not reconcile to the cost lines',
+      stated:pctv(gv('gross_margin')), computed:pctv(D.gm_implied), delta:d.toFixed(1) + ' pts apart',
+      text:`Hosting and support costs imply a gross margin of ${pctv(D.gm_implied)} against the stated ${pctv(gv('gross_margin'))}.`,
+      ask:'Which costs sit above the gross margin line? Support and customer success are frequently moved below it to improve the optics.' });
+  }
+
+  /* 15 — burn vs headcount */
+  if (has(gv('net_burn'), D.burn_implied) && gv('net_burn') > 0 && D.burn_implied > 0) {
+    const rel = Math.abs(gv('net_burn') - D.burn_implied) / gv('net_burn') * 100;
+    if (rel > 55) add({ id:'burn_check', sev:'minor', title:'Burn does not track headcount cost',
+      stated:money(gv('net_burn')) + '/mo', computed:money(D.burn_implied) + '/mo', delta:rel.toFixed(0) + '% apart',
+      text:`Headcount at the assumed loaded cost, net of gross profit, implies roughly ${money(D.burn_implied)} a month against a stated ${money(gv('net_burn'))}.`,
+      ask:'What non-payroll spend closes this gap, and is any of it capitalised rather than expensed?' });
+  }
+
+  /* 16 — stated TAM vs bottom-up */
+  if (has(gv('stated_tam'), D.tam_bottomup) && D.tam_bottomup > 0) {
+    const mult = gv('stated_tam') / D.tam_bottomup;
+    if (mult > 10) add({ id:'tam_check', sev:'major', title:'Stated market size is top-down',
+      stated:money(gv('stated_tam')), computed:money(D.tam_bottomup), delta:mult.toFixed(0) + 'x larger than bottom-up',
+      text:`Counting target accounts at the ACV this company actually realises gives ${money(D.tam_bottomup)}. The stated figure is ${mult.toFixed(0)} times larger.`,
+      ask:'Can the market size be rebuilt from a named account list at current pricing rather than from an analyst report?' });
+    else add({ id:'tam_check', sev:'ok', title:'Market size is defensible bottom-up', stated:money(gv('stated_tam')), computed:money(D.tam_bottomup), delta:mult.toFixed(1) + 'x' });
+  }
+
+  /* 17 — deferred revenue larger than ARR */
+  if (has(gv('deferred_revenue'), arr) && gv('deferred_revenue') > arr * 1.1)
+    add({ id:'deferred', sev:'minor', title:'Deferred revenue exceeds ARR',
+      stated:money(gv('deferred_revenue')), computed:money(arr), delta:'exceeds annual run rate',
+      text:'A deferred balance above the annual run rate usually means multi-year prepayments, which change the cash picture but not the recurring one.',
+      ask:'How much of the deferred balance relates to contract years beyond the next twelve months?' });
+
+  /* 18 — aged receivables */
+  if (D.ar_share != null && D.ar_share > 8)
+    add({ id:'ar', sev: D.ar_share > 18 ? 'major' : 'minor', title:'Material receivables past 90 days',
+      stated:pctv(D.ar_share) + ' of ARR', computed:'< 5% typical', delta:'collection risk',
+      text:'Revenue booked but not collected after ninety days is often revenue that will be disputed or churned.',
+      ask:'Which accounts are past ninety days, and are any of them already in a cancellation conversation?' });
+
+  /* 19 — services revenue inside ARR */
+  if (gv('services_pct') != null && gv('services_pct') > 15)
+    add({ id:'services', sev:'minor', title:'Significant non-recurring revenue',
+      stated:pctv(gv('services_pct')), computed:'< 15% preferred', delta:'ARR quality',
+      text:'A meaningful share of revenue is non-recurring, which inflates every multiple calculated on the ARR figure.',
+      ask:'Can subscription and services be shown as two separate revenue lines for the last eight quarters?' });
+
+  /* 20 — cash vs raise history */
+  if (has(gv('cash_on_hand'), gv('total_raised')) && gv('cash_on_hand') > gv('total_raised') * 1.02 && !gv('debt_outstanding'))
+    add({ id:'cash_raise', sev:'minor', title:'Cash exceeds total equity raised',
+      stated:money(gv('cash_on_hand')), computed:money(gv('total_raised')) + ' raised', delta:'unexplained',
+      text:'Cash above cumulative equity raised implies either profitability, debt, or a raise not reflected in the total.',
+      ask:'Is there debt, a grant, or a round that is not included in the total raised figure?' });
+
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCORING — deterministic, weighted, stage-aware, sample-guarded
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Metric weights inside a dimension. Default 1. */
+const MW = {
+  growth_yoy:2.2, nrr:2.2, grr:1.8, gross_margin:1.6, quick_ratio:1, logo_ret:1.2, services_pct:0.8,
+  runway:2.2, burn_multiple:2, hype_ratio:1.4, arr_per_fte:1.6, rule40:1.4,
+  cac_payback:2, ltv_cac:1.6, magic_number:1.4, win_rate:1, quota_att:1, pipeline_cov:0.8,
+  pct_paid:0.8, top5_conc:1.6, sales_cycle:0.6,
+  domain_years:1.4, eng_turnover:1.2, founder_conc:0.8, headcount_eff:1.2,
+  tam_bottomup:1.6, penetration:0.8, win_vs_primary:1.2,
+  option_pool:0.8, liq_pref:1, safe_overhang:1.2, uptime:1,
+};
+
+function pos4(v, a) {
+  if (v <= a[0]) return 0;
+  if (v >= a[3]) return 3;
+  for (let i = 0; i < 3; i++) if (v <= a[i + 1]) return i + (v - a[i]) / ((a[i + 1] - a[i]) || 1);
+  return 3;
+}
+function bandScore(v, anchors, dir) {
+  const pts = [0, 45, 72, 100];
+  const p = pos4(v, anchors), lo = Math.min(Math.floor(p), 2), f = p - lo;
+  const base = pts[lo] + (pts[lo + 1] - pts[lo]) * f;
+  return clamp(dir === 'hi' ? base : 100 - base, 0, 100);
+}
+function bandedIdeal(v, ideal, hard) {
+  if (v >= ideal[0] && v <= ideal[1]) return 92;
+  if (v < ideal[0]) return clamp(bandScore(v, [hard[0], (hard[0] + ideal[0]) / 2, ideal[0], ideal[0]], 'hi'), 0, 92);
+  return clamp(bandScore(v, [ideal[1], ideal[1], (ideal[1] + hard[1]) / 2, hard[1]], 'lo'), 0, 92);
+}
+
+/* Which metrics are not meaningful at this company's scale. */
+function suppressions(D) {
+  const s = {}, m = RUBRIC.minN;
+  const c0 = gv('customers_12mo'), nc = gv('new_customers_l12'), hc = gv('headcount_now'), arr = gv('arr_now');
+  const arr0 = gv('arr_12mo');
+  if (c0 != null && c0 < m.retention) {
+    const r = `only ${c0} customers a year ago — below the ${m.retention}-logo floor where a retention percentage carries signal`;
+    ['nrr','grr','quick_ratio','logo_ret'].forEach(k => s[k] = r);
+  }
+  if (nc != null && nc < m.unit_economics) {
+    const r = `only ${nc} new customers in the period — blended CAC on that few wins is not a rate, it is an anecdote`;
+    ['cac_payback','ltv_cac'].forEach(k => s[k] = r);
+  }
+  if (arr0 != null && arr0 < m.growth_base)
+    s.growth_yoy = `growth measured off ${money(arr0)} of opening ARR — percentage growth off a base this small is not comparable to anything`;
+  if (arr != null && arr < m.magic_number)
+    s.magic_number = `ARR below ${money(m.magic_number)} — quarterly magic number is dominated by single-deal timing at this scale`;
+  if (hc != null && hc < m.arr_per_fte) s.arr_per_fte = `only ${hc} employees — ARR per head is not yet a productivity measure`;
+  if (gv('headcount_sales') != null && gv('headcount_sales') < m.quota)
+    s.quota_att = `fewer than ${m.quota} quota carriers — attainment is a single person's quarter`;
+  return s;
+}
+
+function scoreAll(D, checks) {
+  const stage = S.stage, W = RUBRIC.weights[stage];
+  const supp = suppressions(D);
+  const dims = {};
+  Object.keys(W).forEach(k => dims[k] = { wsum:0, psum:0, possible:0, metrics:[], adj:0, notes:[] });
+
+  /* --- threshold metrics --- */
+  Object.entries(RUBRIC.thresholds).forEach(([key, cfg]) => {
+    const dim = cfg.dim; if (!dims[dim]) return;
+    const w = MW[key] || 1;
+    const anchors = cfg.dir === 'band' ? (cfg[stage] ? true : null) : cfg[stage];
+    if (!anchors) return;                              // not scored at this stage
+    dims[dim].possible += w;
+    const v = D[key];
+    if (v == null || !isFinite(v)) return;             // no data
+    if (supp[key]) { dims[dim].metrics.push({ key, label:DLABEL[key]||key, value:dfmt(key,v), score:null, suppressed:supp[key] }); return; }
+    let sc;
+    if (cfg.dir === 'band') sc = bandedIdeal(v, cfg.ideal, cfg.hard);
+    else sc = bandScore(v, anchors, cfg.dir);
+    dims[dim].wsum += w; dims[dim].psum += w * sc;
+    dims[dim].metrics.push({
+      key, label:DLABEL[key] || key, value:dfmt(key, v), score:Math.round(sc), weight:w,
+      bench: cfg.dir === 'band' ? `${cfg.ideal[0]}–${cfg.ideal[1]} ideal`
+           : (cfg.dir === 'hi' ? '≥ ' : '≤ ') + dfmt(key, anchors[cfg.dir === 'hi' ? 2 : 1]) + ' good',
+    });
+  });
+
+  /* --- categorical metrics --- */
+  const cats = [
+    ['soc2', gs('soc2'), RUBRIC.categorical.soc2, 'SOC 2 status', 1],
+    ['books', gs('audited_financials'), RUBRIC.categorical.books, 'Financial statement quality', 1.2],
+    ['switching', gs('switching_cost'), RUBRIC.categorical.switching, 'Switching cost', 1.4],
+    ['pricing', gs('pricing_move'), RUBRIC.categorical.pricing, 'Last pricing action', 1.2],
+  ];
+  cats.forEach(([key, val, cfg, label, w]) => {
+    const dim = cfg.dim; if (!dims[dim]) return;
+    dims[dim].possible += w;
+    if (!val || cfg.map[val] == null) return;
+    const sc = cfg.map[val];
+    dims[dim].wsum += w; dims[dim].psum += w * sc;
+    dims[dim].metrics.push({ key, label, value:val, score:sc, weight:w, bench:'categorical' });
+  });
+
+  /* --- boolean modifiers, bounded --- */
+  RUBRIC.booleans.forEach(b => {
+    const v = gb(b.id); if (v == null || !dims[b.dim]) return;
+    const isGood = v === b.good;
+    if (isGood && b.pts > 0) { dims[b.dim].adj += b.pts; dims[b.dim].notes.push({ good:true, note:b.note }); }
+    if (!isGood && b.pts < 0) { dims[b.dim].adj += b.pts; dims[b.dim].notes.push({ good:false, note:b.note }); }
+  });
+
+  /* --- resolve dimensions (canonical order, not object-literal order) --- */
+  const DIM_ORDER = ['revenue','capital','gtm','team','market','govern'];
+  const dimensions = DIM_ORDER.filter(k => W[k] != null).map(k => {
+    const d = dims[k];
+    const cov = d.possible > 0 ? d.wsum / d.possible : 0;
+    const raw = d.wsum > 0 ? d.psum / d.wsum : null;
+    const adj = clamp(d.adj, -15, 15);
+    const score = raw == null ? null : Math.round(clamp(raw + adj, 0, 100));
+    return { id:k, label:DIM_LABEL[k], weight:W[k], coverage:cov, raw, adj, score, metrics:d.metrics, notes:d.notes };
+  });
+
+  /* --- overall ---
+     A dimension carries its full stage weight only once it is at least half
+     populated. Below that its influence falls proportionally, so a single
+     lucky metric in an otherwise empty dimension cannot move the headline. */
+  const scored = dimensions.filter(d => d.score != null);
+  scored.forEach(d => d.effWeight = d.weight * Math.min(1, d.coverage / 0.5));
+  const wTot = scored.reduce((a, d) => a + d.effWeight, 0);
+  const overall = wTot > 0 ? scored.reduce((a, d) => a + d.effWeight * d.score, 0) / wTot : null;
+  const coverage = dimensions.reduce((a, d) => a + d.weight * d.coverage, 0);
+
+  /* --- gates --- */
+  const gates = [];
+  RUBRIC.gates.forEach(g => { if (gb(g.id) === g.when) gates.push({ title:g.title, why:g.why }); });
+  const major = checks.filter(c => c.sev === 'major').length;
+  const minor = checks.filter(c => c.sev === 'minor').length;
+  if (major >= 3) gates.push({
+    title:`${major} figures do not reconcile`,
+    why:'When this many headline numbers disagree with the arithmetic behind them, the correct next step is a corrected data pack, not a score. Radar will not produce one until the material contradictions are resolved.',
+  });
+
+  /* --- confidence band --- */
+  const half = overall == null ? null : Math.round(clamp(3 + 22 * (1 - coverage) + 3 * major, 3, 30));
+  const confidence = coverage >= 0.75 && major === 0 ? 'HIGH'
+                   : coverage >= 0.45 && major <= 1 ? 'MEDIUM' : 'LOW';
+
+  return {
+    rubric:RUBRIC.version, stage, model:S.model,
+    overall: overall == null ? null : Math.round(overall),
+    band: half == null ? null : [Math.max(0, Math.round(overall) - half), Math.min(100, Math.round(overall) + half)],
+    coverage, confidence, dimensions, gates, suppressed:supp,
+    counts:{ major, minor, ok:checks.filter(c => c.sev === 'ok').length },
+  };
+}
+
+const DIM_LABEL = {
+  revenue:'Revenue quality', capital:'Capital efficiency', gtm:'Go-to-market',
+  team:'Team', market:'Market & moat', govern:'Governance & technical risk',
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   QUESTION LIST — the actual deliverable
+   ═══════════════════════════════════════════════════════════════ */
+function buildQuestions(D, checks, sc) {
+  const q = [];
+  sc.gates.forEach(g => q.push({ p:0, tag:'Gate — resolve before terms', text:g.title + '. ' + g.why }));
+  checks.filter(c => c.sev === 'major').forEach(c => c.ask && q.push({ p:1, tag:'Contradiction — ' + c.title, text:c.ask }));
+  checks.filter(c => c.sev === 'minor').forEach(c => c.ask && q.push({ p:2, tag:'Inconsistency — ' + c.title, text:c.ask }));
+
+  /* Missing required inputs */
+  SECTIONS.forEach(sec => sec.fields.forEach(f => {
+    if (f.req && !fieldIsFilled(f)) q.push({ p:2, tag:'Missing input — ' + sec.label, text:`Obtain ${f.lbl.toLowerCase()}. Several derived metrics cannot be computed without it.` });
+  }));
+
+  /* Suppressed metrics: say so out loud rather than scoring noise */
+  Object.entries(sc.suppressed).forEach(([k, r]) =>
+    q.push({ p:3, tag:'Not yet measurable', text:`${DLABEL[k] || k} is not scored: ${r}. Ask for the raw cohort table instead of a headline percentage.` }));
+
+  /* Weakest scored dimensions */
+  sc.dimensions.filter(d => d.score != null && d.score < 50)
+    .sort((a, b) => a.score - b.score).slice(0, 3)
+    .forEach(d => {
+      const worst = d.metrics.filter(m => m.score != null).sort((a, b) => a.score - b.score)[0];
+      q.push({ p:2, tag:'Weak dimension — ' + d.label, text:worst
+        ? `${d.label} scores ${d.score}. The binding constraint is ${worst.label.toLowerCase()} at ${worst.value} against a ${worst.bench} bar. Establish whether this is structural or a timing artefact.`
+        : `${d.label} scores ${d.score}. Work out which underlying metric is driving it.` });
+    });
+
+  /* Low coverage dimensions */
+  sc.dimensions.filter(d => d.coverage < 0.35).forEach(d =>
+    q.push({ p:3, tag:'Thin evidence — ' + d.label, text:`Only ${Math.round(d.coverage * 100)}% of the ${d.label.toLowerCase()} rubric is populated. The dimension score is not yet load-bearing.` }));
+
+  return q.sort((a, b) => a.p - b.p);
+}
+
+function buildDataRequests(D, checks, sc) {
+  const r = new Set();
+  r.add('Monthly ARR waterfall by movement type for the last 24 months, in a spreadsheet, not a slide.');
+  r.add('Cohort retention table by signup month, gross and net, in dollars.');
+  r.add('Top 20 customers by ARR with contract start date, renewal date and term length.');
+  if (sc.gates.length || gb('ip_assignments') !== true)
+    r.add('Executed IP assignment agreements for every current and former employee and contractor.');
+  r.add('Cap table as issued, including all SAFEs and notes with caps and discounts.');
+  if (gv('sm_spend_l12') != null) r.add('S&M spend by month split into people, paid media, events and tooling.');
+  if (gs('audited_financials') === 'Internal only') r.add('At minimum a reviewed set of financial statements, or a quality-of-earnings scope for the last two years.');
+  if (gv('deferred_revenue')) r.add('Deferred revenue roll-forward with the contract terms that generated it.');
+  if (gv('ar_over_90')) r.add('Aged receivables report by customer.');
+  if (gs('soc2') !== 'Type II') r.add('Current SOC 2 report or the auditor engagement letter and target date.');
+  checks.filter(c => c.sev === 'major').forEach(c => r.add(`Supporting workings for ${c.title.toLowerCase()}.`));
+  return Array.from(r);
+}
+
+/* ── Reproducibility: same inputs, same rubric, same hash ── */
+function runHash() {
+  const canon = JSON.stringify({
+    v:RUBRIC.version, stage:S.stage, model:S.model,
+    vals:Object.keys(S.vals).sort().reduce((a, k) => (a[k] = S.vals[k], a), {}),
+    bools:Object.keys(S.bools).sort().reduce((a, k) => (a[k] = S.bools[k], a), {}),
+    sel:Object.keys(S.sel).sort().reduce((a, k) => (a[k] = S.sel[k], a), {}),
+  });
+  let h = 5381;
+  for (let i = 0; i < canon.length; i++) h = ((h << 5) + h + canon.charCodeAt(i)) >>> 0;
+  return h.toString(16).padStart(8, '0').toUpperCase();
+}
+/* ═══════════════════════════════════════════════════════════════
+   UI — navigation, forms, live derivation panel
+   ═══════════════════════════════════════════════════════════════ */
+
+function fieldIsFilled(f) {
+  if (f.t === 'bool')   return S.bools[f.id] !== undefined;
+  if (f.t === 'select') return !!S.sel[f.id];
+  return S.vals[f.id] !== undefined && S.vals[f.id] !== '';
+}
+function sectionProgress(sec) {
+  const total = sec.fields.length, filled = sec.fields.filter(fieldIsFilled).length;
+  return { filled, total, pct: total ? Math.round(filled / total * 100) : 0 };
+}
+function allProgress() {
+  let f = 0, t = 0;
+  SECTIONS.forEach(s => { const p = sectionProgress(s); f += p.filled; t += p.total; });
+  return { filled:f, total:t, pct: t ? Math.round(f / t * 100) : 0 };
+}
+
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type;
+  const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (f => setTimeout(f, 16));
+  raf(() => el.classList.add('show'));
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 3400);
+}
+function toggleSidebar(open) {
+  document.getElementById('sidebar').classList.toggle('open', open);
+  document.getElementById('sidebar-overlay').classList.toggle('show', open);
+}
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + id);
+  if (el) el.classList.add('active');
+  updateTopbar(id);
+  window.scrollTo({ top:0 });
+  toggleSidebar(false);
+}
+function updateTopbar(id) {
+  const c = document.getElementById('tb-company'), s = document.getElementById('tb-section');
+  c.textContent = S.name || 'New assessment';
+  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report' };
+  s.textContent = id === 'section' ? (SECTIONS[S.section] ? SECTIONS[S.section].label : 'Evidence') : (map[id] || '');
+  const right = document.getElementById('tb-right');
+  right.innerHTML = '';
+  if (id === 'section' || id === 'verify') {
+    const b = document.createElement('button');
+    b.className = 'btn btn-ghost btn-sm'; b.textContent = 'Save & exit';
+    b.onclick = () => { saveSec(); saveDraft(); toast('Draft saved in this browser.'); showPage('intro'); };
+    right.appendChild(b);
+  }
+  if (id === 'result') {
+    right.innerHTML = '<button class="btn btn-ghost btn-sm" onclick="editData()">Edit inputs</button>';
+  }
+}
+function updateProgress() {
+  const p = allProgress();
+  document.getElementById('pct-val').textContent = p.pct + '%';
+  document.getElementById('pct-fill').style.width = p.pct + '%';
+  const { D } = derive();
+  const ck = runChecks(D);
+  const maj = ck.filter(c => c.sev === 'major').length, min = ck.filter(c => c.sev === 'minor').length;
+  const el = document.getElementById('consist-val');
+  if (!ck.length) { el.textContent = '—'; el.style.color = ''; }
+  else if (maj) { el.textContent = maj + ' material'; el.style.color = 'var(--red)'; }
+  else if (min) { el.textContent = min + ' minor'; el.style.color = 'var(--amber)'; }
+  else { el.textContent = 'clean'; el.style.color = 'var(--green)'; }
+  refreshNavCounts();
+}
+function refreshNavCounts() {
+  SECTIONS.forEach((sec, i) => {
+    const el = document.getElementById('ni-' + i); if (!el) return;
+    const p = sectionProgress(sec);
+    const c = el.querySelector('.nav-count'); if (c) c.textContent = p.filled + '/' + p.total;
+    el.classList.toggle('done', p.filled === p.total);
+    el.classList.toggle('active', i === S.section);
+  });
+}
+function buildNav() {
+  const nav = document.getElementById('sb-nav');
+  nav.innerHTML = '<div class="sb-nav-label">Evidence sections</div>' + SECTIONS.map((sec, i) => `
+    <div class="nav-item" id="ni-${i}" onclick="jumpTo(${i})">
+      <div class="nav-dot"></div>
+      <div class="nav-label">${esc(sec.label)}</div>
+      <div class="nav-count">0/${sec.fields.length}</div>
+    </div>`).join('') +
+    `<div class="nav-item" onclick="goVerify()" style="margin-top:8px">
+      <div class="nav-dot"></div><div class="nav-label">Verification</div><div class="nav-count">→</div></div>`;
+}
+function buildStages() {
+  document.getElementById('stage-grid').innerHTML = STAGES.map(s => `
+    <div class="stage-card${S.stage === s.id ? ' sel' : ''}" id="stc-${s.id}" onclick="selStage('${s.id}')">
+      <div class="stage-n">${esc(s.n)}</div><div class="stage-s">${esc(s.s)}</div>
+    </div>`).join('');
+}
+function buildTypes() {
+  document.getElementById('type-grid').innerHTML = MODELS.map(t => `
+    <div class="type-card${S.model === t.id ? ' sel' : ''}" id="tc-${t.id}" onclick="selModel('${t.id}')">
+      <span class="type-em">${t.em}</span>
+      <div class="type-n">${esc(t.n)}</div><div class="type-s">${esc(t.s)}</div>
+    </div>`).join('');
+  const m = MODELS.find(x => x.id === S.model);
+  document.getElementById('calib-note').textContent = m ? CALIB_NOTE[m.calib] : '';
+}
+function selStage(id) { S.stage = id; buildStages(); saveDraft(); }
+function selModel(id) { S.model = id; buildTypes(); saveDraft(); }
+
+function goSetup() { showPage('setup'); buildStages(); buildTypes(); }
+function goIntake() {
+  if (!S.name.trim()) { toast('Enter a company name so the report can be identified later.', 'err'); return; }
+  showPage('intake');
+}
+function startSections() { S.section = 0; renderSection(0); showPage('section'); }
+function jumpTo(i) { saveSec(); S.section = i; renderSection(i); showPage('section'); }
+function prevSec() { saveSec(); if (S.section > 0) { S.section--; renderSection(S.section); showPage('section'); } else showPage('intake'); }
+function nextSec() {
+  saveSec();
+  if (S.section < SECTIONS.length - 1) { S.section++; renderSection(S.section); showPage('section'); }
+  else goVerify();
+}
+function saveSec() {
+  document.querySelectorAll('[data-fid]').forEach(inp => {
+    const id = inp.dataset.fid, v = inp.value.trim();
+    if (inp.dataset.kind === 'select') { if (v) S.sel[id] = v; else delete S.sel[id]; }
+    else if (v === '') delete S.vals[id];
+    else S.vals[id] = v;
+  });
+  saveDraft(); updateProgress();
+}
+
+/* ── FIELD RENDERING ── */
+function provBadge(id) {
+  const p = S.prov[id];
+  if (!p) return '';
+  return `<span class="prov" title="${esc(p.line || '')}">extracted</span>`;
+}
+function renderField(f) {
+  const filled = fieldIsFilled(f) ? ' filled' : '';
+  const hint = f.hint ? `<div class="field-hint">${esc(f.hint)}</div>` : '';
+  const req = f.req ? '<span class="req-tag">required</span>' : '';
+  const gate = f.gate ? '<span class="req-tag" style="background:var(--red-d);color:#fca5a5;border-color:var(--red-b)">gate</span>' : '';
+
+  if (f.t === 'bool') {
+    const v = S.bools[f.id];
+    return `<div class="bool-card${filled}" id="fc-${f.id}" tabindex="0" data-bool-id="${f.id}" onkeydown="boolKeydown(event,'${f.id}')">
+      <div class="field-lbl">${esc(f.lbl)} ${gate}${provBadge(f.id)}</div>
+      ${hint}
+      <div class="bool-grp">
+        <button class="bool-btn yes${v === true ? ' active' : ''}"  onclick="setBool('${f.id}',true)">Yes</button>
+        <button class="bool-btn no${v === false ? ' active' : ''}"  onclick="setBool('${f.id}',false)">No</button>
+        <button class="bool-btn unk${v === undefined ? ' active' : ''}" onclick="setBool('${f.id}',undefined)">Unknown</button>
+      </div>
+    </div>`;
+  }
+  if (f.t === 'select') {
+    return `<div class="field-card field-item${filled}" id="fc-${f.id}">
+      <div class="field-lbl">${esc(f.lbl)}${req}${provBadge(f.id)}</div>
+      ${hint}
+      <select class="field-select" data-fid="${f.id}" data-kind="select" onchange="S.sel['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive()">
+        <option value="">Not answered</option>
+        ${f.options.map(o => `<option${S.sel[f.id] === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+  const chips = f.chips ? `<div class="chip-row">${f.chips.map(c =>
+    `<button class="chip${String(S.vals[f.id]) === String(c) ? ' active' : ''}" onclick="setChip('${f.id}',${c})">${c}${f.unit === '%' ? '%' : ''}</button>`).join('')}</div>` : '';
+  const unit = f.unit ? ` <span style="font-weight:300;opacity:.5">(${esc(f.unit)})</span>` : '';
+  return `<div class="field-card field-item${filled}" id="fc-${f.id}">
+    <div class="field-lbl">${esc(f.lbl)}${unit}${req}${provBadge(f.id)}</div>
+    ${hint}
+    <input class="field-inp" data-fid="${f.id}" type="${f.t === 'num' ? 'number' : 'text'}" step="any"
+           value="${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}"
+           placeholder="${f.t === 'num' ? '—' : 'Text'}"
+           oninput="S.vals['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive();saveDraft()" />
+    ${chips}
+  </div>`;
+}
+function updateFieldCardState(id) {
+  const all = SECTIONS.flatMap(s => s.fields), f = all.find(x => x.id === id);
+  const el = document.getElementById('fc-' + id);
+  if (el && f) el.classList.toggle('filled', fieldIsFilled(f));
+  updateSectionProgressUI();
+}
+function updateSectionProgressUI() {
+  const sec = SECTIONS[S.section]; if (!sec) return;
+  const p = sectionProgress(sec);
+  const t = document.getElementById('sec-field-count'), fill = document.getElementById('sec-field-fill');
+  if (t) t.textContent = `${p.filled} of ${p.total}`;
+  if (fill) fill.style.width = p.pct + '%';
+  updateProgress();
+}
+function setChip(id, val) {
+  S.vals[id] = String(val);
+  const inp = document.querySelector(`[data-fid="${id}"]`); if (inp) inp.value = val;
+  const card = document.getElementById('fc-' + id);
+  if (card) card.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.textContent.replace('%', '') === String(val)));
+  updateFieldCardState(id); liveDerive(); saveDraft();
+}
+function setBool(id, val) {
+  if (val === undefined) delete S.bools[id]; else S.bools[id] = val;
+  const card = document.getElementById('fc-' + id); if (!card) return;
+  const btns = card.querySelectorAll('.bool-btn');
+  btns[0].classList.toggle('active', val === true);
+  btns[1].classList.toggle('active', val === false);
+  btns[2].classList.toggle('active', val === undefined);
+  updateFieldCardState(id); liveDerive(); saveDraft();
+}
+function boolKeydown(e, id) {
+  const k = e.key.toLowerCase();
+  if (k === 'y') { setBool(id, true); e.preventDefault(); }
+  if (k === 'n') { setBool(id, false); e.preventDefault(); }
+  if (k === 'u' || k === '0') { setBool(id, undefined); e.preventDefault(); }
+}
+
+/* ── SECTION PAGE ── */
+function renderSection(idx) {
+  const sec = SECTIONS[idx], p = sectionProgress(sec);
+  const groups = [];
+  sec.fields.forEach(f => {
+    let g = groups.find(x => x.name === (f.g || ''));
+    if (!g) { g = { name:f.g || '', fields:[] }; groups.push(g); }
+    g.fields.push(f);
+  });
+
+  const html = `
+    <div class="sec-step-bar">${SECTIONS.map((_, i) =>
+      `<div class="sec-step-dot${i === idx ? ' active' : i < idx ? ' done' : ''}"></div>`).join('')}</div>
+
+    <div class="sec-header">
+      <div class="sec-icon" style="background:${sec.ibg}"><span style="font-size:20px">${sec.em}</span></div>
+      <div>
+        <div class="sec-title">${esc(sec.label)}</div>
+        <div class="sec-desc">${esc(sec.desc)}</div>
+        <div class="sec-field-progress">
+          <span class="sec-counter" id="sec-field-count">${p.filled} of ${p.total}</span>
+          <div class="sec-field-track"><div class="sec-field-fill" id="sec-field-fill" style="width:${p.pct}%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-toolbar">
+      <div class="sec-toolbar-left">${sec.claims
+        ? 'Nothing here is scored. Every entry is compared against the computed figure.'
+        : 'Leave a field blank rather than guessing — a blank lowers confidence, a guess corrupts the output.'}</div>
+      <div class="sec-toolbar-right">
+        <button class="btn btn-ghost btn-sm" onclick="clearSection()">Clear section</button>
+      </div>
+    </div>
+
+    <div id="derived-slot"></div>
+
+    ${groups.map(g => `
+      <div class="field-group">
+        ${g.name ? `<div class="field-group-title">${esc(g.name)}</div>` : ''}
+        <div class="field-grid">${g.fields.map(renderField).join('')}</div>
+      </div>`).join('')}
+
+    <div class="sec-nav">
+      <button class="btn btn-ghost" onclick="prevSec()">${idx === 0 ? 'Back' : 'Previous'}</button>
+      <div class="sec-nav-right">
+        <span class="sec-kbd-hint">Y / N / U on a focused yes-no card</span>
+        <button class="btn btn-primary" onclick="nextSec()">${idx === SECTIONS.length - 1 ? 'Go to verification' : 'Next section'}</button>
+      </div>
+    </div>`;
+
+  document.getElementById('section-content').innerHTML = html;
+  liveDerive();
+  refreshNavCounts();
+  window.scrollTo({ top:0 });
+}
+function clearSection() {
+  const sec = SECTIONS[S.section];
+  sec.fields.forEach(f => { delete S.vals[f.id]; delete S.bools[f.id]; delete S.sel[f.id]; delete S.prov[f.id]; });
+  renderSection(S.section); saveDraft(); updateProgress();
+}
+
+/* ── LIVE DERIVED PANEL ── */
+const LIVE_BY_SECTION = {
+  revenue: ['growth_yoy','nrr','grr','quick_ratio','net_new_arr','logo_ret','gm_implied'],
+  capital: ['runway','burn_multiple','hype_ratio','arr_per_fte','rule40','fcf_margin','safe_overhang'],
+  gtm:     ['acv','cac','cac_payback','ltv','ltv_cac','magic_number','top5_conc'],
+  team:    ['arr_per_fte','eng_turnover','headcount_growth','headcount_eff','burn_implied'],
+  market:  ['tam_bottomup','sam','penetration','acv'],
+  govern:  ['safe_overhang','option_pool','uptime'],
+  claims:  ['nrr','grr','growth_yoy','runway','rule40','burn_multiple','acv','cac','cac_payback','ltv_cac'],
+};
+function liveDerive() {
+  const slot = document.getElementById('derived-slot'); if (!slot) return;
+  const sec = SECTIONS[S.section]; if (!sec) return;
+  const { D, F } = derive();
+  const keys = (LIVE_BY_SECTION[sec.id] || []).filter(k => D[k] != null);
+  const supp = suppressions(D);
+
+  if (!keys.length) {
+    slot.innerHTML = `<div class="derived-panel"><div class="derived-head"><h4>Computed from this section</h4>
+      <span>waiting for inputs</span></div>
+      <p style="font-size:11.5px;color:var(--t2)">Nothing derivable yet. Fill the primitives above and the metrics appear here as they become computable.</p></div>`;
+    return;
+  }
+  const th = RUBRIC.thresholds;
+  const cls = k => {
+    if (supp[k]) return 'n';
+    const cfg = th[k]; if (!cfg || cfg.dir === 'band') return 'n';
+    const a = cfg[S.stage]; if (!a) return 'n';
+    const s = bandScore(D[k], a, cfg.dir);
+    return s >= 72 ? 'g' : s >= 45 ? 'a' : 'r';
+  };
+  slot.innerHTML = `<div class="derived-panel">
+    <div class="derived-head"><h4>Computed from this section</h4><span>${keys.length} metric${keys.length === 1 ? '' : 's'} · not entered by hand</span></div>
+    <div class="derived-grid">${keys.map(k => `
+      <div class="dv ${cls(k)}">
+        <div class="dv-lbl">${esc(DLABEL[k] || k)}</div>
+        <div class="dv-val">${esc(dfmt(k, D[k]))}</div>
+        <div class="dv-form">${esc(F[k] || '')}</div>
+        ${supp[k] ? `<div class="dv-form" style="color:var(--amber)">not scored at this scale</div>` : ''}
+      </div>`).join('')}</div>
+  </div>`;
+}
+
+/* ── DRAFTS ── */
+function saveDraft() {
+  try {
+    localStorage.setItem('vcr3-draft', JSON.stringify({
+      name:S.name, stage:S.stage, model:S.model, asof:S.asof, section:S.section,
+      vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov,
+    }));
+  } catch (e) {}
+}
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem('vcr3-draft'); if (!raw) return;
+    const d = JSON.parse(raw);
+    Object.assign(S, {
+      name:d.name || '', stage:d.stage || 'seed', model:d.model || 'saas', asof:d.asof || '',
+      section:typeof d.section === 'number' ? d.section : 0,
+      vals:d.vals || {}, bools:d.bools || {}, sel:d.sel || {}, prov:d.prov || {},
+    });
+    const n = document.getElementById('cname'); if (n) n.value = S.name;
+    const a = document.getElementById('asof'); if (a) a.value = S.asof;
+    updateProgress();
+    if (S.name || Object.keys(S.vals).length) document.getElementById('resume-btn').style.display = '';
+  } catch (e) {}
+}
+function resumeDraft() { buildStages(); buildTypes(); renderSection(S.section); showPage('section'); }
+function resetApp() {
+  if (!confirm('Clear this assessment and start again? The saved draft in this browser is deleted.')) return;
+  try { localStorage.removeItem('vcr3-draft'); } catch (e) {}
+  S = { name:'', stage:'seed', model:'saas', asof:'', section:0, vals:{}, bools:{}, sel:{}, prov:{}, result:null, files:[] };
+  document.getElementById('cname').value = '';
+  updateProgress(); showPage('intro');
+}
+function editData() { renderSection(S.section); showPage('section'); }
+
+/* ── WORKED EXAMPLE ── */
+function loadDemo() {
+  S.name = 'Northwind Data'; S.stage = 'a'; S.model = 'saas'; S.prov = {};
+  S.vals = {
+    arr_now:'4200000', arr_12mo:'2400000', new_arr_l12:'1450000', expansion_arr_l12:'810000',
+    churned_arr_l12:'520000', contraction_arr_l12:'190000', gross_margin:'71',
+    cogs_hosting:'620000', cogs_support:'540000', services_pct:'11', pct_annual:'68',
+    deferred_revenue:'900000', ar_over_90:'310000',
+    cash_on_hand:'6100000', net_burn:'310000', total_raised:'14500000', pre_money:'42000000',
+    safes_outstanding:'2600000', months_since_round:'16',
+    customers_now:'88', customers_12mo:'61', logos_lost_l12:'9',
+    top1_pct:'14', top5_pct:'41', top10_pct:'58',
+    sm_spend_l12:'2900000', new_customers_l12:'36', sm_spend_prior_q:'790000', new_arr_prior_q:'430000',
+    win_rate:'22', sales_cycle:'74', pipeline_coverage:'2.8', quota_attainment:'46', pct_paid:'52',
+    headcount_now:'39', headcount_12mo:'28', headcount_eng:'17', headcount_sales:'11',
+    avg_loaded_comp:'178000', founders_count:'2', founder_max_equity:'74', founder_domain_years:'6',
+    eng_departures_l12:'4',
+    target_accounts:'6200', reachable_pct:'9', primary_competitor:'Kestrel Analytics', win_rate_vs_primary:'38',
+    liq_pref:'1', option_pool:'8', uptime_90d:'99.72', p1_incidents:'3',
+    stated_arr:'4900000', stated_growth:'92', stated_nrr:'134', stated_grr:'91',
+    stated_runway:'24', stated_rule40:'52', stated_cac:'54000', stated_cac_payback:'14',
+    stated_ltv_cac:'4.8', stated_acv:'56000', stated_tam:'11000000000', stated_burn_multiple:'1.6',
+  };
+  S.bools = {
+    prior_exit:false, founder_departed:true, ip_assignments:false, contractor_ip:false,
+    chain_title:true, captable_documented:true, participating:false, founder_vesting:true,
+    litigation:false, infra_single_vendor:true, model_single_vendor:false, dpas_signed:true,
+    regulated_market:false,
+  };
+  S.sel = { soc2:'In progress', audited_financials:'Reviewed', pricing_move:'Discounted to win', switching_cost:'Medium — some migration effort' };
+  document.getElementById('cname').value = S.name;
+  buildStages(); buildTypes(); updateProgress();
+  S.section = 0; renderSection(0); showPage('section');
+  toast('Worked example loaded. It contains several deliberate inconsistencies.');
+}
+/* ═══════════════════════════════════════════════════════════════
+   PROVIDERS — the model never produces a score. It writes prose
+   around numbers the deterministic engine has already computed.
+   ═══════════════════════════════════════════════════════════════ */
+const PROVIDERS = {
+  local:      { needsKey:false, name:'Deterministic only', hint:'Scores, checks and the question list are computed in your browser. Nothing is sent anywhere.', ph:'No key needed' },
+  anthropic:  { needsKey:true,  name:'Anthropic',    hint:'console.anthropic.com', ph:'sk-ant-api03-…',
+                url:'https://api.anthropic.com/v1/messages', model:'claude-sonnet-4-6' },
+  openai:     { needsKey:true,  name:'OpenAI',       hint:'platform.openai.com', ph:'sk-proj-…',
+                url:'https://api.openai.com/v1/chat/completions', model:'gpt-4o' },
+  gemini:     { needsKey:true,  name:'Gemini',       hint:'aistudio.google.com', ph:'AIza…',
+                url:'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', model:'gemini-2.0-flash' },
+  groq:       { needsKey:true,  name:'Groq',         hint:'console.groq.com', ph:'gsk_…',
+                url:'https://api.groq.com/openai/v1/chat/completions', model:'llama-3.3-70b-versatile' },
+  openrouter: { needsKey:true,  name:'OpenRouter',   hint:'openrouter.ai/keys', ph:'sk-or-v1-…',
+                url:'https://openrouter.ai/api/v1/chat/completions', model:'meta-llama/llama-3.3-70b-instruct' },
+};
+
+async function callModel(providerId, key, system, prompt) {
+  const p = PROVIDERS[providerId];
+  let res;
+  if (providerId === 'anthropic') {
+    res = await fetch(p.url, { method:'POST',
+      headers:{ 'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      body:JSON.stringify({ model:p.model, max_tokens:4000, system, messages:[{ role:'user', content:prompt }] }) });
+  } else if (providerId === 'gemini') {
+    res = await fetch(p.url + '?key=' + encodeURIComponent(key), { method:'POST',
+      headers:{ 'content-type':'application/json' },
+      body:JSON.stringify({ systemInstruction:{ parts:[{ text:system }] }, contents:[{ role:'user', parts:[{ text:prompt }] }] }) });
+  } else {
+    res = await fetch(p.url, { method:'POST',
+      headers:{ 'content-type':'application/json', authorization:'Bearer ' + key },
+      body:JSON.stringify({ model:p.model, max_tokens:4000, messages:[{ role:'system', content:system }, { role:'user', content:prompt }] }) });
+  }
+  if (!res.ok) throw new Error(`${p.name} returned ${res.status}. ${(await res.text()).slice(0, 180)}`);
+  const j = await res.json();
+  if (providerId === 'anthropic') return (j.content || []).map(c => c.text || '').join('\n');
+  if (providerId === 'gemini') return ((j.candidates || [])[0]?.content?.parts || []).map(x => x.text || '').join('\n');
+  return j.choices?.[0]?.message?.content || '';
+}
+function parseJSON(text) {
+  const clean = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
+  try { return JSON.parse(clean); } catch (e) {}
+  const m = clean.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXTRACTION — source material to primitives, with provenance
+   ═══════════════════════════════════════════════════════════════ */
+function extractableFields() {
+  return SECTIONS.flatMap(s => s.fields).filter(f => f.t === 'num' || f.t === 'bool' || f.t === 'select');
+}
+async function runExtraction() {
+  const provider = document.getElementById('api-provider').value;
+  const key = document.getElementById('api-key').value.trim();
+  if (provider === 'local' || !PROVIDERS[provider].needsKey) {
+    toast('Extraction needs a model key. Choose a provider in the sidebar, or enter figures by hand.', 'err'); return;
+  }
+  if (!key || key.length < 8) { toast('Enter the API key for the selected provider.', 'err'); return; }
+  const deck = document.getElementById('intake-deck').value.trim();
+  const fin  = document.getElementById('intake-fin').value.trim();
+  const files = S.files.map(f => `--- ${f.name} ---\n${f.text}`).join('\n\n');
+  const src = [deck && '=== NARRATIVE MATERIAL ===\n' + deck, fin && '=== FINANCIALS ===\n' + fin, files].filter(Boolean).join('\n\n');
+  if (src.length < 40) { toast('Paste some source material first, or skip to enter figures by hand.', 'err'); return; }
+
+  const btn = document.getElementById('extract-btn');
+  btn.disabled = true; btn.textContent = 'Extracting…';
+
+  const fieldList = extractableFields().map(f => {
+    const u = f.t === 'select' ? `one of: ${f.options.join(' | ')}` : f.t === 'bool' ? 'true or false' : (f.unit === '$' ? 'number in USD, no symbols' : f.unit === '%' ? 'number, percentage points' : 'number');
+    return `${f.id} — ${f.lbl} (${u})`;
+  }).join('\n');
+
+  const SYSTEM = 'You extract figures from startup fundraising material into a fixed schema. You never estimate, infer or annualise. If a value is not stated, you omit the field. You always return the exact source line for every value you return.';
+  const PROMPT = `Extract values for the fields below from the source material.
+
+RULES
+- Only return a field if the material states it explicitly. Do not compute, annualise or infer anything.
+- Currency: strip symbols and separators. "$4.2M" becomes 4200000.
+- Percentages: "71%" becomes 71. "1.4x" becomes 1.4.
+- Churn and contraction ARR must be positive numbers.
+- Fields beginning with stated_ are the company's own headline claims — take them exactly as presented, even if the material elsewhere implies a different number. The disagreement is the point.
+- Return ONLY a JSON object, no prose, in this shape:
+{ "field_id": { "value": <number|boolean|string>, "line": "<the exact source sentence or cell, max 120 chars>" } }
+
+FIELDS
+${fieldList}
+
+SOURCE MATERIAL
+${src.slice(0, 28000)}`;
+
+  try {
+    const raw = await callModel(provider, key, SYSTEM, PROMPT);
+    const obj = parseJSON(raw);
+    if (!obj) throw new Error('The response was not valid JSON.');
+    const all = extractableFields(); let n = 0;
+    Object.entries(obj).forEach(([id, rec]) => {
+      const f = all.find(x => x.id === id); if (!f || rec == null) return;
+      const v = rec && typeof rec === 'object' ? rec.value : rec;
+      if (v == null || v === '') return;
+      if (f.t === 'bool') { if (typeof v !== 'boolean') return; S.bools[id] = v; }
+      else if (f.t === 'select') { if (!f.options.includes(String(v))) return; S.sel[id] = String(v); }
+      else { const num = parseFloat(v); if (!isFinite(num)) return; S.vals[id] = String(num); }
+      S.prov[id] = { src:'extracted', line:(rec && rec.line) ? String(rec.line).slice(0, 160) : '' };
+      n++;
+    });
+    saveDraft(); updateProgress();
+    toast(`${n} field${n === 1 ? '' : 's'} extracted. Review every one before generating the report.`);
+    S.section = 0; renderSection(0); showPage('section');
+  } catch (e) {
+    toast('Extraction failed: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Extract figures';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VERIFICATION PAGE
+   ═══════════════════════════════════════════════════════════════ */
+function goVerify() {
+  saveSec();
+  const { D } = derive();
+  const checks = runChecks(D);
+  const majors = checks.filter(c => c.sev === 'major');
+  const minors = checks.filter(c => c.sev === 'minor');
+  const oks    = checks.filter(c => c.sev === 'ok');
+  const p = allProgress();
+
+  const card = c => `<div class="contra${c.sev === 'minor' ? ' minor' : ''}">
+    <div class="contra-h"><strong>${esc(c.title)}</strong><span class="sev">${esc(c.delta || c.sev)}</span></div>
+    <p>${esc(c.text || '')}</p>
+    ${c.ask ? `<div class="ask">${esc(c.ask)}</div>` : ''}
+  </div>`;
+
+  document.getElementById('verify-content').innerHTML = `
+    <div class="pg-eyebrow">Step 4 of 4</div>
+    <h2 class="pg-title">Verification</h2>
+    <p class="pg-desc">Eighteen checks compare what the company states against what the underlying figures produce. This runs before any score is computed, because a score built on numbers that do not reconcile is worse than no score.</p>
+
+    <div class="stat-row" style="margin-bottom:22px">
+      <div class="stat"><span class="stat-n" style="color:${majors.length ? 'var(--red)' : 'var(--green)'}">${majors.length}</span><span class="stat-l">Material</span></div>
+      <div class="stat"><span class="stat-n" style="color:${minors.length ? 'var(--amber)' : 'var(--t1)'}">${minors.length}</span><span class="stat-l">Minor</span></div>
+      <div class="stat"><span class="stat-n">${oks.length}</span><span class="stat-l">Reconciled</span></div>
+      <div class="stat"><span class="stat-n">${p.pct}%</span><span class="stat-l">Inputs filled</span></div>
+    </div>
+
+    ${majors.length >= 3 ? `<div class="gate"><h3>Assessment blocked</h3>
+      <p style="font-size:12px;color:var(--t1);margin-bottom:8px">${majors.length} headline figures disagree with the arithmetic behind them. Radar will still show the findings and the question list, but it will not publish a score against a data pack in this state.</p></div>` : ''}
+
+    ${majors.length ? `<div class="block-title">Material contradictions</div>${majors.map(card).join('')}` : ''}
+    ${minors.length ? `<div class="block-title" style="margin-top:20px">Minor inconsistencies</div>${minors.map(card).join('')}` : ''}
+    ${!checks.length ? `<div class="suppressed">No checks could run yet. The verification layer needs both the primitives and at least one figure in “What the company states”.</div>` : ''}
+
+    ${oks.length ? `<div class="block-title" style="margin-top:22px">Reconciled</div>
+      <div class="tbl-wrap"><table class="ledger">
+        <thead><tr><th>Check</th><th>Stated</th><th>Computed</th><th>Result</th></tr></thead>
+        <tbody>${oks.map(c => `<tr><td>${esc(c.title)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td style="color:var(--green)">${esc(c.delta)}</td></tr>`).join('')}</tbody>
+      </table></div>` : ''}
+
+    <div class="sec-nav">
+      <button class="btn btn-ghost" onclick="jumpTo(SECTIONS.length-1)">Back to inputs</button>
+      <div class="sec-nav-right">
+        <button class="btn btn-primary" onclick="runAnalysis()">Generate report</button>
+      </div>
+    </div>`;
+  showPage('verify');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RUN
+   ═══════════════════════════════════════════════════════════════ */
+async function runAnalysis() {
+  saveSec();
+  showPage('loading');
+  const steps = Array.from({ length:8 }, (_, i) => document.getElementById('ls-' + i));
+  steps.forEach(s => s.className = 'ld-step');
+  const box = document.getElementById('stream-box');
+  const advance = i => { steps.forEach((s, j) => s.className = 'ld-step' + (j < i ? ' done' : j === i ? ' active' : '')); };
+
+  const provider = document.getElementById('api-provider').value;
+  const key = document.getElementById('api-key').value.trim();
+  const wantsMemo = provider !== 'local' && PROVIDERS[provider].needsKey && key.length > 8;
+
+  advance(0); await sleep(220);
+  const { D, F } = derive();
+  advance(1); await sleep(260);
+  const checks = runChecks(D);
+  advance(2); await sleep(240);
+  const sc = scoreAll(D, checks);
+  advance(3); await sleep(200);
+  advance(4); await sleep(220);
+  advance(5); await sleep(180);
+  const questions = buildQuestions(D, checks, sc);
+  const requests = buildDataRequests(D, checks, sc);
+  advance(6);
+  box.textContent = 'Deterministic pass complete. Rubric ' + RUBRIC.version + ' · run ' + runHash();
+
+  let memo = null;
+  if (wantsMemo) {
+    advance(7);
+    box.textContent = 'Drafting the memo from the computed figures…';
+    try { memo = await writeMemo(provider, key, D, F, checks, sc, questions); }
+    catch (e) { memo = null; toast('Memo draft failed: ' + e.message + ' The computed report is unaffected.', 'err'); }
+  }
+  steps.forEach(s => s.className = 'ld-step done');
+
+  S.result = { D, F, checks, sc, questions, requests, memo, hash:runHash(), at:new Date().toISOString() };
+  renderResult(S.result);
+  showPage('result');
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function writeMemo(provider, key, D, F, checks, sc, questions) {
+  const metricLines = Object.keys(D).map(k => `${DLABEL[k] || k}: ${dfmt(k, D[k])}  [${F[k]}]`).join('\n');
+  const dimLines = sc.dimensions.map(d => `${d.label}: ${d.score == null ? 'not scored' : d.score + '/100'} (weight ${(d.weight * 100).toFixed(0)}%, coverage ${(d.coverage * 100).toFixed(0)}%)`).join('\n');
+  const checkLines = checks.filter(c => c.sev !== 'ok').map(c => `[${c.sev}] ${c.title}: stated ${c.stated}, computed ${c.computed} — ${c.delta}`).join('\n');
+  const gateLines = sc.gates.map(g => '- ' + g.title).join('\n') || 'none';
+
+  const SYSTEM = `You are a venture investor writing the narrative section of an investment committee memo. You are given figures that have already been computed by a deterministic engine. You do not recompute, re-score or contradict them, and you never invent a number that is not in the input. You write in plain, unhedged English, in complete paragraphs, without headers or bullet points. You do not open with a summary of your instructions.`;
+
+  const PROMPT = `Write the narrative for an IC memo on ${S.name}, a ${MODELS.find(m => m.id === S.model).n} company at ${STAGES.find(s => s.id === S.stage).n}.
+
+Write exactly five paragraphs, no headings:
+1. What the business is doing, in numbers, and whether the trajectory holds up.
+2. Revenue quality and retention, using the computed figures rather than the stated ones, and saying plainly where the two differ.
+3. Capital efficiency and what the runway actually supports.
+4. Go-to-market and whether the motion looks repeatable at this scale.
+5. What would have to be true for this to work, and the single thing that would most change the view.
+
+Constraints:
+- Use only the figures below. If a figure is absent, say the evidence is not there rather than estimating.
+- Where a metric is marked "not scored", explain that it is below the sample size where it carries signal. Do not treat it as bad news.
+- Do not state a verdict, a recommendation, or a score. The engine owns those.
+
+COMPUTED METRICS
+${metricLines}
+
+DIMENSION SCORES (deterministic, rubric ${sc.rubric})
+${dimLines}
+Overall: ${sc.overall == null ? 'not computed' : sc.overall + '/100, band ' + sc.band[0] + '–' + sc.band[1] + ', confidence ' + sc.confidence}
+
+GATES
+${gateLines}
+
+STATED VS COMPUTED
+${checkLines || 'no contradictions found'}
+
+SUPPRESSED AT THIS SCALE
+${Object.entries(sc.suppressed).map(([k, r]) => `${DLABEL[k] || k}: ${r}`).join('\n') || 'none'}`;
+
+  const out = await callModel(provider, key, SYSTEM, PROMPT);
+  return String(out).trim();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REPORT
+   ═══════════════════════════════════════════════════════════════ */
+function renderResult(R) {
+  const { D, F, checks, sc, questions, requests, memo } = R;
+  const majors = checks.filter(c => c.sev === 'major'), minors = checks.filter(c => c.sev === 'minor');
+  const blocked = sc.gates.length > 0;
+  const sColor = v => v == null ? 'var(--t1)' : v >= 70 ? 'var(--green)' : v >= 45 ? 'var(--amber)' : 'var(--red)';
+  const stageName = STAGES.find(s => s.id === S.stage).n, modelName = MODELS.find(m => m.id === S.model).n;
+  const date = new Date().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
+
+  const pos = sc.overall == null ? 0 : sc.overall;
+  const bandHtml = sc.overall == null ? '' : `
+    <div class="band-wrap">
+      <div class="band-num" style="color:${sColor(sc.overall)}">${sc.overall}<span style="font-size:17px;color:var(--t2)">/100</span></div>
+      <div class="band-rng">likely range ${sc.band[0]}–${sc.band[1]} · ${sc.confidence} confidence · ${Math.round(sc.coverage * 100)}% of the rubric populated</div>
+      <div class="band-track"><div class="band-fill" style="left:${sc.band[0]}%;width:${sc.band[1] - sc.band[0]}%"></div><div class="band-tick" style="left:${pos}%"></div></div>
+      <div class="band-scale"><span>0</span><span>45</span><span>70</span><span>100</span></div>
+    </div>`;
+
+  const gateHtml = blocked ? `<div class="gate">
+    <h3>${sc.gates.length === 1 ? 'One item must be resolved before terms' : sc.gates.length + ' items must be resolved before terms'}</h3>
+    <ul>${sc.gates.map(g => `<li><b>${esc(g.title)}.</b> ${esc(g.why)}</li>`).join('')}</ul>
+  </div>` : '';
+
+  const contraCard = c => `<div class="contra${c.sev === 'minor' ? ' minor' : ''}">
+    <div class="contra-h"><strong>${esc(c.title)}</strong><span class="sev">${esc(c.delta || '')}</span></div>
+    <p>${esc(c.text || '')}</p>${c.ask ? `<div class="ask">${esc(c.ask)}</div>` : ''}</div>`;
+
+  const dimRows = sc.dimensions.map(d => `
+    <tr>
+      <td>${esc(d.label)}${d.notes.length ? `<div style="font-size:10px;color:var(--t2);margin-top:3px">${d.notes.map(n => (n.good ? '+ ' : '− ') + esc(n.note)).join('<br>')}</div>` : ''}</td>
+      <td class="n">${(d.weight * 100).toFixed(0)}%</td>
+      <td class="n">${Math.round(d.coverage * 100)}%</td>
+      <td class="n" style="color:${sColor(d.score)}">${d.score == null ? '—' : d.score}</td>
+      <td style="width:110px"><div class="minibar"><i style="width:${d.score || 0}%;background:${sColor(d.score)}"></i></div></td>
+    </tr>`).join('');
+
+  const metricRows = sc.dimensions.flatMap(d => d.metrics.map(m => `
+    <tr class="${m.suppressed ? 'warn' : ''}">
+      <td>${esc(m.label)}</td>
+      <td class="m">${esc(m.value)}</td>
+      <td class="m" style="color:var(--t2)">${esc(m.bench || '—')}</td>
+      <td class="n" style="color:${m.score == null ? 'var(--t2)' : sColor(m.score)}">${m.score == null ? 'not scored' : m.score}</td>
+      <td style="color:var(--t2);font-size:10.5px">${esc(m.suppressed || DIM_LABEL[d.id])}</td>
+    </tr>`)).join('');
+
+  const derivedRows = Object.keys(D).filter(k => DLABEL[k]).map(k => `
+    <tr><td>${esc(DLABEL[k])}</td><td class="m">${esc(dfmt(k, D[k]))}</td><td style="color:var(--t2);font-size:10.5px">${esc(F[k] || '')}</td></tr>`).join('');
+
+  const okRows = checks.filter(c => c.sev === 'ok').map(c =>
+    `<tr><td>${esc(c.title)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td style="color:var(--green)">${esc(c.delta)}</td></tr>`).join('');
+  const badRows = checks.filter(c => c.sev !== 'ok').map(c =>
+    `<tr class="${c.sev === 'major' ? 'bad' : 'warn'}"><td>${esc(c.title)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td style="color:${c.sev === 'major' ? 'var(--red)' : 'var(--amber)'}">${esc(c.delta)}</td></tr>`).join('');
+
+  document.getElementById('result-content').innerHTML = `
+    <div class="res-hero">
+      <div>
+        <div class="res-company">${esc(S.name)}</div>
+        <div class="res-meta">${esc(stageName)} · ${esc(modelName)} · ${esc(date)}${S.asof ? ' · data as of ' + esc(S.asof) : ''}</div>
+      </div>
+      <div class="score-card">${blocked
+        ? `<div class="verdict-pill vp-avoid">⛔ Blocked — ${sc.gates.length} gate${sc.gates.length === 1 ? '' : 's'}</div>
+           <div style="font-size:11px;color:var(--t2);margin-top:8px;max-width:230px">A score is withheld until these are cleared.</div>`
+        : bandHtml}</div>
+    </div>
+
+    ${gateHtml}
+
+    <div class="rtabs">
+      <button class="rtab active" onclick="rtab(this,'findings')">Findings</button>
+      <button class="rtab" onclick="rtab(this,'questions')">Questions (${questions.length})</button>
+      <button class="rtab" onclick="rtab(this,'scoring')">Scoring</button>
+      <button class="rtab" onclick="rtab(this,'metrics')">Computed metrics</button>
+      <button class="rtab" onclick="rtab(this,'ledger')">Consistency ledger</button>
+      ${memo ? '<button class="rtab" onclick="rtab(this,\'memo\')">Memo draft</button>' : ''}
+    </div>
+
+    <div class="rpane active" id="rp-findings">
+      ${majors.length ? `<div class="block-title">Material contradictions</div>${majors.map(contraCard).join('')}` : ''}
+      ${minors.length ? `<div class="block-title" style="margin-top:18px">Minor inconsistencies</div>${minors.map(contraCard).join('')}` : ''}
+      ${!majors.length && !minors.length ? `<div class="suppressed">Every stated figure reconciles with the figure computed from the primitives. That is a meaningful positive signal about how this company keeps its books.</div>` : ''}
+      ${Object.keys(sc.suppressed).length ? `<div class="block-title" style="margin-top:20px">Metrics withheld at this scale</div>
+        ${Object.entries(sc.suppressed).map(([k, r]) => `<div class="suppressed"><b>${esc(DLABEL[k] || k)}</b> — ${esc(r)}.</div>`).join('')}` : ''}
+      <div class="block-title" style="margin-top:20px">Documents to request</div>
+      <div class="qlist">${requests.map((r, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(r)}</div></div>`).join('')}</div>
+    </div>
+
+    <div class="rpane" id="rp-questions">
+      <p class="pg-desc" style="margin-bottom:14px">Ordered by what would most change the decision. Gates first, then contradictions, then evidence gaps.</p>
+      <div class="qlist">${questions.map((q, i) => `
+        <div class="qitem"><div class="qnum">${i + 1}</div>
+          <div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span></div></div>`).join('')}</div>
+    </div>
+
+    <div class="rpane" id="rp-scoring">
+      <p class="pg-desc" style="margin-bottom:14px">Weights are set by stage, not by how many fields happened to be filled. Coverage is shown separately from score so a thin dimension cannot masquerade as a confident one.</p>
+      <div class="tbl-wrap"><table class="dimtbl">
+        <thead><tr><th>Dimension</th><th style="text-align:right">Weight</th><th style="text-align:right">Coverage</th><th style="text-align:right">Score</th><th></th></tr></thead>
+        <tbody>${dimRows}</tbody>
+      </table></div>
+      <div class="runmeta">
+        <span>Rubric</span> ${RUBRIC.version} (${RUBRIC.updated}) &nbsp;·&nbsp;
+        <span>Stage profile</span> ${esc(S.stage)} &nbsp;·&nbsp;
+        <span>Run</span> ${esc(R.hash)}<br>
+        <span>Method</span> each metric is mapped onto its stage anchors [poor, acceptable, good, excellent] → [0, 45, 72, 100] and weighted inside its dimension. Dimensions are then combined at the stage weights above, with a dimension below 50% coverage carrying proportionally less than its full weight so that a single metric in an otherwise empty dimension cannot move the headline. Booleans adjust a dimension by at most ±15. Metrics below the sample size where they carry signal are excluded rather than scored. The same inputs and the same rubric version always produce this exact score.
+      </div>
+    </div>
+
+    <div class="rpane" id="rp-metrics">
+      <div class="block-title">Scored against stage thresholds</div>
+      <div class="tbl-wrap"><table class="ledger">
+        <thead><tr><th>Metric</th><th>Value</th><th>Bar</th><th style="text-align:right">Score</th><th>Note</th></tr></thead>
+        <tbody>${metricRows || '<tr><td colspan="5" style="color:var(--t2)">No metrics could be scored from the inputs provided.</td></tr>'}</tbody>
+      </table></div>
+      <div class="block-title" style="margin-top:22px">Everything computed, with its formula</div>
+      <p style="font-size:11.5px;color:var(--t2);margin-bottom:10px">None of these was typed in. Each is derived from the primitives, which is why a company cannot improve its score by reporting a flattering version of a headline metric.</p>
+      <div class="tbl-wrap"><table class="ledger">
+        <thead><tr><th>Metric</th><th>Value</th><th>Formula</th></tr></thead><tbody>${derivedRows}</tbody>
+      </table></div>
+    </div>
+
+    <div class="rpane" id="rp-ledger">
+      <div class="tbl-wrap"><table class="ledger">
+        <thead><tr><th>Check</th><th>Stated by company</th><th>Computed by Radar</th><th>Result</th></tr></thead>
+        <tbody>${badRows}${okRows}${!checks.length ? '<tr><td colspan="4" style="color:var(--t2)">No checks could run. Fill the “What the company states” section to enable the comparison layer.</td></tr>' : ''}</tbody>
+      </table></div>
+    </div>
+
+    ${memo ? `<div class="rpane" id="rp-memo">
+      <div class="warnstrip"><span>ℹ</span><div>Drafted by a language model from the computed figures above. It did not produce and cannot change the score. Check every sentence against the metrics tab before it goes near an IC.</div></div>
+      <div class="analysis-blk">${esc(memo).split(/\n\n+/).map(p => `<p style="margin-bottom:13px">${p.replace(/\n/g, '<br>')}</p>`).join('')}</div>
+    </div>` : ''}
+
+    <div class="res-nav">
+      <button class="btn btn-ghost" onclick="editData()">Edit inputs</button>
+      <div class="res-nav-right">
+        <button class="btn btn-ghost" onclick="copyJSON()">Copy JSON</button>
+        <button class="btn btn-success" onclick="downloadReport()">Download memo (.md)</button>
+        <button class="btn btn-ghost" onclick="resetApp()">New assessment</button>
+      </div>
+    </div>
+
+    <div class="runmeta">
+      Radar is a workflow tool for investment professionals. It does not provide investment advice and its output is not a recommendation to buy or sell any security.
+      Figures are as supplied by the user or extracted from user-supplied material and are not independently verified.
+    </div>`;
+}
+function rtab(btn, id) {
+  document.querySelectorAll('.rtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.rpane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('rp-' + id).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPORT
+   ═══════════════════════════════════════════════════════════════ */
+function downloadReport() {
+  const R = S.result; if (!R) return;
+  const { D, F, checks, sc, questions, requests, memo } = R;
+  const stageName = STAGES.find(s => s.id === S.stage).n;
+  let md = `# ${S.name} — diligence report\n\n`;
+  md += `${stageName} · ${MODELS.find(m => m.id === S.model).n} · ${new Date().toLocaleDateString('en-GB')}\n\n`;
+  md += `Rubric ${RUBRIC.version} · run ${R.hash} · ${Math.round(sc.coverage * 100)}% rubric coverage · ${sc.confidence} confidence\n\n`;
+
+  if (sc.gates.length) {
+    md += `## Gates — resolve before terms\n\n`;
+    sc.gates.forEach(g => md += `- **${g.title}.** ${g.why}\n`);
+    md += `\nNo score is published while a gate is open.\n\n`;
+  } else if (sc.overall != null) {
+    md += `## Score\n\n**${sc.overall}/100**, likely range ${sc.band[0]}–${sc.band[1]}.\n\n`;
+  }
+
+  const bad = checks.filter(c => c.sev !== 'ok');
+  if (bad.length) {
+    md += `## Stated vs computed\n\n| Check | Stated | Computed | Gap |\n|---|---|---|---|\n`;
+    bad.forEach(c => md += `| ${c.title} | ${c.stated} | ${c.computed} | ${c.delta} |\n`);
+    md += `\n`;
+    bad.filter(c => c.ask).forEach(c => md += `- **${c.title}** — ${c.ask}\n`);
+    md += `\n`;
+  }
+
+  md += `## Dimension scores\n\n| Dimension | Weight | Coverage | Score |\n|---|---|---|---|\n`;
+  sc.dimensions.forEach(d => md += `| ${d.label} | ${(d.weight * 100).toFixed(0)}% | ${Math.round(d.coverage * 100)}% | ${d.score == null ? '—' : d.score} |\n`);
+
+  md += `\n## Computed metrics\n\n| Metric | Value | Formula |\n|---|---|---|\n`;
+  Object.keys(D).filter(k => DLABEL[k]).forEach(k => md += `| ${DLABEL[k]} | ${dfmt(k, D[k])} | ${F[k]} |\n`);
+
+  if (Object.keys(sc.suppressed).length) {
+    md += `\n## Withheld at this scale\n\n`;
+    Object.entries(sc.suppressed).forEach(([k, r]) => md += `- **${DLABEL[k] || k}** — ${r}.\n`);
+  }
+
+  md += `\n## Questions, in priority order\n\n`;
+  questions.forEach((q, i) => md += `${i + 1}. ${q.text}  \n   _${q.tag}_\n`);
+
+  md += `\n## Documents to request\n\n`;
+  requests.forEach(r => md += `- ${r}\n`);
+
+  if (memo) md += `\n## Narrative draft\n\n${memo}\n\n_Drafted by a language model from the figures above. It did not produce the score._\n`;
+
+  md += `\n---\nGenerated by VC Risk Radar, rubric ${RUBRIC.version}. Workflow tool, not investment advice. Figures are user-supplied and not independently verified.\n`;
+
+  const blob = new Blob([md], { type:'text/markdown' });
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = `${(S.name || 'report').replace(/[^\w-]+/g, '_').slice(0, 40)}-diligence-${R.hash}.md`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Report downloaded.');
+}
+function copyJSON() {
+  if (!S.result) return;
+  const R = S.result;
+  const payload = {
+    company:S.name, stage:S.stage, model:S.model, generated:R.at,
+    rubric_version:RUBRIC.version, run_hash:R.hash,
+    inputs:{ values:S.vals, booleans:S.bools, selects:S.sel, provenance:S.prov },
+    derived:R.D, formulas:R.F, checks:R.checks, scoring:R.sc,
+    questions:R.questions, data_requests:R.requests,
+  };
+  navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
+    .then(() => toast('Full run copied, including inputs and rubric version.'))
+    .catch(() => toast('Clipboard blocked by the browser.', 'err'));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════ */
+function updateProviderUI() {
+  const id = document.getElementById('api-provider').value, p = PROVIDERS[id];
+  const inp = document.getElementById('api-key');
+  inp.placeholder = p.ph; inp.disabled = !p.needsKey;
+  inp.style.opacity = p.needsKey ? '1' : '.45';
+  document.getElementById('api-hint').textContent = p.needsKey
+    ? `Key stored in this browser only. Used for extraction and the memo draft — never for scoring. Get one at ${p.hint}.`
+    : p.hint;
+  updateKeyStatus(inp.value.trim());
+  const warn = document.getElementById('intake-warn');
+  if (warn) warn.style.display = p.needsKey ? '' : 'none';
+}
+function updateKeyStatus(k) {
+  const el = document.getElementById('api-status'), p = PROVIDERS[document.getElementById('api-provider').value];
+  if (!p.needsKey) { el.className = 'api-status ok'; el.textContent = '⬤ Deterministic engine ready'; return; }
+  if (k && k.length > 8) { el.className = 'api-status ok'; el.textContent = `⬤ ${p.name} key set`; }
+  else { el.className = 'api-status off'; el.textContent = '⬤ No key — scoring still works'; }
+}
+
+(function init() {
+  buildNav(); buildStages(); buildTypes();
+  try {
+    const pv = localStorage.getItem('vcr3-provider') || 'local';
+    document.getElementById('api-provider').value = PROVIDERS[pv] ? pv : 'local';
+    document.getElementById('api-key').value = localStorage.getItem('vcr3-key') || '';
+  } catch (e) {}
+  updateProviderUI();
+  loadDraft();
+  updateProgress();
+
+  document.getElementById('api-key').addEventListener('input', e => {
+    const k = e.target.value.trim();
+    try { localStorage.setItem('vcr3-key', k); } catch (err) {}
+    updateKeyStatus(k);
+  });
+  document.getElementById('api-provider').addEventListener('change', e => {
+    try { localStorage.setItem('vcr3-provider', e.target.value); } catch (err) {}
+    updateProviderUI();
+  });
+  document.getElementById('api-eye').addEventListener('click', () => {
+    const i = document.getElementById('api-key');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  });
+
+  /* file drop */
+  const dz = document.getElementById('dropzone');
+  const readFiles = list => {
+    Array.from(list).slice(0, 5).forEach(file => {
+      if (file.size > 900000) { toast(`${file.name} is too large to paste inline. Export a summary tab instead.`, 'err'); return; }
+      const r = new FileReader();
+      r.onload = () => { S.files.push({ name:file.name, text:String(r.result).slice(0, 20000) }); renderFileList(); };
+      r.readAsText(file);
+    });
+  };
+  dz.addEventListener('click', () => {
+    const i = document.createElement('input'); i.type = 'file'; i.multiple = true;
+    i.accept = '.csv,.txt,.md,.tsv';
+    i.onchange = () => readFiles(i.files); i.click();
+  });
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e => readFiles(e.dataTransfer.files));
+})();
+
+function renderFileList() {
+  document.getElementById('file-list').innerHTML = S.files.map((f, i) =>
+    `<span class="file-pill">${esc(f.name)} <button onclick="S.files.splice(${i},1);renderFileList()">×</button></span>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PUBLIC SURFACE
+   The scoring core is exposed so it can be driven by tests today
+   and lifted into a server module unchanged tomorrow.
+   ═══════════════════════════════════════════════════════════════ */
+window.Radar = {
+  version: RUBRIC.version,
+  get state() { return S; },
+  set state(v) { S = v; },
+  derive, runChecks, scoreAll, suppressions, buildQuestions, buildDataRequests, runHash,
+  RUBRIC, SECTIONS, STAGES, MODELS,
+  /* Headless: inputs in, full assessment out. No DOM required. */
+  assess(input) {
+    const prev = S;
+    S = Object.assign({ name:'', stage:'seed', model:'saas', vals:{}, bools:{}, sel:{}, prov:{}, files:[] }, input);
+    const { D, F } = derive();
+    const checks = runChecks(D);
+    const sc = scoreAll(D, checks);
+    const out = { rubric:RUBRIC.version, hash:runHash(), derived:D, formulas:F, checks, scoring:sc,
+                  questions:buildQuestions(D, checks, sc), data_requests:buildDataRequests(D, checks, sc) };
+    S = prev;
+    return out;
+  },
+};
+
+</script>
+</body>
+</html>
