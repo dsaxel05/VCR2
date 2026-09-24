@@ -120,7 +120,6 @@ VCR2 is a workflow tool for educational purposes. It does not provide investment
 
 Built by **Axel De Sousa**, Finance and AI Analysis at Menlo College.
 [GitHub](https://github.com/dsaxel05) · [LinkedIn](https://www.linkedin.com/in/axeldesousa)
-
 ## License
 
 [MIT](LICENSE) © 2026 Axel De Sousa
