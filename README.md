@@ -4,7 +4,7 @@
 
 [![Version](https://img.shields.io/badge/version-4.3.0-8b5cf6?style=flat-square)](CHANGELOG.md)
 [![Live demo](https://img.shields.io/badge/demo-live-22c55e?style=flat-square)](https://dsaxel05.github.io/VCR2/)
-[![Engine tests](https://github.com/dsaxel05/VCR2/actions/workflows/test.yml/badge.svg)](https://github.com/dsaxel05/VCR2/actions/workflows/test.yml)
+[![Engine tests](https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg)](https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square)](#project-structure)
 [![Runs in the browser](https://img.shields.io/badge/data-never%20leaves%20your%20browser-8896b0?style=flat-square)](#privacy-and-security)
@@ -190,8 +190,7 @@ VCR2 is a workflow tool. It does not provide investment advice, and its score is
 ## Author
 
 Built by **Axel De Sousa** — Finance and AI Analysis at Menlo College.
-[GitHub](https://github.com/dsaxel05) · [LinkedIn](https://www.linkedin.com/in/YOUR-LINKEDIN-HANDLE)
-
+[GitHub](https://github.com/dsaxel05) · [LinkedIn](https://www.linkedin.com/in/axeldesousa/)
 ## License
 
 [MIT](LICENSE) © 2026 Axel De Sousa
