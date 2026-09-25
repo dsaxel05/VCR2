@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VC Risk Radar — evidence-first diligence engine</title>
+<meta name="description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
+<meta name="author" content="Axel De Sousa" />
+<meta name="theme-color" content="#080a0d" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233b82f6'/%3E%3Cpath d='M32 12l17 10v20L32 52 15 42V22z' fill='none' stroke='white' stroke-width='4'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+/*@@CSS@@*/
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row" onclick="showPage('intro')" style="cursor:pointer">
+        <div class="sb-logo-icon">⬡</div>
+        <div class="sb-logo-name">VC Risk Radar</div>
+      </div>
+      <div class="sb-logo-sub" id="sb-rubric">evidence engine · rubric v4.0.0</div>
+    </div>
+
+    <div class="sb-progress">
+      <div class="sb-progress-row">
+        <span>Input coverage</span><span id="pct-val">0%</span>
+      </div>
+      <div class="track"><div class="fill" id="pct-fill" style="width:0%"></div></div>
+      <div class="sb-progress-row" style="margin-top:9px">
+        <span>Consistency</span><span id="consist-val">—</span>
+      </div>
+      <div class="sb-progress-row" style="margin-top:6px">
+        <span>Data files</span><span id="files-val">—</span>
+      </div>
+    </div>
+
+    <nav class="sb-nav" id="sb-nav">
+      <div class="sb-nav-label">Evidence sections</div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="nav-item lib-link" onclick="goLibrary()"><div class="nav-dot"></div><div class="nav-label">Library &amp; benchmarks</div><div class="nav-count" id="lib-count">0</div></div>
+      <div class="nav-item lib-link" id="studio-link" style="display:none" onclick="goStudio()"><div class="nav-dot" style="background:var(--amber)"></div><div class="nav-label">Owner Studio</div></div>
+      <div class="api-lbl" style="margin-top:10px">AI assist (optional)</div>
+      <select class="api-sel" id="api-provider">
+        <option value="local">Deterministic only — no AI</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="groq">Groq</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+      <div class="api-row">
+        <input class="api-inp" id="api-key" type="password" placeholder="No key needed" autocomplete="off" spellcheck="false" aria-label="API key" />
+        <button class="api-eye" id="api-eye" type="button" title="Show or hide the key">👁</button>
+      </div>
+      <input class="api-inp" id="api-model" type="text" placeholder="Model name (optional override)" autocomplete="off" spellcheck="false" style="width:100%;margin-bottom:5px" aria-label="Model name override" />
+      <label class="api-check"><input type="checkbox" id="memo-toggle" checked /> Draft the memo narrative when generating the report</label>
+      <div class="api-status ok" id="api-status">⬤ Deterministic engine ready</div>
+      <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere.</div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="mobile-menu" onclick="toggleSidebar(true)" aria-label="Open menu">☰</button>
+        <span class="tb-company" id="tb-company">New assessment</span>
+        <span class="tb-sep">/</span>
+        <span class="tb-section" id="tb-section">Start</span>
+      </div>
+      <div class="tb-right" id="tb-right"></div>
+    </div>
+
+    <!-- ── INTRO ── -->
+    <div class="page active" id="page-intro">
+      <div class="intro-wrap">
+        <div class="intro-badge"><div class="pulse"></div>Deterministic · versioned · auditable · runs in your browser</div>
+        <h1 class="intro-h1">Check whether the<br>numbers reconcile</h1>
+        <p class="intro-sub">Founders send you a deck, a model and an update. Radar rebuilds the revenue from the company’s own customer ledger, recomputes every headline metric, shows where the stated figures disagree with the arithmetic, stress-tests the runway, prices the deal — and turns every gap into the question to ask on the next call.</p>
+
+        <div class="stat-row">
+          <div class="stat"><span class="stat-n" id="st-metrics">40+</span><span class="stat-l">Derived metrics</span></div>
+          <div class="stat"><span class="stat-n">29</span><span class="stat-l">Consistency checks</span></div>
+          <div class="stat"><span class="stat-n">9</span><span class="stat-l">Forensic tests</span></div>
+          <div class="stat"><span class="stat-n">40+</span><span class="stat-l">Risk patterns</span></div>
+          <div class="stat"><span class="stat-n">0</span><span class="stat-l">Black boxes</span></div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feat-card"><span class="feat-icon">🧾</span><div class="feat-title">Revenue rebuilt from the ledger</div><div class="feat-desc">Drop in revenue by customer by month. Radar builds the MRR bridge, true cohort retention, concentration and cohort heatmaps — two days of associate work, in a second.</div></div>
+          <div class="feat-card"><span class="feat-icon">⚠️</span><div class="feat-title">Stated vs. computed</div><div class="feat-desc">If the deck says 134% NRR and the cohorts say 104%, that gap is the finding. A binomial test tells you when every error happens to flatter the company.</div></div>
+          <div class="feat-card"><span class="feat-icon">🔬</span><div class="feat-title">Forensics on the billing data</div><div class="feat-desc">Pre-raise booking spikes, one-off charges booked as recurring, duplicate logos, quarter-end pull-forward and a Benford test — each with its method and its limits.</div></div>
+          <div class="feat-card"><span class="feat-icon">🎲</span><div class="feat-title">Runway odds, not a runway number</div><div class="feat-desc">A seeded Monte Carlo gives the probability of reaching next-stage metrics before the cash runs out, and how much capital that takes at 80% confidence.</div></div>
+          <div class="feat-card"><span class="feat-icon">💼</span><div class="feat-title">Deal maths to the exit</div><div class="feat-desc">Pool shuffle, SAFE and note conversion, a term-sheet review against market standard, VC Method and First Chicago returns, and a full liquidation waterfall.</div></div>
+          <div class="feat-card"><span class="feat-icon">📚</span><div class="feat-title">Learns from your deals</div><div class="feat-desc">Save runs, import comparables, or paste anything and let AI structure it. Percentiles against your own data — and a rubric you can recalibrate on it.</div></div>
+        </div>
+
+        <div class="intro-cta">
+          <button class="btn btn-primary btn-lg" onclick="goSetup()">Start an assessment</button>
+          <button class="btn btn-ghost btn-lg" id="resume-btn" style="display:none" onclick="resumeDraft()">Resume saved draft</button>
+        </div>
+        <div class="intro-cta" style="margin-top:10px">
+          <button class="btn btn-ghost" onclick="loadDemo('northwind')">Example: a messy Series A data pack</button>
+          <button class="btn btn-ghost" onclick="loadDemo('halcyon')">Example: a clean seed-stage AI company</button>
+          <button class="btn btn-ghost" onclick="importAssessment()">Open a saved assessment</button>
+          <button class="btn btn-ghost" onclick="goLibrary()">Library</button>
+        </div>
+        <p class="intro-note">Radar is a workflow tool. It does not give investment advice and its score is not a recommendation to buy or sell a security. Both examples are fictional companies with synthetic data.</p>
+      </div>
+    </div>
+
+    <!-- ── SETUP ── -->
+    <div class="page" id="page-setup">
+      <div class="content-wrap">
+        <div class="pg-eyebrow">Step 1 of 4</div>
+        <h2 class="pg-title">What are you looking at?</h2>
+        <p class="pg-desc">Stage sets the benchmark thresholds and the dimension weights. Business model selects which metrics are scored and which are suppressed.</p>
+
+        <div class="field-group-title">Stage</div>
+        <div class="stage-grid" id="stage-grid"></div>
+
+        <div class="field-group-title">Business model</div>
+        <div class="type-grid" id="type-grid"></div>
+        <p class="sector-note" id="calib-note"></p>
+
+        <div class="setup-grid">
+          <div>
+            <label class="form-lbl" for="cname">Company name</label>
+            <input class="form-inp" id="cname" placeholder="e.g. Northwind Data" oninput="S.name=this.value;saveDraft()" />
+          </div>
+          <div>
+            <label class="form-lbl" for="asof">Data as of</label>
+            <input class="form-inp" id="asof" type="month" oninput="S.asof=this.value;saveDraft()" />
+          </div>
+        </div>
+
+        <div class="sec-nav">
+          <button class="btn btn-ghost" onclick="showPage('intro')">Back</button>
+          <div class="sec-nav-right">
+            <button class="btn btn-primary" onclick="goIntake()">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INTAKE ── -->
+    <div class="page" id="page-intake">
+      <div class="content-wrap wide">
+        <div class="pg-eyebrow">Step 2 of 4</div>
+        <h2 class="pg-title">Give it the source material</h2>
+        <p class="pg-desc">The strongest evidence is the company’s own data. Structured files are parsed in your browser — nothing is sent anywhere. Narrative material can optionally be read by a model you choose, and every extracted value keeps the line it came from.</p>
+
+        <div class="block-title">Structured data · parsed locally, no AI</div>
+        <div class="intake-grid">
+          <div class="intake-box" id="ledger-box">
+            <h4>Customer revenue ledger <span class="pill">most valuable</span></h4>
+            <p>Revenue by customer by month from the billing system. Wide (one column per month) or long (customer, month, amount). Unlocks cohort retention, the MRR bridge, concentration and the forensic tests.</p>
+            <div class="drop-zone" id="ledger-drop">Drop a .csv or Excel .xlsx here, or click to choose</div>
+            <details class="paste"><summary>…or paste it</summary><textarea class="intake-ta" id="ledger-paste" placeholder="customer,2025-01,2025-02,2025-03&#10;Acme,4200,4200,4600"></textarea>
+              <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="loadLedgerText(document.getElementById('ledger-paste').value,'pasted')">Load pasted ledger</button></details>
+            <div class="unit-row"><label for="ledger-unit">Values are</label>
+              <select class="field-select mini" id="ledger-unit"><option value="mrr">Monthly recurring revenue (MRR)</option><option value="arr">Annualised (ARR)</option><option value="rev">Monthly billed revenue</option></select>
+              <a href="#" onclick="downloadTemplate('ledger');return false">template</a></div>
+            <div id="ledger-status"></div>
+          </div>
+          <div class="intake-box" id="series-box">
+            <h4>Monthly financials</h4>
+            <p>Month by month: revenue, cash balance, net burn or total expenses, headcount. Any subset works. Unlocks burn trend, default-alive and a calibrated runway simulation.</p>
+            <div class="drop-zone" id="series-drop">Drop a .csv or Excel .xlsx here, or click to choose</div>
+            <details class="paste"><summary>…or paste it</summary><textarea class="intake-ta" id="series-paste" placeholder="month,revenue,cash,burn,headcount&#10;2025-01,210000,6400000,290000,31"></textarea>
+              <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="loadSeriesText(document.getElementById('series-paste').value,'pasted')">Load pasted financials</button></details>
+            <div class="unit-row"><span></span><a href="#" onclick="downloadTemplate('series');return false">template</a></div>
+            <div id="series-status"></div>
+          </div>
+        </div>
+
+        <div class="block-title" style="margin-top:26px">Narrative material · optional AI extraction</div>
+        <div class="warnstrip" id="intake-warn">
+          <span>⚠</span>
+          <div>Extraction sends the pasted text to the model provider you chose in the sidebar. Everything else in Radar — the ledger, the derivations, the checks, the simulation and the score — runs in your browser and sends nothing.</div>
+        </div>
+        <div class="intake-grid">
+          <div class="intake-box">
+            <h4>Deck, memo, founder update or term sheet</h4>
+            <p>Plain text. Slide notes, an email update, a data-room summary, the term sheet.</p>
+            <textarea class="intake-ta" id="intake-deck" placeholder="Paste the narrative material here…"></textarea>
+          </div>
+          <div class="intake-box">
+            <h4>Financial summary</h4>
+            <p>A P&amp;L, ARR waterfall or metrics tab. CSV or tab-separated works.</p>
+            <textarea class="intake-ta" id="intake-fin" placeholder="Month,ARR,New,Expansion,Churn…"></textarea>
+            <div class="drop-zone" id="dropzone" style="margin-top:10px">Or drop a .csv / .xlsx / .txt / .md file here</div>
+            <div id="file-list"></div>
+          </div>
+        </div>
+
+        <div class="sec-nav">
+          <button class="btn btn-ghost" onclick="showPage('setup')">Back</button>
+          <div class="sec-nav-right">
+            <button class="btn btn-ghost" onclick="startSections()">Continue to the evidence form</button>
+            <button class="btn btn-primary" id="extract-btn" onclick="runExtraction()">Extract figures with AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTIONS ── -->
+    <div class="page" id="page-section">
+      <div class="section-wrap" id="section-content" tabindex="0"></div>
+    </div>
+
+    <!-- ── VERIFY ── -->
+    <div class="page" id="page-verify">
+      <div class="content-wrap" id="verify-content"></div>
+    </div>
+
+    <!-- ── LOADING ── -->
+    <div class="page" id="page-loading">
+      <div class="loading-wrap">
+        <div class="radar-anim">
+          <div class="r-ring"></div><div class="r-ring"></div><div class="r-ring"></div><div class="r-core"></div>
+        </div>
+        <h2 class="ld-title" id="ld-title">Computing</h2>
+        <p class="ld-msg" id="ld-msg">Recomputing headline metrics from primitives…</p>
+        <div class="ld-steps" id="ld-steps">
+          <div class="ld-step" id="ls-0"><div class="ld-dot"></div>Rebuilding revenue from the ledger</div>
+          <div class="ld-step" id="ls-1"><div class="ld-dot"></div>Deriving metrics from primitives</div>
+          <div class="ld-step" id="ls-2"><div class="ld-dot"></div>Running consistency and forensic checks</div>
+          <div class="ld-step" id="ls-3"><div class="ld-dot"></div>Scoring against stage thresholds</div>
+          <div class="ld-step" id="ls-4"><div class="ld-dot"></div>Simulating runway paths</div>
+          <div class="ld-step" id="ls-5"><div class="ld-dot"></div>Pricing the deal and matching patterns</div>
+          <div class="ld-step" id="ls-6"><div class="ld-dot"></div>Building the question list</div>
+          <div class="ld-step" id="ls-7"><div class="ld-dot"></div>Drafting the memo narrative</div>
+        </div>
+        <div class="stream-box" id="stream-box">Idle</div>
+      </div>
+    </div>
+
+    <!-- ── RESULT ── -->
+    <div class="page" id="page-result">
+      <div class="result-wrap" id="result-content"></div>
+    </div>
+
+    <!-- ── LIBRARY ── -->
+    <div class="page" id="page-library">
+      <div class="result-wrap" id="library-content"></div>
+    </div>
+
+    <!-- ── OWNER STUDIO (reached through #studio) ── -->
+    <div class="page" id="page-studio">
+      <div class="result-wrap" id="studio-content"></div>
+    </div>
+
+  </main>
+</div>
+
+<div id="print-root" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/*@@JS@@*/
+</script>
+</body>
+</html>
