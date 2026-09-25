@@ -1,11 +1,13 @@
 // Engine tests for VC Risk Radar.
 // Runs the maths in index.html headlessly — no browser, no dependencies:
 //   node tests/engine.test.mjs
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+/* Works whether this file sits in tests/ or beside index.html. */
+const here = dirname(fileURLToPath(import.meta.url));
+const root = existsSync(join(here, 'index.html')) ? here : join(here, '..');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 const app = html.slice(html.indexOf('<script>') + 8, html.lastIndexOf('</script>'));
 
