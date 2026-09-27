@@ -1,21 +1,36 @@
-MIT License
+Copyright (c) 2026 Axel De Sousa. All rights reserved.
 
-Copyright (c) 2026 Axel De Sousa
+VC Risk Radar (VCR2) — Proprietary Software Licence
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This source code is made publicly visible for evaluation, review and
+educational reading only. It is NOT open source.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+YOU MAY:
+  - View and read this source code.
+  - Use the hosted application at its official address.
+  - Quote short excerpts for commentary, teaching or review, with attribution.
+
+YOU MAY NOT, without prior written permission from the copyright holder:
+  - Copy, reproduce or redistribute this source code, in whole or in part.
+  - Modify this code or create derivative works from it.
+  - Host, deploy or operate this software, or any work derived from it,
+    whether publicly or privately, free of charge or commercially.
+  - Use this code, or any part of it, in another product or service.
+  - Remove or alter this notice.
+
+Forking this repository on GitHub for the purpose of reading is permitted.
+Forking it in order to deploy, modify, publish or distribute the software
+is not.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+VCR2 is a workflow tool. It does not provide investment advice, and its
+output is not a recommendation to buy or sell any security.
+
+For licensing enquiries: ds.axel05@gmail.com
