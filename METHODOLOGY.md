@@ -1,6 +1,6 @@
 # VCR2 methodology
 
-Rubric **4.0.0**. Everything below is implemented in `src/` and bundled into `index.html`. Where a number is a judgement rather than a derivation, this document says so.
+Rubric **4.3.0**. Everything below is implemented in the JavaScript source files and bundled into `index.html`. Where a number is a judgement rather than a derivation, this document says so.
 
 ---
 
@@ -182,4 +182,4 @@ The owner can extend or narrow the engine from the Studio ([STUDIO.md](STUDIO.md
 
 **Formula semantics.** Arithmetic on a missing value is missing; division by zero is missing; comparisons with a missing side are missing; `and`, `or` and `not` follow three-valued logic (`missing and false` is false, `missing or true` is true, otherwise missing); a question, request or pattern fires only when its condition is true. `has(x)` and `coalesce(…)` are the only ways to act on missing data deliberately.
 
-**Reproducibility.** A signature of everything in the configuration that can change a score — hidden items, thresholds, weights, answer scores and yes/no points, sample-size and blocking settings, check tolerances, deal-breakers, evidence weights, custom metrics and checks — is appended to the rubric version (`4.0.0+cfg.3f9a2c`), and to the run hash through it. It is computed on a canonical form, so the order in which things were edited does not matter. Texts, renamed labels, pattern triggers, deal defaults and benchmarks do not change a score and do not change the signature.
+**Reproducibility.** A signature of everything in the configuration that can change a score — hidden items, thresholds, weights, answer scores and yes/no points, sample-size and blocking settings, check tolerances, deal-breakers, evidence weights, custom metrics and checks — is appended to the rubric version (`4.3.0+cfg.3f9a2c`), and to the run hash through it. It is computed on a canonical form, so the order in which things were edited does not matter. Texts, renamed labels, pattern triggers, deal defaults and benchmarks do not change a score and do not change the signature.

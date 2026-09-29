@@ -122,7 +122,7 @@ Every formula box checks what you type as you type it: unknown names, unbalanced
 
 A scored metric has four values per stage, from lowest to highest. For a higher-is-better metric they score 0, 45, 72 and 100; for a lower-is-better metric they score 100, 55, 28 and 0. The score is interpolated in between. Leave a stage empty and the metric is not scored at that stage. The metric's weight sets its influence inside its dimension; built-in weights range from 0.6 to 2.2.
 
-Anything that changes scores (thresholds, weights, answer scores and yes/no points, hidden items, deal-breakers, check tolerances, evidence weights, custom metrics and checks, settings) changes the rubric version shown on every report, for example `4.0.0+cfg.3f9a2c`. Two reports with the same inputs and the same rubric version always have the same score.
+Anything that changes scores (thresholds, weights, answer scores and yes/no points, hidden items, deal-breakers, check tolerances, evidence weights, custom metrics and checks, settings) changes the rubric version shown on every report, for example `4.3.0+cfg.3f9a2c`. Two reports with the same inputs and the same rubric version always have the same score.
 
 ## What the file looks like
 

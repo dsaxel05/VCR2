@@ -1,5 +1,15 @@
 # Changelog
 
+## v4.3.1 — 2026-09-28
+
+### Fixed
+- The rubric version shown in the sidebar and on every report now reads **4.3.0**, matching the scoring changes shipped since 4.0 (it still read 4.0.0). Two reports with the same inputs and the same rubric version always have the same score.
+- The home page understated the engine: it computes **65** derived metrics, not "40+".
+- `build.py` works whether the source files sit in `src/` or next to the script.
+
+### Added
+- Link previews for the live site (Open Graph and Twitter cards): sharing the link on LinkedIn, iMessage, Slack or WhatsApp now shows the title, a description and the preview image.
+
 ## v4.3.0 — 2026-09-24
 
 Everything that decides how a company is judged can now be changed from the Owner Studio, without touching code.

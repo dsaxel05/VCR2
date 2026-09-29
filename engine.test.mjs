@@ -1,6 +1,6 @@
 // Engine tests for VC Risk Radar.
 // Runs the maths in index.html headlessly — no browser, no dependencies:
-//   node tests/engine.test.mjs
+//   node engine.test.mjs
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';

@@ -2,7 +2,7 @@
 
 **An evidence-first diligence engine for venture investors — and every rule in it is yours to set.** VCR2 rebuilds a startup's revenue from its own customer ledger, recomputes every headline metric from primitives, shows exactly where the stated figures disagree with the arithmetic, stress-tests the runway, prices the deal, and turns every gap into the question to ask on the next call. When an investor tells you a different number is healthy, you change it in the owner Studio and publish — no code.
 
-[![Version](https://img.shields.io/badge/version-4.3.0-8b5cf6?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.3.1-8b5cf6?style=flat-square)](CHANGELOG.md)
 [![Live demo](https://img.shields.io/badge/demo-live-22c55e?style=flat-square)](https://dsaxel05.github.io/VCR2/)
 [![Engine tests](https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg)](https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml)
 [![Licence](https://img.shields.io/badge/licence-proprietary-8896b0?style=flat-square)](LICENSE)
@@ -171,7 +171,7 @@ northwind-*.csv / .xlsx sample customer ledger and monthly financials
 
 **Run it locally:** open `index.html` in a browser, or `python3 -m http.server 8000`.
 **Run the tests:** `node engine.test.mjs`
-**Rebuild after editing `src/`:** `python3 build.py`
+**Rebuild after editing the source files:** `python3 build.py`
 
 The engines are also exposed as `window.Radar` — `Radar.assess({...})` runs a full assessment headlessly and returns every metric, check, pattern, projection and question.
 

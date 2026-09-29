@@ -373,7 +373,7 @@ const ALL_FIELDS = () => SECTIONS.flatMap(s => s.fields);
    Anchors are always ascending in value. dir says which end is good.
    ═══════════════════════════════════════════════════════════════ */
 const RUBRIC = {
-  version: '4.0.0',
+  version: '4.3.0',
   updated: '2026-09-24',
 
   /* Dimension weights must sum to 1 within each stage. */
