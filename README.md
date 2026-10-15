@@ -1,8 +1,8 @@
-# VCR2 — VC Risk Radar
+# VCR2 — evidence-first venture diligence
 
 **An evidence-first diligence engine for venture investors — and every rule in it is yours to set.** VCR2 rebuilds a startup's revenue from its own customer ledger, recomputes every headline metric from primitives, shows exactly where the stated figures disagree with the arithmetic, stress-tests the runway, prices the deal, and turns every gap into the question to ask on the next call. When an investor tells you a different number is healthy, you change it in the owner Studio and publish — no code.
 
-[![Version](https://img.shields.io/badge/version-4.3.1-8b5cf6?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-5.0.0-8b5cf6?style=flat-square)](CHANGELOG.md)
 [![Live demo](https://img.shields.io/badge/demo-live-22c55e?style=flat-square)](https://dsaxel05.github.io/VCR2/)
 [![Engine tests](https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg)](https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml)
 [![Licence](https://img.shields.io/badge/licence-proprietary-8896b0?style=flat-square)](LICENSE)
@@ -12,6 +12,10 @@
 ### [Try the live demo →](https://dsaxel05.github.io/VCR2/)
 
 Open it and click **“Example: a messy Series A data pack”** or **“Example: a clean seed-stage AI company”**. Both are fictional companies with synthetic data; no account, no API key.
+
+### New in v5.0: scores you can explain, and a site that is entirely yours to change
+
+Evidence now changes the score (good news needs a source), every point of a score is explained (“What drove this score”), default bars show where they come from, and a company's figures are checked against each other more strictly (a stated figure against a computed zero, SAFE and note conversion solved exactly, impossible deal inputs reported). In the **Owner Studio** you can now change anything without code: click any wording on the site and rewrite it; replace the calculation, dimension, unit or healthy range of any built-in metric; add scoring dimensions, stages, scored answers and business models; edit the details of built-in deal-breakers, red flags and checklist items; and see a list of everything that differs from the built-in site, undo, review the effect on two example companies before publishing, and go back through the publish history. One designed look (ivory page, deep-green ink, thin brass lines, large readable type) in light and night, with text size, page scale, corners, the size of titles, figures and questions, and the report views in sight all set in the Studio; no third-party request at run time; and a simulation that runs off the main thread. See [CHANGELOG.md](CHANGELOG.md), [docs/STUDIO.md](docs/STUDIO.md) and [docs/EDITING.md](docs/EDITING.md).
 
 ### New in v4.3 — everything is configurable
 
@@ -28,10 +32,10 @@ The engine used to hold its judgements in code: what counts as healthy retention
 | “Median gross margin at Series A is 74% in this report.” | **Benchmark data** — quartiles shown in every report |
 | “We also look at hardware.” | **Business models** |
 
-Plus custom inputs, metrics, checks, questions, red flags, document requests and checklist items; renaming or switching off anything built in; and a draft you preview in your own browser before publishing. Only the repository owner can publish. Full guide: **[STUDIO.md](STUDIO.md)** · full history: **[CHANGELOG.md](CHANGELOG.md)**.
+Plus custom inputs, metrics, checks, questions, red flags, document requests and checklist items; renaming or switching off anything built in; and a draft you preview in your own browser before publishing. Only the repository owner can publish. Full guide: **[STUDIO.md](docs/STUDIO.md)** · full history: **[CHANGELOG.md](CHANGELOG.md)**.
 
 <p align="center">
-  <img src="demo.gif" alt="VCR2 walkthrough: loading a data pack, verification, and the report tabs" width="820">
+  <img src="docs/img/demo.gif" alt="VCR2 walkthrough: loading a data pack, verification, and the report tabs" width="820">
 </p>
 
 ---
@@ -46,7 +50,7 @@ VCR2 does that work in about a second, shows its working, and never hides a judg
 
 | | |
 |---|---|
-| **🛠️ An owner Studio** | The owner of the site can change everything that decides how a company is judged — healthy ranges, answer scores, weights, defaults, red-flag triggers, check tolerances — add fields, metrics, checks, deal-breakers, questions, red flags, benchmarks, checklist items and business models, and rename or switch off anything built in. Then publish to the live site in one click. No code. [How it works →](STUDIO.md) |
+| **🛠️ An owner Studio** | The owner of the site can change everything that decides how a company is judged — healthy ranges, answer scores, weights, defaults, red-flag triggers, check tolerances — add fields, metrics, checks, deal-breakers, questions, red flags, benchmarks, checklist items and business models, and rename or switch off anything built in. Then publish to the live site in one click. No code. [How it works →](docs/STUDIO.md) |
 | **🧾 Rebuilds revenue from the ledger** | Upload revenue by customer by month — any billing-system export, wide or long, as CSV or straight from Excel (.xlsx, read in the browser with no library). VCR2 builds the monthly MRR bridge — new, expansion, reactivation, contraction, churn — which closes to the dollar, plus **true cohort NRR and GRR**, logo retention, concentration (top 1/5/10, HHI) and cohort heatmaps. It also shows how far a waterfall-style NRR is inflated by expansion from customers acquired during the year. |
 | **⚠️ Stated vs. computed** | 29 consistency checks compare what the company states with what the primitives and the ledger produce. A **binomial test** flags when the discrepancies all happen to flatter the company — honest errors point both ways. |
 | **🔬 Forensics on billing data** | Nine tests, each with its method and its limits: final-month booking spikes before a raise, quarter-end pull-forward, one-month “recurring” customers, near-duplicate logos, one-off charges booked as MRR, reactivations hidden in new business, negative entries, growth smoothness, and a Benford first-digit test with an applicability check. |
@@ -57,7 +61,7 @@ VCR2 does that work in about a second, shows its working, and never hides a judg
 | **🧩 40+ compound risk patterns** | Growth bought with paid acquisition, leaky bucket, services wearing a software multiple, concentration on short contracts, window dressing before a raise, AI inference-margin trap, off-market terms, a price that cannot clear the target return, weak product-market fit, a discretionary product, a new or non-technical founding team, finance and tax hygiene — and the strengths too. |
 | **🗺️ Risk map** | Every red and amber signal grouped the way an investment committee discusses risk: product, market & timing, execution & team, financial & reporting, legal & regulatory, deal & structure. |
 | **✅ Diligence checklist by stage** | Around 60 items across ten data-room categories — founders, financial, tax, cap table & legal, customers, product, IP, HR, security, insurance — scoped to the stage, pre-filled from your inputs and uploads, tracked item by item, and carried into the memo. |
-| **📐 Evidence-weighted, stage-calibrated scoring** | Every field records where its number came from (founder said → deck → model → system export → bank record → audited). Weak evidence widens the confidence band. Four stage rubrics, four business models, product-market-fit signals (the Sean Ellis 40% test, NPS), hard gates on IP, cap-table and unpaid-tax issues, and metrics withheld below the sample size where they carry signal. |
+| **📐 Evidence-weighted, stage-calibrated scoring** | Every field records where its number came from (founder said → deck → model → system export → bank record → audited). Weak evidence widens the confidence band and pulls good scores towards 50. Four stage rubrics, four business models, product-market-fit signals (the Sean Ellis 40% test, NPS), hard gates on IP, cap-table and unpaid-tax issues, and metrics withheld below the sample size where they carry signal. |
 | **📚 Learns from your deals** | Save each run to a local **Library**, import comparables from CSV, or paste anything — a newsletter, a portfolio update, meeting notes — and let a model you choose structure it for review. VCR2 then ranks each new company against your own data and can **recalibrate its thresholds on your library**. |
 | **📋 Output you can use** | A ranked question list, a ready-to-send founder email, a data-room request list, a print-ready **IC memo (PDF)**, Markdown and a JSON export anyone can re-open. |
 
@@ -65,17 +69,17 @@ VCR2 does that work in about a second, shows its working, and never hides a judg
 
 | Overview and risk patterns | Revenue rebuilt from the ledger |
 |---|---|
-| ![Overview](screenshot-overview.png) | ![Revenue](screenshot-revenue.png) |
+| ![Overview](docs/img/screenshot-overview.png) | ![Revenue](docs/img/screenshot-revenue.png) |
 | **Runway odds (Monte Carlo)** | **Deal maths and liquidation waterfall** |
-| ![Runway](screenshot-runway.png) | ![Deal](screenshot-deal.png) |
+| ![Runway](docs/img/screenshot-runway.png) | ![Deal](docs/img/screenshot-deal.png) |
 | **Verification before any score** | **A clean data pack earns a score** |
-| ![Verification](screenshot-verification.png) | ![Scored](screenshot-scored.png) |
+| ![Verification](docs/img/screenshot-verification.png) | ![Scored](docs/img/screenshot-scored.png) |
 | **Risk map by type** | **VC Method and First Chicago returns** |
-| ![Risk map](screenshot-riskmap.png) | ![Returns](screenshot-returns.png) |
+| ![Risk map](docs/img/screenshot-riskmap.png) | ![Returns](docs/img/screenshot-returns.png) |
 
-<p align="center"><b>Owner Studio — start from what an investor told you</b><br><img src="screenshot-studio-start.png" alt="VCR2 Owner Studio start page: every kind of change, grouped" width="900"></p>
+<p align="center"><b>Owner Studio — start from what an investor told you</b><br><img src="docs/img/screenshot-studio-start.png" alt="VCR2 Owner Studio start page: every kind of change, grouped" width="900"></p>
 
-<p align="center"><b>Owner Studio — add metrics, questions and checks without code</b><br><img src="screenshot-studio.png" alt="VCR2 Owner Studio: custom metrics with formulas" width="900"></p>
+<p align="center"><b>Owner Studio — add metrics, questions and checks without code</b><br><img src="docs/img/screenshot-studio.png" alt="VCR2 Owner Studio: custom metrics with formulas" width="900"></p>
 
 ## How to use it
 
@@ -91,16 +95,18 @@ Sample files to try the uploads are in the repository — a customer ledger (CSV
 Investors ask for different things. The Studio lets the owner add them without touching code: open **`/#studio`**, sign in with a GitHub token, and change the engine.
 
 - **Start from what an investor told you** — the Studio's start page sends you to the right screen.
+- **Rewrite any text** on the site by clicking it, and **change anything about a built-in metric**: its calculation, dimension, business models, unit and healthy range.
 - **Retune** what counts as healthy for any metric at any stage (reports mark it “your standard”), the score of every answer and yes/no question, dimension and metric weights, every default assumption (exit years, target return, probabilities, exit multiple, dilution, stage ranges, evidence weights), the numbers behind every built-in red flag and term-sheet norm, and the tolerance of every consistency check.
 - **Add** evidence fields, metrics computed with a formula (`new_arr_l12 / headcount_sales`), stated-vs-computed checks, deal-breakers (`top1_pct > 50`), conditional questions (`nrr < 100 and customers_now >= 20`), red flags and strengths, document requests, checklist items, published benchmarks and new business models.
 - **Switch off or rename** any built-in section, field, metric, check, forensic test, red flag, question family, request, checklist item, dimension or deal-breaker.
+- **See and undo**: what differs from built-in (also a sentence on every report), undo and redo, a reset beside every value, the effect on the two example companies before you publish, and the publish history.
 - **Preview** the draft in your own browser, then **publish**: the Studio commits `radar-config.json` to the repository and every visitor gets it within a minute.
 
-Only the repository owner can publish. The Studio verifies with GitHub that the token belongs to the owner and can write to the repository, and the live site only ever reads the committed file. Formulas run in a small built-in interpreter — nothing is executed as code — and missing data is never silently treated as zero. Anything that changes scores changes the rubric version printed on every report. Full guide: **[STUDIO.md](STUDIO.md)**.
+Only the repository owner can publish. The Studio verifies with GitHub that the token belongs to the owner and can write to the repository, and the live site only ever reads the committed file. Formulas run in a small built-in interpreter — nothing is executed as code — and missing data is never silently treated as zero. Anything that changes scores changes the rubric version printed on every report. Full guide: **[STUDIO.md](docs/STUDIO.md)**.
 
 ## Methodology
 
-Everything is deterministic and versioned. The same inputs and rubric version always produce the same score, and every run carries a hash that includes the ledger, the evidence tags and any calibration. The full specification — every formula, tolerance, forensic threshold, the scoring and confidence-band maths, the simulation, the deal conventions and the waterfall algorithm — is in **[METHODOLOGY.md](METHODOLOGY.md)**.
+Everything is deterministic and versioned. The same inputs and rubric version always produce the same score, and every run carries a hash that includes the ledger, the evidence tags and any calibration. The full specification — every formula, tolerance, forensic threshold, the scoring and confidence-band maths, the simulation, the deal conventions and the waterfall algorithm — is in **[METHODOLOGY.md](docs/METHODOLOGY.md)**.
 
 A few of the formulas:
 
@@ -108,7 +114,7 @@ A few of the formulas:
 |---|---|
 | Cohort NRR (from the ledger) | today’s MRR of customers live 12 months ago ÷ their MRR then |
 | Cohort GRR | same base, each customer capped at its starting MRR |
-| Burn multiple | annualised net burn ÷ net new ARR |
+| Burn multiple | net burn over the same twelve months ÷ net new ARR (current burn × 12 when twelve months of financials are not loaded) |
 | Magic number | net new ARR in the quarter ÷ prior-quarter S&M |
 | CAC payback | CAC ÷ monthly gross profit per customer |
 | Effective pre-money | headline pre − (pool top-up + SAFE conversion) × post-money |
@@ -122,7 +128,7 @@ A few of the formulas:
 - **Never ask for a number that can be derived.** Runway, NRR, burn multiple and payback are computed, never typed in.
 - **Prefer the company’s data to its summary.** A customer ledger outranks a deck; a bank statement outranks a model.
 - **Refuse to score bad data.** Three or more material contradictions, or an open IP or cap-table gate, withholds the score — the analysis still runs.
-- **Weight evidence, not just values.** Unverified inputs widen the confidence band.
+- **Weight evidence, not just values.** Unverified inputs widen the confidence band and count for less in the score.
 - **Show the working.** Every metric carries its formula, every test its method and limits.
 - **The model never scores.** AI is optional and only extracts figures or drafts prose around numbers the engine has already computed.
 
@@ -131,7 +137,8 @@ A few of the formulas:
 - The ledger, the derivations, the checks, the simulation and the score all run **entirely in your browser**. Nothing is uploaded anywhere.
 - The site loads its published configuration (`radar-config.json`) from the same repository. The Owner Studio talks only to `api.github.com`, with the owner’s own token.
 - The only other network calls are the optional AI features (extraction, AI import, memo narrative), which send text to the provider **you** choose — Anthropic, OpenAI, Gemini, Groq or OpenRouter — using **your own** key. The model name can be overridden in the sidebar.
-- The key and your library are stored in your browser’s `localStorage`. There is no VCR2 server. Use a restricted, low-spend key and don’t paste confidential data-room material into a provider you haven’t cleared.
+- Your AI key is kept in the tab only and forgotten when you close it, unless you tick “Remember this key on this computer”. It is never in a draft, an export or the library. Your library is stored in your browser’s `localStorage`. There is no VCR2 server. Use a restricted, low-spend key and don’t paste confidential data-room material into a provider you haven’t cleared.
+- A Content-Security-Policy limits the page to this site, the GitHub API (Studio only) and the five AI providers. Library backups are rebuilt from a whitelist, and a spreadsheet that inflates beyond a budget is refused.
 
 See [SECURITY.md](SECURITY.md).
 
@@ -145,40 +152,53 @@ See [SECURITY.md](SECURITY.md).
 ## Project structure
 
 ```
-index.html              the whole app — one self-contained file, zero dependencies
+index.html              the whole app — one self-contained file, generated by build.py (never edit by hand)
 radar-config.json       the owner's published configuration (written by the Studio)
-build.py                rebuilds index.html from the source files below
+site.json               the address the site is published at (used for the link-preview image; change it for your own domain)
+build.py                rebuilds index.html from src/
 
-core.js                 evidence schema, derivations, checks, rubric, scoring, pipeline
-ledger.js               ledger parsing, MRR bridge, cohorts, concentration, forensics
-series.js               monthly financials, trajectory, default-alive
-sim.js                  seeded Monte Carlo
-deal.js                 ownership, dilution, notes, term review, VC Method, First Chicago, waterfall
-checklist.js            stage-based diligence checklist
-patterns.js             compound risk patterns, optimism test, sensitivity
-library.js              local library, CSV and AI import, percentiles, calibration
-charts.js / report.js   the report and its SVG charts
-exports.js              IC memo, founder email, JSON, Markdown
-config.js               configuration layer and the safe formula language
-studio.js               the owner Studio and GitHub publishing
-xlsx.js                 dependency-free Excel reader
+src/                    the source files, concatenated in the order listed in build.py
+  shell.html            page skeleton
+  style*.css            styles
+  core.js               evidence schema, derivations, checks, rubric, scoring, pipeline
+  ledger.js             ledger parsing, MRR bridge, cohorts, concentration, forensics
+  series.js             monthly financials, trajectory, default-alive
+  sim.js                seeded Monte Carlo
+  sim-async.js          runs the simulation in a background worker (same numbers)
+  deal.js               ownership, dilution, notes, term review, VC Method, First Chicago, waterfall
+  checklist.js          stage-based diligence checklist
+  patterns.js           compound risk patterns, optimism test, sensitivity
+  library.js            local library, CSV and AI import, percentiles, calibration
+  charts.js, report.js  the report and its SVG charts
+  exports.js            IC memo, founder email, JSON, Markdown
+  config.js             configuration layer and the safe formula language
+  owner*.js             owner control: text replacements, scoring constants, what differs from built-in
+  studio*.js            the owner Studio: panes, details of built-in items, safety (undo, review, history, JSON)
+  xlsx.js               dependency-free Excel reader
 
-engine.test.mjs         engine and configuration tests, run headlessly with Node (CI on every push)
-METHODOLOGY.md          every formula, tolerance and convention
-STUDIO.md               the owner Studio guide
-northwind-*.csv / .xlsx sample customer ledger and monthly financials
+tests/*.test.mjs        engine, archetype, property, configuration, importer, forensic and deal tests, run headlessly with Node (CI on every push)
+tests/browser/          Playwright browser suites (Studio, importers, accessibility, privacy, sidebar, AI rule)
+tests/e2e/              end-to-end tests with invented companies (Chromium, Firefox, WebKit)
+docs/METHODOLOGY.md     definitions, formulas, tolerances, conventions and sources of the default ranges
+docs/STUDIO.md          the owner Studio guide
+docs/EDITING.md         what can and cannot be changed without code
+docs/img/               screenshots and the demo GIF
+examples/               sample customer ledgers, monthly financials and a comparables template
+assets/                 self-hosted fonts and the social preview image
+tools/                  dev server, size and performance budgets, layout and accessibility scans, key scan, contrast checks
 ```
 
-**Run it locally:** open `index.html` in a browser, or `python3 -m http.server 8000`.
-**Run the tests:** `node engine.test.mjs`
-**Rebuild after editing the source files:** `python3 build.py`
+**Run it locally:** `node tools/dev_server.mjs --port 8765`, then open http://127.0.0.1:8765
+**Run the tests:** `for f in tests/*.test.mjs; do node $f; done` (browser suites: `python tests/browser/run_all.py`)
+**Rebuild after editing the source files:** `python build.py`
 
 The engines are also exposed as `window.Radar` — `Radar.assess({...})` runs a full assessment headlessly and returns every metric, check, pattern, projection and question.
 
 ## Roadmap
 
 - [ ] Customer reference-call notes → structured signals (AI-assisted, with quotes)
-- [ ] Side-by-side comparison of two companies
+- [ ] Document import (v5.1): drop several files or a .zip, a figure finder with the source line and page, an import report, column mapping with presets
+- [ ] Side-by-side comparison of companies, scenario lab, evidence trail on every number (ranked in docs/overhaul/candidate-features.md)
 - [ ] Shared team library (optional sync)
 - [ ] Revenue-quality checks against invoices and bank receipts
 - [ ] More business-model modules (hardware, consumer subscription)
@@ -191,6 +211,7 @@ VCR2 is a workflow tool. It does not provide investment advice, and its score is
 
 Built by **Axel De Sousa** — Finance and AI Analysis at Menlo College.
 [GitHub](https://github.com/dsaxel05) · [LinkedIn](https://www.linkedin.com/in/axeldesousa/)
+
 ## License
 
 Proprietary — all rights reserved. See [LICENSE](LICENSE). © 2026 Axel De Sousa.

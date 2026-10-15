@@ -1,0 +1,10 @@
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
+__pycache__/
+node_modules/
+docs/overhaul/shots/
+docs/overhaul/verify/scratch/
+docs/overhaul/verify/private/
+tests/legacy-browser/shots/
+deliverables/

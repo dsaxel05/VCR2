@@ -1,5 +1,85 @@
 # Changelog
 
+## v5.0.0 — 2026-10-13 (prepared, not yet published)
+
+A rebuild of how companies are scored and of how the site looks, found and checked by independent reviews (`docs/overhaul/verify/`). Rubric **5.0.0**: scores change, mostly downwards by 5 to 10 points on the same inputs because figures without a source now count for less; the order of companies is broadly kept; four companies move past others (the leaky-bucket and subsidised-marketplace archetypes rise above the flat and the burning ones, and the clean seed AI example falls below the Halcyon sample), as `docs/overhaul/scores-5.0.0.md` shows beside `baseline-scores.md`.
+
+### Scoring
+- Lower-is-better metrics use the mirrored curve the documentation always described (100 / 72 / 45 / 0).
+- Boundary cases are scored instead of dropped: a company that is not burning, burns with no growth, has no gross profit or no churn can no longer score higher than a better one.
+- Evidence now changes the score: good figures without a strong source are pulled towards 50, bad news is taken as stated, and inputs behind a failed check count as barely evidenced. Owner setting: off, gentle (default) or strict.
+- CAC payback and LTV use new-customer contract value; LTV lifetime is capped at five years (setting); burn multiple uses twelve months of burn when monthly financials are loaded.
+- Related metrics share their weight (cap of twice the largest, setting).
+- AI applications have their own gross-margin ranges.
+- Every score is explained: “What drove this score” and the score before and after the evidence adjustment.
+- A stated figure against a computed zero is a discrepancy; the stage-mismatch flag fires earlier.
+
+### Fixed
+- **Found by an outside review of the first release candidate (2026-10-15):**
+  - The "Odds of next-stage bar" tile and the Runway tab no longer stay at "simulating in the background…" for good: a worker answer that arrives before the report is stored is kept and swapped in, the AI memo waits for the simulation, and a worker that has not answered after ten seconds is replaced by the same calculation run on the page (`tests/browser/sim_refresh_test.py`, 66 checks, http and file://).
+  - One name per concept: **Form filled** (share of the form's fields entered) and **Scoring weight covered** (share of the rubric the figures reach), in the sidebar, the top bar, the report, the Scoring table and the exports.
+  - Counts that explain themselves: the Findings tab says how many discrepancies there are and how many are material and minor; the gate is "N material discrepancies"; the direction-of-errors line says it counts the discrepancies that have a direction.
+  - "1786% of the market reachable" and "161% of bottom-up TAM" are now plain sentences ("18 times the whole market reachable in five years", "1.6 times the bottom-up market").
+  - The static page no longer names an old rubric; the Markdown export date is "15 Oct 2026"; a ledger or financials file that is refused keeps its reason under the drop zone, not only in a toast; the link-preview image address comes from `site.json` (so it follows your own domain) instead of being typed into the page.
+  - The build also drops the spaces after commas and around `=` and `=>` in code (strings, templates, regular expressions and comments untouched): the page is 20 KB smaller (`tests/jsstrip_test.py`).
+- **Found by the end-to-end company tests (2026-10-14):** a SAFE line that cannot be read is named in the deal notes instead of being dropped, and the SAFE list is a text area (it said "one per line" in a single-line box); a form with no revenue, no cash and no burn no longer gets a 120-month runway and a Strong score; the overview tiles say "no growth" and "not burning" instead of 99.00 and 120 months; invoices on two annual billing dates are read as a ledger. Details in `docs/overhaul/verify/2026-10-14-e2e.md`.
+- **Accessibility (axe-core scan, 2026-10-14):** every field has a name, every page has one h1 and no skipped heading level, navigation landmarks are named, scrolling tables can be reached by keyboard, the cohort heatmap and the status text read at 4.5:1 in both themes. A second pass closed the last findings: every strip of report tabs keeps a keyboard stop, empty table headers carry a hidden name, headings never jump from level 1 to 3, and tables with the same name are numbered; the scan now finds nothing.
+- **Runway simulator:** a simulated path that reached the next-stage bar could never run out of cash, so fast-burning companies showed “36+ months”. Cash-out is now the first month cash goes below zero, whatever revenue did.
+- **A list of SAFEs** (amount, cap, discount per line) converts each at its own price; before, one aggregate cap approximated them and understated the SAFE stake in a tenth of cases.
+- **Deal inputs** that are impossible (a negative preference, a pool of 100 %, a prior stake of 150 %, a dilution of 120 %…) are kept inside what a deal can be, and the report says what was changed.
+- **Default alive** now holds expenses flat, as Paul Graham's test does (setting to let them grow); before, expenses grew at their recent rate under the same name.
+- **Exit waterfall:** the unallocated option pool is no longer paid out as if it were common stock; its share goes pro rata to the issued shares (setting under Scoring constants → Returns).
+- **SAFEs and notes:** post-money SAFEs are diluted by the option-pool top-up, as in YC's document; the note discount formula; no silent 60 % clamp; the note cap is measured on the existing shares (setting); the SAFE cap field asks for total amount ÷ Σ(amount ÷ cap).
+- **File readers:** European numbers (1.200), day-first dates, French abbreviated months, quarterly columns, lists of invoices and cash-flow columns with a fundraise are no longer misread.
+- **Forensics:** far fewer false alarms on clean ledgers (one-month customers 45 % → 7.5 % on flat ledgers, final-month spike 15 % → 7.5 %, cohort decay 17.5 % → 0 %) and a pull-forward split over two months is now seen without flagging fast-growing honest companies (7 to 14 % net monthly growth: 0 of 40 clean ledgers flagged, before 18 % to 95 %); the optimism test counts related discrepancies once.
+
+### Privacy and security
+- No Google Fonts request: the fonts are served from the site (SIL Open Font Licence). The tour reports zero third-party requests.
+- AI memo drafting is opt-in; before, a stored key sent the deal's figures by default.
+- GitHub Actions pinned to commit SHAs, read-only permissions.
+
+### Design
+- **One identity, Private bank** (from the owner's style template): an ivory page and sidebar, deep-green ink and buttons, thin brass hairlines, Fraunces for display and figures and IBM Plex Sans for text (four self-hosted files), garnet kept for risk, and a night theme. The default theme is light, whatever the visitor's device prefers ("follow the device" is a Studio option). A double frame and a diamond divider appear only on the home page, the report header and the printed memo.
+- **Compact and readable by design**: a 75% page scale (measured against the first approved look: the same screens are 30% shorter, the sidebar 26% narrower, spacing and control heights 25 to 35% smaller, text 19% smaller because it stops at the floors) with floors for the type: body text 16 px, form labels and table text 14 px, table headings and help text 13 px, nothing smaller than 13 px on screen, line height 1.6. One spacing scale (6, 12, 18, 30, 48 px), one-column forms with 39 px fields, and a quiet "5 of 12 filled" line. Secondary fields sit behind "More options", secondary table columns behind "Show details", secondary report views behind "More views", and AI assist and consistency detail behind a disclosure in the sidebar. Every empty field shows an example and every group a one-line guide.
+- **Retractable sidebar**: a "Menu" button in the top bar (and Alt + M) hides the left menu so the form has the whole width. While it is hidden the top bar keeps the coverage percentage and a "Sections" list to jump between evidence sections; Previous and Next stay at the bottom of each section. On a phone or tablet the menu is a drawer that closes when a section is picked. The visitor's choice is kept in their own browser only; the owner sets the starting state in Studio > Look & feel > Sidebar on start.
+- **Text size and page scale**: Normal (default), Large or Extra large text, and a page scale of 75% (default), 90% or 100%, set in Studio > Look & feel; each visitor can change the text size with the "Aa" button.
+- Three identities (Highlighter, Thermal, Six dimensions), each in light and dark, with a theme toggle; every text colour passes WCAG 2.2 AA; chart colours stay distinguishable for colour-blind readers.
+- New home page built around a real finding from the sample; icons instead of emoji; report tabs and navigation work with the keyboard.
+
+### Owner Studio
+- **Edit any text on the site**: click any wording and rewrite it; the change applies to the page, the memo, the markdown report and the founder email.
+- **Scoring constants**: the scores at the four anchors, the cap on yes/no points, coverage for full weight, how withheld metrics are treated, the audited-tag cap, confidence cut-offs, the likely-range formula, display thresholds, exit growth floors, AI model names. Each shows its built-in value and a way back.
+- **Built-in metrics are fully editable**: replace the calculation, move to another dimension, limit to business models, change the unit, edit banded ranges.
+- **Add scoring dimensions and stages**; business models can start from a built-in one; choice fields can be scored; details of built-in items (quick picks, deal-breaker text and trigger, red-flag severity, checklist category, yes/no wording) are settings.
+- Forensic thresholds, deferred-revenue, cash-vs-raise, concentration and every form-vs-ledger tolerance are settings like the other triggers.
+- **Safety**: undo and redo, reset per item and everything, a list of what differs from built-in (also a sentence on every report), a review with the change list and the effect on the two examples before publishing, publish history with load-into-draft, an advanced JSON editor with live validation, and a fallback to the built-in rules if a setting ever breaks the engine.
+- **Look & feel**: accent, frame, divider, default theme, text size, corners, the size of titles, figures and questions, which report views are in sight, and your own ink and line colours with a contrast guard.
+- **Metrics measured together**: the groups that count as one signal are a setting (Weights & rules), next to the overlap cap.
+- `docs/EDITING.md` lists what is and is not a setting.
+
+### Questions, numbers and sources
+- **Every generated question says what you do if it stays unresolved** (the lever): a built-in wording per question family, which you can change per family or per built-in deal-breaker, check and red flag, and on your own questions. It appears in the report and the memo and never in the founder email.
+- **Numbers**: "1.200" with a currency sign, or with several dot groups ("1.200.000"), is read as a thousand-separated amount; a bare "1.200" or "1,200" is flagged as ambiguous instead of guessed. Text numbers in a saved assessment are read once with the same rules; ones that cannot be read are dropped and listed.
+- **AI extraction**: a value is accepted only with the line of the source it came from; numbers returned as text follow the same rules; every refused value is reported with its reason.
+- **Run hash**: computed over canonical numbers, so "1200000", "1200000.0" and "1.2e6" give one hash. It is now 16 hex digits (64 bits) instead of 8, so two different runs almost never share one. Run IDs written by earlier versions are not recomputed: a library entry saved before 5.0 keeps its 8-digit ID and is no longer recognised as the same run ("already in the library", and the comparison that leaves a company out of its own peer list). Saved assessments and drafts open unchanged.
+- **Studio**: section descriptions can be renamed; a stage's weights have their own way back; the sign-in page says to use a 7-day token limited to this repository with Contents read and write only.
+
+### Known issues
+- **A Studio token can write every file in the repository, not only the configuration** (design property, noted in SECURITY.md). Mitigation for this release: a 7-day token limited to this one repository with Contents read and write only. Moving the configuration to a separate repository or a protected branch is planned.
+- **The longest task while the page loads is 344 ms under a 4x CPU slowdown (target 100 ms).** Largest contentful paint is 1.19 s (target 2.0 s). Fixing it means loading the Studio, the spreadsheet reader and the exports on demand, which ends the single-file page; this is the first job of v5.1.
+
+### Performance
+- The Monte Carlo simulation runs in a background worker and gives the same numbers; assessing a company takes 12–20 ms instead of 57–67 ms. Measured before and after in `docs/overhaul/perf-budgets.md`.
+- The generated page is about 50 KB smaller than the first v5.0 builds (comments and indentation removed from the scripts; the stylesheet is compacted and 72 unused and 662 overridden rules are removed, with a browser test that every rule still means the same; the readable sources are in `src/`).
+
+### Security and privacy (additional)
+- The AI key is kept in the tab only unless "Remember this key on this computer" is ticked; it is never in a draft, export or library.
+- A library backup is rebuilt from a whitelist, so a malformed one cannot break the app.
+- A Content-Security-Policy and a no-referrer policy; a spreadsheet that inflates beyond a budget is refused; very long numeric cells are refused; the Gemini key goes in a header; formulas over 1,000 characters are refused instead of being cut.
+
+### Tests
+- 400+ tests: 16 fictional companies with expected orderings, property tests, old-configuration fixtures, importer, forensic and deal-convention suites; browser suites run by one command; CI checks that `index.html` is a fresh build and enforces a size budget.
+
 ## v4.3.1 — 2026-09-28
 
 ### Fixed
