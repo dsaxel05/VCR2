@@ -1,0 +1,22 @@
+{
+  "version": 1, "updated": "2026-09-20T10:00:00Z", "owner": "dsaxel05", "repo": "VCR2", "branch": "main",
+  "branding": { "appName": "VC Risk Radar", "subtitle": "Owner edition", "note": "Calibrated on our deals." },
+  "settings": { "blockAfter": 4, "minN": { "retention": 25 }, "nextStage": { "seed": 2500000 } },
+  "hidden": { "sections": [], "fields": [], "metrics": [], "checks": [], "patterns": ["new_team"], "forensics": ["benford"], "questions": [], "requests": [], "gates": [], "checklist": [] },
+  "labels": { "fields": {}, "hints": { "fc_rate": "Our First Chicago rate" }, "metrics": {}, "sections": { "team": "Founders and team" }, "dims": { "market": "Market" }, "patterns": {}, "gates": {}, "checklist": {} },
+  "thresholds": {}, "metricWeights": {}, "stageWeights": {},
+  "fields": [], "metrics": [], "checks": [], "questions": [], "patterns": [], "requests": [],
+  "checklist": [ { "id": "cl_refs", "text": "Two customer reference calls done", "category": "Commercial", "from": "seed" } ],
+  "gates": [ { "id": "g_runway", "title": "Less than six months of runway", "when": "runway < 6", "why": "Raising from need.", "risk": "financial" } ],
+  "checkTol": { "stated_arr": { "tol": 3, "hard": 8 } },
+  "categorical": { "soc2": { "Type II": 100, "Type I": 75 } },
+  "booleans": { "prior_exit:plus": 10, "litigation:minus": 15 },
+  "patternParams": { "runway_cliff": { "amber": 15, "red": 10 } },
+  "defaults": { "exit": { "years": { "a": 7 }, "irr": { "a": 45 }, "probs": { "a": [50, 35, 15] }, "fcRate": 22 },
+                "deal": { "exit_multiple": 8, "dilution": 20, "future_rounds": { "a": 2 } },
+                "sim": { "decay": 4, "horizon": 36, "buffer": 6 },
+                "stageRange": { "seed": { "lo": 300000, "hi": 2500000 } },
+                "evidence": { "verbal": 0.2, "unverified": 0.3 } },
+  "models": [ { "id": "hardware", "name": "Hardware", "desc": "Devices with software", "emoji": "🔧" } ],
+  "benchmarks": [ { "id": "b_nrr", "metric": "nrr", "stage": "a", "p25": 95, "median": 104, "p75": 112, "source": "Our portfolio", "year": "2026" } ]
+}

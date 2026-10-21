@@ -1,0 +1,554 @@
+[
+{
+"fg": "--text",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-2",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-2",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-2",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-2",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-3",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-3",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-3",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-3",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-4",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-4",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-4",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--text-4",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--ok-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--ok-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--warn-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--warn-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--risk-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--risk-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--owner-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--owner-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--brand-ink",
+"bg": "--brand",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--brand-field-ink",
+"bg": "--brand-field",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--hl-ink",
+"bg": "--hl",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--sb-text",
+"bg": "--sb-bg",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--sb-muted",
+"bg": "--sb-bg",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--sb-active-text",
+"bg": "--sb-bg",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--tooltip-text",
+"bg": "--tooltip-bg",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--focus",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-axis",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--chart-1",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-2",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-3",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-4",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-5",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-6",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--chart-down",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--text",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-2",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-2",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-2",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-2",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-3",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-3",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-3",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-3",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-4",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-4",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-4",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--text-4",
+"bg": "--surface-hover",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--ok-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--ok-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--warn-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--warn-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--risk-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--risk-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--owner-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--owner-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--brand-ink",
+"bg": "--brand",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--brand-field-ink",
+"bg": "--brand-field",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--hl-ink",
+"bg": "--hl",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--sb-text",
+"bg": "--sb-bg",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--sb-muted",
+"bg": "--sb-bg",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--sb-active-text",
+"bg": "--sb-bg",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--tooltip-text",
+"bg": "--tooltip-bg",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--focus",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-axis",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-1",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-2",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-3",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-4",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-5",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-6",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--chart-down",
+"bg": "--surface",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-accent=\"garnet\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-accent=\"garnet\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface",
+"min": 4.5,
+"theme": ":root[data-accent=\"emerald\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface-sunken",
+"min": 4.5,
+"theme": ":root[data-accent=\"emerald\"]"
+},
+{
+"fg": "--accent-text",
+"bg": "--surface-page",
+"min": 3.0,
+"theme": ":root"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root"
+},
+{
+"fg": "--accent-text",
+"bg": "--surface-page",
+"min": 3.0,
+"theme": ":root[data-theme=\"dark\"]"
+},
+{
+"fg": "--brand-text",
+"bg": "--surface-page",
+"min": 4.5,
+"theme": ":root[data-theme=\"dark\"]"
+}
+]

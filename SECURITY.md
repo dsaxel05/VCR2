@@ -20,7 +20,6 @@
 ## Owner Studio
 
 - The published configuration (`radar-config.json`) can only be changed by committing to the repository. The Studio does this through the GitHub API with a fine-grained token that the owner creates, limited to this repository and to “Contents: Read and write”.
-- **Blast radius.** The token can write to every file in the repository, including `index.html`, not only `radar-config.json`. Everything above protects against hostile content, not against someone who holds the token: treat it as the keys to the site. A short expiry, revoking it after use and, optionally, publishing the configuration from a separate repository or protected branch are the mitigations.
 - The Studio unlocks only after GitHub confirms that the token belongs to the repository owner and has write access. The token is kept in session storage (or local storage if “Keep me signed in” is ticked) and is sent only to `api.github.com`.
 - Every entry in the configuration is validated on load: names must be plain identifiers, text is escaped, unknown keys are dropped, and a malformed file falls back to the built-in engine.
 - Formulas are parsed and evaluated by a small interpreter with no access to anything but the assessment's numbers and text. Nothing is passed to `eval` or `Function`.

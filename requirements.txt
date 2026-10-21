@@ -1,0 +1,7 @@
+# Only needed to run the browser tests and the screenshot / accessibility tools.
+# Building the page (python build.py) and the Node engine tests need nothing from pip.
+#
+# Python 3.12 or newer (CI runs 3.12; developed on 3.14).  Node.js 24 for tests/*.test.mjs.
+# After installing: python -m playwright install chromium   (firefox and webkit too for the cross-browser run)
+playwright==1.63.0
+pillow==12.3.0      # only tools/readme_shots.py (README screenshots)

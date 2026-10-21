@@ -1,0 +1,27 @@
+{
+  "version": 1, "updated": "2026-10-12T09:00:00Z", "owner": "dsaxel05", "repo": "VCR2", "branch": "main",
+  "branding": { "appName": "Radar", "headline": "Diligence you can explain", "note": "Calibrated on our own deals." },
+  "look": { "direction": "thermal", "accent": "garnet", "frame": "off", "divider": "plain", "theme": "dark", "brand": "#112233", "highlight": "#FFE14D" },
+  "texts": [ { "from": "Seed", "to": "Early" }, { "from": "Review before publishing", "to": "Check first" } ],
+  "settings": {
+    "evidenceMode": "gentle", "ltvCapYears": 5, "blockAfter": 3,
+    "minN": { "retention": 25 }, "nextStage": { "seed": 2500000 },
+    "withheldMode": "shrink", "auditedCap": true, "currency": "€", "runwayCap": 96, "burnMultipleCap": 50,
+    "confHighMajor": 0, "confMediumMajor": 1, "evidencePivot": 55, "contestedEvidence": 0.15,
+    "questionWeakDim": 55, "calMin": 10, "waterfallPool": "unallocated", "defaultAliveExpenses": "flat",
+    "aiModels": { "anthropic": "claude-sonnet-5-5" }
+  },
+  "hidden": { "sections": [], "fields": [], "metrics": [], "checks": [], "patterns": [], "forensics": [], "questions": [], "requests": [], "gates": [], "checklist": [], "models": [], "stages": [] },
+  "labels": { "stages": { "seed": "Early growth" }, "units": { "burn_multiple": "x" }, "metrics": { "nrr": "Net revenue retention" }, "dims": { "revenue": "Revenue quality" } },
+  "formulas": { "burn_multiple": "burn_multiple * 1" },
+  "meta": {
+    "gates": { "ip_assignments": { "why": "Without signed IP assignments the company may not own its product.", "ask": "Send the signed assignments." } },
+    "fields": { "arr_now": { "group": "Revenue today" } },
+    "patterns": { "new_team": { "sev": "amber", "why": "A team that has not worked together yet." } }
+  },
+  "dimensions": [ { "id": "d_regulatory", "label": "Regulatory exposure", "desc": "Licences and sector rules" } ],
+  "stages": [ { "id": "s_series_c", "name": "Series C", "like": "b", "lo": 20000000, "hi": 80000000, "desc": "Late growth" } ],
+  "thresholds": { "nrr": { "a": [90, 100, 110, 125], "note": "Our Series A investors expect 110%+." } },
+  "metricWeights": { "nrr": 1.5 },
+  "questions": [ { "id": "q_reg", "text": "Which licences does the company hold?", "when": "model == 'fintech'" } ]
+}

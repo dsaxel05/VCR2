@@ -1,0 +1,43 @@
+name: Browser tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install Playwright (test tool only; the app itself has no dependencies)
+        run: |
+          pip install playwright pillow
+          python -m playwright install --with-deps chromium
+      - name: Build
+        run: python build.py
+      - name: Browser suites (Studio with a mocked GitHub API, importers, smoke)
+        run: python tests/browser/run_all.py
+        env:
+          PYTHONUTF8: '1'
+      - name: Screenshot tour (no JavaScript errors, no third-party requests)
+        # No third-party host is allowed: the fonts are self-hosted. Never widen this.
+        run: python tools/shots.py --out shots --widths 1440,390 --schemes light,dark
+        env:
+          PYTHONUTF8: '1'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: screenshots
+          path: shots
+          retention-days: 14

@@ -1,0 +1,15 @@
+{
+  "__proto__": { "polluted": 1 },
+  "version": 999, "owner": "<script>alert(1)</script>", "repo": "../../etc",
+  "hidden": { "fields": [1, 2, { "a": 1 }], "metrics": "growth_yoy" },
+  "labels": { "fields": { "bad id": "x", "constructor": "y" }, "metrics": { "nrr": { "nested": true } } },
+  "thresholds": { "constructor": { "a": [1, 2, 3, 4] }, "nrr": { "a": [1, "x", 3] }, "grr": { "a": [90, 80, 70, 60] } },
+  "metricWeights": { "nrr": -5, "grr": "abc", "__proto__": 3 },
+  "stageWeights": { "z": { "revenue": 1 }, "a": { "revenue": -1 } },
+  "metrics": "nope",
+  "checks": [ { "id": "x", "stated": "bad id!", "computed": "1" } ],
+  "fields": [ { "id": "arr_now", "label": "shadow a built-in" }, { "id": "ok_field", "type": "select", "options": "a" } ],
+  "benchmarks": [ { "metric": "nrr", "median": "abc" }, { "metric": "nrr", "median": 100, "p25": 120 } ],
+  "defaults": { "deal": { "exit_multiple": -4 }, "sim": { "horizon": 100000 } },
+  "models": [ { "id": "saas", "name": "dupe" }, { "id": "X", "name": "bad id" } ]
+}

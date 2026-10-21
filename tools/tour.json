@@ -1,0 +1,89 @@
+[
+  {
+    "name": "intro",
+    "js": "showPage('intro')"
+  },
+  {
+    "name": "setup",
+    "js": "goSetup()"
+  },
+  {
+    "name": "northwind-intake",
+    "js": "loadDemo('northwind')"
+  },
+  {
+    "name": "northwind-form",
+    "js": "loadDemo('northwind'); S.section = 0; renderSection(0); showPage('section');"
+  },
+  {
+    "name": "northwind-form-market",
+    "js": "loadDemo('northwind'); S.section = SECTIONS.findIndex(s => s.id === 'market'); renderSection(S.section); showPage('section');"
+  },
+  {
+    "name": "northwind-overview",
+    "js": "loadDemo('northwind'); const R = assessAll(); _rtab = 'overview'; renderResult(R); showPage('result');"
+  },
+  {
+    "name": "northwind-findings",
+    "js": "loadDemo('northwind'); const R = assessAll(); renderResult(R); showPage('result'); goTab('findings');"
+  },
+  {
+    "name": "northwind-revenue",
+    "js": "loadDemo('northwind'); const R = assessAll(); renderResult(R); showPage('result'); goTab('revenue');"
+  },
+  {
+    "name": "northwind-forensics",
+    "js": "loadDemo('northwind'); const R = assessAll(); renderResult(R); showPage('result'); goTab('forensics');"
+  },
+  {
+    "name": "northwind-scoring",
+    "js": "loadDemo('northwind'); const R = assessAll(); renderResult(R); showPage('result'); goTab('scoring');"
+  },
+  {
+    "name": "northwind-questions",
+    "js": "loadDemo('northwind'); const R = assessAll(); renderResult(R); showPage('result'); goTab('questions');"
+  },
+  {
+    "name": "halcyon-overview",
+    "js": "loadDemo('halcyon'); const R = assessAll(); _rtab = 'overview'; renderResult(R); showPage('result');"
+  },
+  {
+    "name": "halcyon-runway",
+    "js": "loadDemo('halcyon'); const R = assessAll(); renderResult(R); showPage('result'); goTab('runway');"
+  },
+  {
+    "name": "halcyon-deal",
+    "js": "loadDemo('halcyon'); const R = assessAll(); renderResult(R); showPage('result'); goTab('deal');"
+  },
+  {
+    "name": "halcyon-benchmarks",
+    "js": "loadDemo('halcyon'); const R = assessAll(); renderResult(R); showPage('result'); goTab('bench');"
+  },
+  {
+    "name": "library",
+    "js": "goLibrary()"
+  },
+  {
+    "name": "studio-start",
+    "hash": "#studio",
+    "studio": true
+  },
+  {
+    "name": "studio-standards",
+    "hash": "#studio",
+    "studio": true,
+    "js": "studioTab('standards')"
+  },
+  {
+    "name": "studio-metrics",
+    "hash": "#studio",
+    "studio": true,
+    "js": "studioTab('metrics')"
+  },
+  {
+    "name": "studio-look",
+    "hash": "#studio",
+    "studio": true,
+    "js": "studioTab('look')"
+  }
+]

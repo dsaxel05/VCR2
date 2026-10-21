@@ -1,10 +1,38 @@
-CLAUDE.local.md
-.claude/settings.local.json
-.claude/worktrees/
 __pycache__/
 node_modules/
-docs/overhaul/shots/
-docs/overhaul/verify/scratch/
-docs/overhaul/verify/private/
 tests/legacy-browser/shots/
+deliverables/
+
+# secrets and local environment
+.env
+.env.*
+*.pem
+*.key
+
+# Python
+*.pyc
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# test and build output
+tests/e2e/out/
+shots/
+*.bundle
+
+# operating system and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.log
+
+# local-only working material (never published)
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+docs/overhaul/
 deliverables/

@@ -1,0 +1,109 @@
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS — loaded first. One identity: PRIVATE BANK (ivory page, deep-green ink, brass hairlines, garnet for risk),
+   with a light and a night theme: <html data-theme="light|dark" data-accent="brass|garnet|emerald" data-frame="on|off"
+   data-divider="diamond|plain">. theme.js sets them before the first paint. Components use the semantic tokens below (and the
+   legacy names mapped at the end, so older rules follow the theme). Never put raw hex in a component rule: add or reuse a token.
+   Every text/background pair is checked by tools/contrast_pairs.json in CI.
+═══════════════════════════════════════════════════ */
+
+/* Self-hosted fonts (SIL Open Font Licence; licences in assets/fonts/): Fraunces 400 and 400 italic for display and figures,
+   IBM Plex Sans 400 and 500 for everything else. No other weights exist, so nothing is ever faux-bolded. */
+@font-face { font-family: 'Fraunces'; src: url('assets/fonts/fraunces-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('assets/fonts/fraunces-400-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'IBM Plex Sans'; src: url('assets/fonts/ibm-plex-sans-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Sans'; src: url('assets/fonts/ibm-plex-sans-500-normal.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
+/* ── PRIVATE BANK, light ── */
+:root {
+  color-scheme: light;
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --display-weight: 400; --display-tracking: -0.01em;
+  /* The accent: brass by default (decorative lines), with a darker brass for text. Presets below change only these two. */
+  --accent-line: #B8934A; --accent-text: #7A5A1F;
+  --surface-page: #F6F1E6; --surface: #F6F1E6; --surface-sunken: #EFE8D8; --surface-hover: #EAE1CD;
+  --text: #0E3B34; --text-2: #2D4B45; --text-3: #4F5E59; --text-4: #54635E;
+  --line-4: var(--accent-line);
+  --line-3: color-mix(in srgb, var(--accent-line) 58%, transparent);
+  --line-2: color-mix(in srgb, var(--accent-line) 36%, transparent);
+  --line-1: color-mix(in srgb, var(--accent-line) 20%, transparent);
+  --brand: #0E3B34; --brand-strong: #0A2B26; --brand-ink: #F6F1E6; --brand-text: var(--accent-text);
+  --brand-field: #0E3B34; --brand-field-ink: #F6F1E6;
+  --brand-soft: color-mix(in srgb, var(--accent-line) 14%, transparent); --brand-line: color-mix(in srgb, var(--accent-line) 50%, transparent);
+  --hl: var(--accent-line); --hl-ink: #08231E; --hl-soft: color-mix(in srgb, var(--accent-line) 30%, transparent);
+  --ok: #1F7A5C; --ok-text: #17634A; --ok-soft: rgba(31,122,92,.10); --ok-line: rgba(31,122,92,.36);
+  --warn: #9A6B12; --warn-text: #7A5A1F; --warn-soft: rgba(184,147,74,.18); --warn-line: rgba(154,107,18,.42);
+  --risk: #8E1F2F; --risk-text: #8E1F2F; --risk-soft: rgba(142,31,47,.08); --risk-line: rgba(142,31,47,.36);
+  --owner-text: #4E3F6E; --owner-soft: rgba(90,74,122,.09); --owner-line: rgba(90,74,122,.32);
+  --focus: #8E1F2F;
+  /* The sidebar is the page colour: only ink and buttons are deep green. */
+  --sb-bg: var(--surface-page); --sb-text: var(--text); --sb-muted: var(--text-3); --sb-line: var(--line-3);
+  --sb-active-bg: var(--surface-sunken); --sb-active-text: var(--text); --sb-hover: var(--surface-sunken);
+  /* Chart series 1-5 (the MRR bridge; 5 is churn, in garnet). Worst-case CIEDE2000 between any two under normal vision,
+     protanopia, deuteranopia and tritanopia is 9.5; every colour is >= 3:1 on the page, and no chart relies on colour alone. */
+  --chart-1: #2E4A8C; --chart-2: #1F7A5C; --chart-3: #8A6A28; --chart-4: #7A3E65; --chart-5: #8E1F2F; --chart-6: #0E3B34;
+  --chart-grid: rgba(14,59,52,.10); --chart-axis: #4F5E59; --chart-down: #8E1F2F;
+  --tooltip-bg: #0E3B34; --tooltip-text: #F6F1E6; --scrim: rgba(40,36,28,.45);
+  --radius-control: 0; --radius-card: 0; --radius-sheet: 0;
+  --shadow-2: none;
+}
+/* ── PRIVATE BANK, night ── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --accent-line: #B8934A; --accent-text: #D5B36F;
+  --surface-page: #0B2B26; --surface: #0B2B26; --surface-sunken: #082019; --surface-hover: #123830;
+  --text: #F3ECDD; --text-2: #DCD4C2; --text-3: #A9BDB6; --text-4: #96ABA3;
+  --brand: #F3ECDD; --brand-strong: #FFFFFF; --brand-ink: #0B2B26; --brand-text: var(--accent-text);
+  --brand-field: #F3ECDD; --brand-field-ink: #0B2B26;
+  --hl: var(--accent-text); --hl-ink: #0B2B26;
+  --ok: #6FD0A0; --ok-text: #6FD0A0; --ok-soft: rgba(111,208,160,.11); --ok-line: rgba(111,208,160,.36);
+  --warn: #D5B36F; --warn-text: #D5B36F; --warn-soft: rgba(213,179,111,.13); --warn-line: rgba(213,179,111,.40);
+  --risk: #FF9FAB; --risk-text: #FF9FAB; --risk-soft: rgba(255,159,171,.11); --risk-line: rgba(255,159,171,.38);
+  --owner-text: #C9B8F0; --owner-soft: rgba(201,184,240,.11); --owner-line: rgba(201,184,240,.34);
+  --focus: #D5B36F;
+  --sb-bg: var(--surface-page); --sb-text: var(--text); --sb-muted: var(--text-3); --sb-line: var(--line-3);
+  --sb-active-bg: var(--surface-sunken); --sb-active-text: var(--text); --sb-hover: var(--surface-sunken);
+  --chart-1: #7FB2E5; --chart-2: #6FD0A0; --chart-3: #D5B36F; --chart-4: #C9B8F0; --chart-5: #FF9FAB; --chart-6: #F3ECDD;
+  --chart-grid: rgba(243,236,221,.10); --chart-axis: #A9BDB6; --chart-down: #FF9FAB;
+  --tooltip-bg: #F3ECDD; --tooltip-text: #0B2B26; --scrim: rgba(4,16,13,.68);
+}
+/* ── Accent presets (Studio: Look & feel > Accent) ── */
+:root[data-accent="garnet"] { --accent-line: #8E1F2F; --accent-text: #8E1F2F; }
+:root[data-accent="emerald"] { --accent-line: #1F7A5C; --accent-text: #17634A; }
+:root[data-theme="dark"][data-accent="garnet"] { --accent-line: #FF9FAB; --accent-text: #FF9FAB; }
+:root[data-theme="dark"][data-accent="emerald"] { --accent-line: #6FD0A0; --accent-text: #6FD0A0; }
+
+/* ── Legacy names → semantic tokens (older rules keep working in every theme) ── */
+:root {
+  --bg: var(--surface-page); --bg1: var(--surface); --bg2: var(--surface-sunken); --bg3: var(--surface-hover);
+  --border0: var(--line-1); --border1: var(--line-2); --border2: var(--line-3); --border3: var(--line-4);
+  --t0: var(--text); --t1: var(--text-2); --t2: var(--text-3); --t3: var(--text-4);
+  --blue: var(--brand-text); --blue-d: var(--brand-soft); --blue-b: var(--brand-line);
+  --green: var(--ok); --green-d: var(--ok-soft); --green-b: var(--ok-line); --green-t: var(--ok-text);
+  --amber: var(--warn); --amber-d: var(--warn-soft); --amber-b: var(--warn-line); --amber-t: var(--warn-text);
+  --red: var(--risk); --red-d: var(--risk-soft); --red-b: var(--risk-line); --red-t: var(--risk-text);
+  --purple: var(--owner-text); --purple-d: var(--owner-soft); --purple-b: var(--owner-line);
+  --sans: var(--font-ui); --mono: var(--font-ui); --serif: var(--font-display);
+  --r: var(--radius-control); --r2: var(--radius-card);
+  --c-new: var(--chart-1); --c-exp: var(--chart-2); --c-react: var(--chart-3); --c-con: var(--chart-4); --c-churn: var(--chart-5);
+  --c2: var(--chart-6); --c-cash: var(--chart-2); --c-up: var(--chart-1); --c-down: var(--chart-down); --grid: var(--chart-grid);
+  --sidebar-w: 15rem;
+}
+/* ── Text size and the spacing scale ──
+   --ts multiplies every rem on the page: Normal 1 (the default: body 16 px, labels and table text 14 px, nothing under 13 px), Large 1.125,
+   Extra large 1.25 (Studio > Look & feel, or the "Aa" button). Spacing is one scale everywhere: 6, 12, 18, 30, 48 px.
+   Page scale (Studio > Look & feel) is 75 % by default: 90 % and 100 % zoom the whole page by 1.2 and 1.333. */
+:root { --ts: 1; --sp-1: 6px; --sp-2: 12px; --sp-3: 18px; --sp-4: 30px; --sp-5: 48px; }
+:root[data-text="large"] { --ts: 1.125; }
+:root[data-text="xlarge"] { --ts: 1.25; }
+:root[data-page="90"] { zoom: 1.2; }
+:root[data-page="100"] { zoom: 1.3333; }
+@media print { :root { zoom: 1 !important; } }
+/* Size of titles, of figures and of questions, each on top of the text size (Studio > Look & feel). */
+:root { --sz-t: 1; --sz-f: 1; --sz-q: 1; }
+:root[data-sz-t="small"] { --sz-t: .9; } :root[data-sz-t="large"] { --sz-t: 1.15; } :root[data-sz-t="xlarge"] { --sz-t: 1.3; }
+:root[data-sz-f="small"] { --sz-f: .9; } :root[data-sz-f="large"] { --sz-f: 1.15; } :root[data-sz-f="xlarge"] { --sz-f: 1.3; }
+:root[data-sz-q="small"] { --sz-q: .9; } :root[data-sz-q="large"] { --sz-q: 1.15; } :root[data-sz-q="xlarge"] { --sz-q: 1.3; }
+/* Corners: square (built in), softly rounded or round. */
+:root[data-corners="soft"] { --radius-control: 4px; --radius-card: 6px; --radius-sheet: 10px; }
+:root[data-corners="round"] { --radius-control: 10px; --radius-card: 14px; --radius-sheet: 20px; }
