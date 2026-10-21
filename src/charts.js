@@ -98,7 +98,7 @@ function chartFan(fan, which, opts = {}) {
   const xl = fan.map((_, t) => t % 6 === 0 ? `<text class="ax" x="${x(t)}" y="${H - 9}" text-anchor="middle">${t === 0 ? 'now' : '+' + t + 'm'}</text>` : '').join('');
   const inner = yAxis(ticks, y, L, W - R, axisMoney) + `<polygon points="${top.concat(bot).join(' ')}" class="fanband" style="fill:${opts.color || 'var(--c-new)'}"/>` + ref
     + `<path d="${med}" class="ln" style="stroke:${opts.color || 'var(--c-new)'}"/>` + xl + hits;
-  return svgFrame(W, H, inner, opts.label || 'Projection fan chart') + legend([{ c:opts.color || 'var(--c-new)', l:'Median path', line:true }, { c:'color-mix(in srgb, ' + (opts.color || 'var(--c-new)') + ' 25%, transparent)', l:'10th–90th percentile' }]);
+  return svgFrame(W, H, inner, opts.label || 'Projection fan chart') + legend([{ c:opts.color || 'var(--c-new)', l:'Median path', line:true }, { c:'color-mix(in srgb, ' + (opts.color || 'var(--c-new)') + ' 25%, transparent)', l:'10th to 90th percentile' }]);
 }
 
 /* Vertical bars (histogram / generic). */
@@ -189,5 +189,5 @@ function percentileHTML(rows) {
     return `<div class="prow"><div class="plbl">${esc(r.m.label)}<div class="field-hint">${esc(libFmt(r.m, r.v))}</div></div>
       <div class="ptrack">${has ? `<span class="pq" style="left:25%"></span><span class="pq mid" style="left:50%"></span><span class="pq" style="left:75%"></span>
         <span class="pdot" style="left:${clamp(r.pct, 0, 100)}%" data-tip="${tipAttr(`Better than ${Math.round(r.pct)}% of ${r.n} deals (${esc(r.scope)})<br>25th ${esc(libFmt(r.m, r.m.dir === 'lo' ? r.p75 : r.p25))} · median ${esc(libFmt(r.m, r.p50))} · 75th ${esc(libFmt(r.m, r.m.dir === 'lo' ? r.p25 : r.p75))}`)}"></span>` : `<span class="field-hint" style="position:absolute;left:8px;top:2px">needs 5+ comparable deals (have ${r.n})</span>`}</div>
-      <div class="pval m">${has ? Math.round(r.pct) + 'th' : '—'}</div></div>`; }).join('')}</div>`;
+      <div class="pval m">${has ? Math.round(r.pct) + 'th' : 'n/a'}</div></div>`; }).join('')}</div>`;
 }

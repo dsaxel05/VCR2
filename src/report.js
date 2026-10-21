@@ -6,7 +6,7 @@ let _rtab = 'overview';
 /* Text-safe colours (AA in every theme). Colour is never the only signal: a word goes with it. */
 const sColor = v => v == null ? 'var(--text-2)' : v >= sx('displayStrong') ? 'var(--ok-text)' : v >= sx('displayMixed') ? 'var(--warn-text)' : 'var(--risk-text)';
 const sWord = v => v == null ? null : v >= sx('displayStrong') ? ['strong', 'Strong'] : v >= sx('displayMixed') ? ['mixed', 'Mixed'] : ['weak', 'Weak'];
-const STATUS_ICON = { pass:'✓', info:'i', warn:'!', fail:'✕', na:'–' };
+const STATUS_ICON = { pass:'✓', info:'i', warn:'!', fail:'✕', na:'n/a' };
 const STATUS_LABEL = { pass:'pass', info:'note', warn:'flag', fail:'strong flag', na:'not applicable' };
 
 function renderResult(R) {
@@ -136,7 +136,7 @@ function bandHTML(sc) {
   const early = sc.coverage != null && sc.coverage * 100 < sx('earlyReadBelow');
   return `<div class="band-wrap">
     <div class="band-num" style="color:${sColor(sc.overall)}">${sc.overall}<small>/100</small><span class="band-word ${early ? 'mixed' : sWord(sc.overall)[0]}">${early ? 'Early read' : sWord(sc.overall)[1]}</span></div>
-    <div class="band-rng">likely range ${sc.band[0]}–${sc.band[1]} · ${sc.confidence} confidence<br>scoring weight covered ${Math.round(sc.coverage * 100)}% · evidence strength ${sc.evidence != null ? Math.round(sc.evidence * 100) + '%' : '—'}${early ? `<br><b>Only ${Math.round(sc.coverage * 100)}% of the scoring weight is covered: take this as a first read, not a verdict.</b>` : ''}</div>
+    <div class="band-rng">likely range ${sc.band[0]} to ${sc.band[1]} · ${sc.confidence} confidence<br>scoring weight covered ${Math.round(sc.coverage * 100)}% · evidence strength ${sc.evidence != null ? Math.round(sc.evidence * 100) + '%' : 'n/a'}${early ? `<br><b>Only ${Math.round(sc.coverage * 100)}% of the scoring weight is covered: take this as a first read, not a verdict.</b>` : ''}</div>
     <div class="band-track"><div class="band-fill" style="left:${sc.band[0]}%;width:${sc.band[1] - sc.band[0]}%"></div><div class="band-tick" style="left:${sc.overall}%"></div></div>
     <div class="band-scale"><span>0</span><span>${sx('displayMixed')}</span><span>${sx('displayStrong')}</span><span>100</span></div>
     ${dimStrip(sc)}
@@ -150,7 +150,7 @@ function dimStrip(sc) {
   const ds = sc.dimensions.filter(d => d.score != null);
   if (!ds.length) return '';
   return `<div class="dim-strip" role="list" aria-label="Dimension scores">${sc.dimensions.map(d => `<div class="dim-cell" role="listitem" data-dim="${esc(d.id)}" title="${esc(d.label)}: ${d.score == null ? 'not scored' : d.score + ' of 100'}">
-    <b>${d.score == null ? '–' : d.score}</b><span class="dim-bar"><i style="width:${d.score == null ? 0 : d.score}%"></i></span><em>${esc(dimShort(d.id))}</em></div>`).join('')}</div>`;
+    <b>${d.score == null ? 'n/a' : d.score}</b><span class="dim-bar"><i style="width:${d.score == null ? 0 : d.score}%"></i></span><em>${esc(dimShort(d.id))}</em></div>`).join('')}</div>`;
 }
 const tile = (label, value, sub, cls = '') => `<div class="kpi ${cls}"><div class="kpi-l">${esc(label)}</div><div class="kpi-v">${esc(value)}</div>${sub ? `<div class="kpi-s">${esc(sub)}</div>` : ''}</div>`;
 function patternCard(p) {
@@ -166,26 +166,26 @@ function paneOverview(R) {
   const sim = proj.sim;
   const tiles = [
     tile('ARR', money(gv('arr_now')), LED ? `ledger ${money(LED.arrNow)}` : null),
-    tile('Growth YoY', D.growth_yoy != null ? fmtPct(D.growth_yoy, 0) : '—', D.cmgr3 != null ? `${fmtPct(D.cmgr3)} / month lately` : null),
-    tile('Net revenue retention', D.nrr != null ? fmtPct(D.nrr) : '—', LED ? 'cohort basis, from ledger' : 'waterfall basis'),
-    tile('Burn multiple', D.burn_multiple != null ? dfmt('burn_multiple', D.burn_multiple) : '—', D.burn_multiple != null ? 'net burn ÷ net new ARR' : null),
-    tile('Runway', D.runway != null ? dfmt('runway', D.runway) : '—', D._cashOut ? 'cash-out ~' + monthLabel(D._cashOut) : null),
-    tile('Odds of next-stage bar', sim ? fmtProb(sim.pMilestone) : '—', sim ? `${money(sim.milestone)} ARR before cash-out` : proj.simPending ? 'simulating in the background…' : 'needs cash, burn and growth'),
-    tile('Entry multiple', deal && deal.entryMult != null ? fmtX(deal.entryMult) + ' ARR' : '—', deal ? `post-money ${money(deal.P)}` : 'no terms entered'),
-    tile('Evidence strength', sc.evidence != null ? Math.round(sc.evidence * 100) + '%' : '—', 'weight-averaged evidence of the scored metrics'),
+    tile('Growth YoY', D.growth_yoy != null ? fmtPct(D.growth_yoy, 0) : 'n/a', D.cmgr3 != null ? `${fmtPct(D.cmgr3)} / month lately` : null),
+    tile('Net revenue retention', D.nrr != null ? fmtPct(D.nrr) : 'n/a', LED ? 'cohort basis, from ledger' : 'waterfall basis'),
+    tile('Burn multiple', D.burn_multiple != null ? dfmt('burn_multiple', D.burn_multiple) : 'n/a', D.burn_multiple != null ? 'net burn ÷ net new ARR' : null),
+    tile('Runway', D.runway != null ? dfmt('runway', D.runway) : 'n/a', D._cashOut ? 'cash-out ~' + monthLabel(D._cashOut) : null),
+    tile('Odds of next-stage bar', sim ? fmtProb(sim.pMilestone) : 'n/a', sim ? `${money(sim.milestone)} ARR before cash-out` : proj.simPending ? 'simulating in the background…' : 'needs cash, burn and growth'),
+    tile('Entry multiple', deal && deal.entryMult != null ? fmtX(deal.entryMult) + ' ARR' : 'n/a', deal ? `post-money ${money(deal.P)}` : 'no terms entered'),
+    tile('Evidence strength', sc.evidence != null ? Math.round(sc.evidence * 100) + '%' : 'n/a', 'weight-averaged evidence of the scored metrics'),
   ];
   const reds = patterns.filter(p => p.sev === 'red'), ambers = patterns.filter(p => p.sev === 'amber'), greens = patterns.filter(p => p.sev === 'green');
   const wnt = sens && sens.path.length && sc.overall < 70 ? `<div class="block-title" style="margin-top:16px">What would need to be true for 70+</div>
     <div class="tbl-wrap"><table class="ledger"><thead><tr><th>Metric</th><th>Today</th><th>Needs to be</th><th style="text-align:right">Score after</th></tr></thead>
     <tbody>${sens.path.slice(0, 6).map(p => `<tr><td>${esc(p.label)}</td><td class="m">${esc(p.from)}</td><td class="m">${esc(p.to)}</td><td class="m" style="text-align:right">${Math.round(p.cum)}</td></tr>`).join('')}
       ${sens.path.length > 6 ? `<tr><td colspan="4" style="color:var(--t2)">…and ${sens.path.length - 6} more metric${sens.path.length - 6 === 1 ? '' : 's'} to reach ${Math.round(sens.path[sens.path.length - 1].cum)}</td></tr>` : ''}</tbody></table></div>
-    <p class="field-hint" style="margin-top:4px">${sens.reaches70 ? 'Moving these metrics to the “good” bar, in this order, lifts the score past 70.' : 'Even with these metrics at the “good” bar the score stays below 70 — the gap is spread across the whole profile.'}</p>` : '';
+    <p class="field-hint" style="margin-top:4px">${sens.reaches70 ? 'Moving these metrics to the “good” bar, in this order, lifts the score past 70.' : 'Even with these metrics at the “good” bar the score stays below 70, the gap is spread across the whole profile.'}</p>` : '';
   return `
     <div class="kpi-grid">${tiles.join('')}</div>
     ${R.opt && R.opt.significant ? `<div class="gate optim" style="margin-top:12px"><h3>Every discrepancy points the same way</h3><p style="font-size:0.875rem;color:var(--t1)">${R.opt.k} of the ${R.opt.n} discrepancies that have a direction flatter the company (chance under honest error ${fmtProb(R.opt.p)}).</p></div>` : ''}
     ${riskMapHTML(R.risk)}
     <div class="block-title" style="margin-top:16px">Pattern read-out <span class="field-group-hint">${reds.length} risk · ${ambers.length} watch · ${greens.length} strength</span></div>
-    ${patterns.length ? `<div class="pat-grid">${patterns.map(patternCard).join('')}</div>` : '<div class="suppressed">No compound patterns fired. Add more evidence — a customer ledger and monthly financials unlock most of them.</div>'}
+    ${patterns.length ? `<div class="pat-grid">${patterns.map(patternCard).join('')}</div>` : '<div class="suppressed">No compound patterns fired. Add more evidence: a customer ledger and monthly financials unlock most of them.</div>'}
     ${wnt}
     <div class="block-title" style="margin-top:16px">First five questions for the founders</div>
     <div class="qlist">${questions.slice(0, 5).map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>
@@ -220,7 +220,7 @@ function paneFindings(R) {
     ${!majors.length && !minors.length && !R.checks.length ? `<div class="suppressed">No stated figure could be compared yet: enter what the company states (the “What the company states” section) or load the customer ledger, and VCR2 checks each against the arithmetic.</div>` : ''}
     ${!majors.length && !minors.length && R.checks.length ? `<div class="suppressed">Every stated figure reconciles with the figure computed from the primitives${R.LED ? ' and the customer ledger' : ''}. That is a meaningful positive signal about how this company keeps its books.</div>` : ''}
     ${Object.keys(sc.suppressed).length ? `<div class="block-title" style="margin-top:15px">Metrics withheld at this scale</div>
-      ${Object.entries(sc.suppressed).map(([k, r]) => `<div class="suppressed"><b>${esc(DLABEL[k] || k)}</b> — ${esc(r)}.</div>`).join('')}` : ''}
+      ${Object.entries(sc.suppressed).map(([k, r]) => `<div class="suppressed"><b>${esc(DLABEL[k] || k)}</b>: ${esc(r)}.</div>`).join('')}` : ''}
     <div class="block-title" style="margin-top:15px">Documents to request</div>
     <div class="qlist">${requests.map((r, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(r)}</div></div>`).join('')}</div>`;
 }
@@ -232,7 +232,7 @@ function paneRevenue(R) {
     const line = SR && SR.revenue.filter(v => v != null).length >= 3
       ? `<div class="block-title">Monthly revenue (from monthly financials)</div>${chartLine(SR.months.map(m => monthLabel(m)), SR.revenue, { label:'Monthly revenue' })}` : '';
     return `${line}<div class="empty-card"><h3>Load the customer ledger to unlock this view</h3>
-      <p>Upload revenue by customer by month — any billing-system export works, wide or long. VCR2 rebuilds the MRR bridge, true cohort retention (not the waterfall approximation), concentration and nine forensic tests from it.</p>
+      <p>Upload revenue by customer by month: any billing-system export works, wide or long. VCR2 rebuilds the MRR bridge, true cohort retention (not the waterfall approximation), concentration and nine forensic tests from it.</p>
       <button class="btn btn-primary btn-sm" onclick="showPage('intake')">Add a ledger</button></div>`;
   }
   const cm = LED.cmgr3, top = LED.pareto.slice(0, 10);
@@ -241,13 +241,13 @@ function paneRevenue(R) {
   return `
     <div class="kpi-grid">
       ${tile('Ledger ARR', money(LED.arrNow), `${LED.customersNow} paying customers`)}
-      ${tile('Monthly growth', cm != null ? fmtPct(cm) : '—', `3-mo CMGR · 12-mo ${fmtPct(LED.cmgr12)}`)}
+      ${tile('Monthly growth', cm != null ? fmtPct(cm) : 'n/a', `3-mo CMGR · 12-mo ${fmtPct(LED.cmgr12)}`)}
       ${tile('Cohort NRR', fmtPct(LED.nrrCohort), LED.openingKnown === false ? 'not computable from under 24 months of invoices' : LED.window === 12 ? 'trailing 12 months' : `trailing ${LED.window} months`)}
       ${tile('Cohort GRR', fmtPct(LED.grrCohort), `logo retention ${fmtPct(LED.logoRet, 0)}`)}
       ${tile('Waterfall NRR', fmtPct(LED.nrrFlow), nrrGap != null ? `${fmtSigned(nrrGap, 1, ' pts')} vs cohort` : null, nrrGap > 5 ? 'warn' : '')}
       ${tile('Top-5 concentration', fmtPct(LED.top5, 0), `largest ${fmtPct(LED.top1, 0)} · HHI ${Math.round(LED.hhi)}`)}
     </div>
-    ${nrrGap != null && nrrGap > 2 ? `<div class="optbox" style="margin-top:9px">The waterfall formula gives ${fmtPct(LED.nrrFlow)} because it counts ${money(LED.expFromNew * 12)} of expansion ARR from customers who joined during the year. On a strict cohort basis — only customers who were already paying twelve months ago — retention is ${fmtPct(LED.nrrCohort)}. Most decks quote the first number.</div>` : ''}
+    ${nrrGap != null && nrrGap > 2 ? `<div class="optbox" style="margin-top:9px">The waterfall formula gives ${fmtPct(LED.nrrFlow)} because it counts ${money(LED.expFromNew * 12)} of expansion ARR from customers who joined during the year. On a strict cohort basis (only customers who were already paying twelve months ago) retention is ${fmtPct(LED.nrrCohort)}. Most decks quote the first number.</div>` : ''}
     <div class="block-title" style="margin-top:16px">MRR over time</div>
     ${chartLine(LED.months.map(m => monthLabel(m)), LED.mrr, { label:'Total MRR by month' })}
     <div class="block-title" style="margin-top:16px">MRR bridge by month</div>
@@ -255,7 +255,7 @@ function paneRevenue(R) {
     <div class="block-title" style="margin-top:16px">Cohort retention ${LED.quarterly ? '(quarterly cohorts, months since start)' : '(monthly cohorts)'}
       <span class="seg"><button class="seg-b active" onclick="cohortMode(this,'dollar')">Dollar</button><button class="seg-b" onclick="cohortMode(this,'logo')">Logo</button></span></div>
     <div id="cohort-hm">${cohortHeatmap(LED, 'dollar')}</div>
-    <p class="field-hint" style="margin-top:4px">Each cell is revenue (or logos) at that age as a share of the cohort's starting MRR. Faded cells are partial — not every customer in the cohort is that old yet. Customers already live in the first ledger month have no known start and are excluded.</p>
+    <p class="field-hint" style="margin-top:4px">Each cell is revenue (or logos) at that age as a share of the cohort's starting MRR. Faded cells are partial: not every customer in the cohort is that old yet. Customers already live in the first ledger month have no known start and are excluded.</p>
     ${ct ? `<div class="optbox ${ct.newer < ct.older - 8 ? 'bad' : ct.newer > ct.older + 5 ? 'good' : ''}" style="margin-top:8px"><b>Cohort quality.</b> At month ${ct.age}, older cohorts retain ${fmtPct(ct.older, 0)} of starting MRR and newer cohorts ${fmtPct(ct.newer, 0)} (${ct.n} cohorts compared${ct.slope != null ? `, trend ${fmtSigned(ct.slope, 1, ' pts per cohort')}` : ''}).</div>` : ''}
     <div class="block-title" style="margin-top:16px">Largest customers today</div>
     <div class="tbl-wrap"><table class="ledger"><thead><tr><th>#</th><th>Customer</th><th style="text-align:right">MRR</th><th style="text-align:right">Share</th><th style="text-align:right">Cumulative</th></tr></thead>
@@ -270,7 +270,7 @@ function cohortMode(btn, mode) {
 function paneForensics(R) {
   const LED = R.LED;
   const intro = `<p class="pg-desc" style="margin-bottom:10px">Tests an auditor would run on the revenue data. None of them is proof of anything; each tells you where to look, and each states its own limits.</p>`;
-  if (!LED) return intro + `<div class="empty-card"><h3>Forensics need the customer ledger</h3><p>The tests look at customer-level billing — spikes before a raise, one-off charges booked as recurring, duplicate logos, quarter-end pull-forward and the first-digit distribution. Load a ledger on the source material step.</p>
+  if (!LED) return intro + `<div class="empty-card"><h3>Forensics need the customer ledger</h3><p>The tests look at customer-level billing: spikes before a raise, one-off charges booked as recurring, duplicate logos, quarter-end pull-forward and the first-digit distribution. Load a ledger on the source material step.</p>
     <button class="btn btn-primary btn-sm" onclick="showPage('intake')">Add a ledger</button></div>`;
   const bf = (R.forensics.find(f => f.id === 'benford') || {}).bf;
   return intro + `<div class="fx-list">${R.forensics.map(f => `
@@ -279,7 +279,7 @@ function paneForensics(R) {
       <p>${esc(f.detail)}</p>
       <details><summary>Method and limits</summary><p><b>Method.</b> ${esc(f.method)}</p><p><b>Limits.</b> ${esc(f.caveat)}</p></details>
       ${f.ask ? `<div class="ask">${esc(f.ask)}</div>` : ''}
-      ${f.id === 'benford' && bf && bf.prop ? `<div style="margin-top:8px">${f.status === 'na' ? '<p class="field-hint" style="margin-bottom:4px">Shown for reference only — the test does not apply to this data.</p>' : ''}${chartBars(bf.prop.map((p, i) => ({ l:String(i + 1), v:p * 100, dot:BENFORD[i] * 100,
+      ${f.id === 'benford' && bf && bf.prop ? `<div style="margin-top:8px">${f.status === 'na' ? '<p class="field-hint" style="margin-bottom:4px">Shown for reference only, the test does not apply to this data.</p>' : ''}${chartBars(bf.prop.map((p, i) => ({ l:String(i + 1), v:p * 100, dot:BENFORD[i] * 100,
         tip:`Digit ${i + 1}: observed ${fmtPct(p * 100)} · Benford ${fmtPct(BENFORD[i] * 100)}` })), { h:180, fmt:v => v + '%', label:'Leading digit distribution' })}
         ${legend([{ c:'var(--c-new)', l:'Observed share' }, { c:'var(--t0)', l:'Benford expectation (dot)' }])}</div>` : ''}
     </div>`).join('')}</div>`;
@@ -311,7 +311,7 @@ function paneRunway(R) {
   if (!sim) return daCard + (proj.simPending ? `<div class="suppressed" role="status">Running ${A.paths.toLocaleString('en-US')} simulated paths in the background; this tab fills in when they finish.</div>` : '') + controls;
   const rw = sim.runway;
   return `${daCard}
-    <div class="block-title" style="margin-top:15px">Simulation — ${sim.N.toLocaleString('en-US')} paths over ${sim.H} months</div>
+    <div class="block-title" style="margin-top:15px">Simulation: ${sim.N.toLocaleString('en-US')} paths over ${sim.H} months</div>
     <div class="kpi-grid">
       ${tile('Reach the bar before cash-out', fmtProb(sim.pMilestone), `${money(sim.milestone)} ARR`, sim.pMilestone < pp('sim', 'low') / 100 ? 'bad' : sim.pMilestone > pp('sim', 'high') / 100 ? 'good' : 'warn')}
       ${tile('…with 6 months of runway left', fmtProb(sim.pFundable), 'a fundable position')}
@@ -329,9 +329,9 @@ function paneRunway(R) {
     <div class="block-title" style="margin-top:16px">Cash paths (no new money)</div>
     ${chartFan(sim.fan, 'c', { ref:0, refLabel:'zero cash', color:'var(--c-cash)', label:'Simulated cash' })}
     <div class="block-title" style="margin-top:16px">When the cash runs out</div>
-    ${chartBars(sim.hist.map(b => ({ l:b.survived ? `${sim.H}+` : `${b.lo}–${b.hi}`, v:b.n / sim.N * 100, c: b.survived ? 'var(--c-exp)' : 'var(--c-churn)',
-      tip:`${b.survived ? 'Still funded at month ' + sim.H : 'Cash-out in months ' + b.lo + '–' + b.hi}: ${fmtPct(b.n / sim.N * 100)} of paths` })), { fmt:v => v + '%', label:'Runway distribution', h:190 })}
-    <div class="block-title" style="margin-top:16px">Assumptions — edit and re-run</div>
+    ${chartBars(sim.hist.map(b => ({ l:b.survived ? `${sim.H}+` : `${b.lo} to ${b.hi}`, v:b.n / sim.N * 100, c: b.survived ? 'var(--c-exp)' : 'var(--c-churn)',
+      tip:`${b.survived ? 'Still funded at month ' + sim.H : 'Cash-out in months ' + b.lo + ' to ' + b.hi}: ${fmtPct(b.n / sim.N * 100)} of paths` })), { fmt:v => v + '%', label:'Runway distribution', h:190 })}
+    <div class="block-title" style="margin-top:16px">Assumptions: edit and re-run</div>
     ${controls}
     <p class="field-hint" style="margin-top:6px">Each month, growth = the starting rate × (1 − decay)^month + volatility × a random normal draw; expenses grow at their rate with noise. Cash-out is the first month cash goes below zero with no new money, even if revenue reached the bar earlier (reaching it makes a raise possible, not certain). The random stream is seeded from the run hash, so the same inputs give the same odds.</p>`;
 }
@@ -379,12 +379,12 @@ function paneDeal(R) {
   return `
     <div class="kpi-grid">
       ${tile('Post-money', money(X.P), `pre ${money(I.pre)} + ${money(I.round)}`)}
-      ${tile('Your ownership', X.ownEntry != null ? fmtPct(X.ownEntry * 100, 2) : '—', X.ownExit != null ? `${fmtPct(X.ownExit * 100, 2)} at exit after ${I.rounds} rounds` : 'enter your cheque')}
+      ${tile('Your ownership', X.ownEntry != null ? fmtPct(X.ownEntry * 100, 2) : 'n/a', X.ownExit != null ? `${fmtPct(X.ownExit * 100, 2)} at exit after ${I.rounds} rounds` : 'enter your cheque')}
       ${tile('Effective pre-money', money(X.effPre), `${fmtPct((1 - X.effPre / I.pre) * 100, 1)} below headline`, X.effPre < I.pre * 0.9 ? 'warn' : '')}
-      ${tile('Entry multiple', X.entryMult != null ? fmtX(X.entryMult) + ' ARR' : '—', X.growthAdj != null ? `${numv(X.growthAdj)} growth-adjusted` : null)}
-      ${tile('Exit to return the fund', X.fundReturner != null ? money(X.fundReturner) : '—', I.fund ? `fund ${money(I.fund)}` : 'enter your fund size')}
-      ${tile('ARR that exit requires', X.arrForFund != null ? money(X.arrForFund) : '—', X.tamShare != null ? `${ofMarket(X.tamShare, 'the bottom-up market')} at ${fmtX(I.exitMult)}` : `at ${fmtX(I.exitMult)} ARR`, X.tamShare > 30 ? 'bad' : X.tamShare > 10 ? 'warn' : X.tamShare != null ? 'good' : '')}
-      ${tile('Exit for 3x your cheque', X.threeX != null ? money(X.threeX) : '—', 'after dilution to exit')}
+      ${tile('Entry multiple', X.entryMult != null ? fmtX(X.entryMult) + ' ARR' : 'n/a', X.growthAdj != null ? `${numv(X.growthAdj)} growth-adjusted` : null)}
+      ${tile('Exit to return the fund', X.fundReturner != null ? money(X.fundReturner) : 'n/a', I.fund ? `fund ${money(I.fund)}` : 'enter your fund size')}
+      ${tile('ARR that exit requires', X.arrForFund != null ? money(X.arrForFund) : 'n/a', X.tamShare != null ? `${ofMarket(X.tamShare, 'the bottom-up market')} at ${fmtX(I.exitMult)}` : `at ${fmtX(I.exitMult)} ARR`, X.tamShare > 30 ? 'bad' : X.tamShare > 10 ? 'warn' : X.tamShare != null ? 'good' : '')}
+      ${tile('Exit for 3x your cheque', X.threeX != null ? money(X.threeX) : 'n/a', 'after dilution to exit')}
       ${tile('Ownership kept to exit', fmtPct(X.retain * 100, 0), `${I.rounds} rounds × ${I.dil}% dilution`)}
     </div>
     ${X.notes.length ? `<div class="optbox" style="margin-top:9px">${X.notes.map(esc).join('<br>')}</div>` : ''}
@@ -394,7 +394,7 @@ function paneDeal(R) {
     <div class="block-title" style="margin-top:16px">Who gets what at each exit value</div>
     ${chartPayoff(X.curve, [{ k:'us', l:'Your cheque', c:'var(--c-new)' }, { k:'common', l:'Founders & common', c:'var(--c2)' }, { k:'prior', l:'Prior investors', c:'var(--c-exp)' }], { marks, label:'Liquidation payoff by exit value' })}
     <div class="tbl-wrap" style="margin-top:9px"><table class="ledger"><thead><tr><th>Exit value</th><th style="text-align:right">Your proceeds</th><th style="text-align:right">Multiple</th><th style="text-align:right">Founders & common</th><th style="text-align:right">Prior investors</th>${X.I.debt ? '<th style="text-align:right">Debt</th>' : ''}</tr></thead>
-      <tbody>${X.table.map(t => `<tr><td class="m">${money(t.x)}${t.x === X.fundReturner ? ' <span class="pill">fund-returner</span>' : ''}</td><td class="m" style="text-align:right">${money(t.us)}</td><td class="m" style="text-align:right">${t.moic != null ? fmtX(t.moic, 2) : '—'}</td><td class="m" style="text-align:right">${money(t.common)}</td><td class="m" style="text-align:right">${money(t.prior)}</td>${X.I.debt ? `<td class="m" style="text-align:right">${money(t.debt)}</td>` : ''}</tr>`).join('')}</tbody></table></div>
+      <tbody>${X.table.map(t => `<tr><td class="m">${money(t.x)}${t.x === X.fundReturner ? ' <span class="pill">fund-returner</span>' : ''}</td><td class="m" style="text-align:right">${money(t.us)}</td><td class="m" style="text-align:right">${t.moic != null ? fmtX(t.moic, 2) : 'n/a'}</td><td class="m" style="text-align:right">${money(t.common)}</td><td class="m" style="text-align:right">${money(t.prior)}</td>${X.I.debt ? `<td class="m" style="text-align:right">${money(t.debt)}</td>` : ''}</tr>`).join('')}</tbody></table></div>
     <p class="field-hint" style="margin-top:6px">Conventions: pre-money includes SAFE and note conversion and any pool top-up; SAFEs convert as post-money SAFEs, notes on the pre-money with simple accrued interest, each at the lower of cap and discounted price; preferred series are pari passu and ${I.newPart || I.priorPart ? 'participating where flagged' + (I.newPartCap ? ` (this round capped at ${numv(I.newPartCap)}x)` : '') : 'non-participating'}, each choosing the better of its preference or converting; debt is paid first. Exit multiple, future rounds and dilution are your assumptions.</p>
     <div id="deal-returns">${returnsHTML(X)}</div>
     <div id="deal-terms">${termsHTML(X)}</div>`;
@@ -411,26 +411,26 @@ function termsHTML(X) {
 function returnsHTML(X) {
   const Rt = X.returns;
   if (!Rt) return '';
-  if (Rt.missing) return `<div class="block-title" style="margin-top:20px">Returns — VC Method and First Chicago</div>
+  if (Rt.missing) return `<div class="block-title" style="margin-top:20px">Returns: VC Method and First Chicago</div>
     <div class="empty-card"><h3>An exit case is needed</h3><p>Enter today’s ARR and its growth, or a base-case ARR at exit in Exit scenarios, to compute the return this price produces.</p>
     ${(() => { const ei = SECTIONS.findIndex(s => s.id === 'exits'); return ei >= 0 && !sectionHidden(SECTIONS[ei]) ? `<button class="btn btn-ghost btn-sm" onclick="jumpTo(${ei})">Open Exit scenarios</button>` : ''; })()}</div>`;
   const who = Rt.who === 'us' ? 'your cheque' : 'the round as a whole';
   const nm = { downside:'Downside', base:'Base', upside:'Upside' };
   const cls = v => v == null ? '' : v >= Rt.r ? 'good' : v >= Rt.r * 0.6 ? 'warn' : 'bad';
   const vs = d => d >= 0 ? `${fmtPct(d * 100, 0)} above the ${money(X.P)} offered` : `${fmtPct(-d * 100, 0)} below the ${money(X.P)} offered`;
-  return `<div class="block-title" style="margin-top:20px">Returns — VC Method and First Chicago <span class="field-group-hint">for ${who}</span></div>
+  return `<div class="block-title" style="margin-top:20px">Returns: VC Method and First Chicago <span class="field-group-hint">for ${who}</span></div>
     <div class="kpi-grid">
       ${tile('Success (upside) case', fmtX(Rt.cases[2].moic, 1), `${fmtPct(Rt.cases[2].irr, 0)} IRR against a ${fmtPct(Rt.r, 0)} target`, cls(Rt.cases[2].irr))}
       ${tile('Base case', fmtX(Rt.cases[1].moic, 1), `${fmtPct(Rt.cases[1].irr, 0)} IRR over ${Rt.years} years`)}
       ${tile('Probability-weighted', fmtX(Rt.expMoic, 1), `${fmtPct(Rt.expIrr, 0)} IRR implied`)}
-      ${tile('Exit needed for the target', Rt.exitForTarget != null ? money(Rt.exitForTarget) : '—', `${fmtPct(Rt.r, 0)} a year for ${Rt.years} years`)}
+      ${tile('Exit needed for the target', Rt.exitForTarget != null ? money(Rt.exitForTarget) : 'n/a', `${fmtPct(Rt.r, 0)} a year for ${Rt.years} years`)}
       ${tile('VC Method post-money', money(Rt.justifiedPost), `success case at ${fmtPct(Rt.r, 0)} · ${vs(Rt.priceVsVc)}`, Rt.priceVsVc < -0.25 ? 'bad' : Rt.priceVsVc < 0 ? 'warn' : 'good')}
       ${tile('First Chicago post-money', money(Rt.fcPost), `probability-weighted at ${fmtPct(Rt.fc, 0)} · ${vs(Rt.priceVsFc)}`, Rt.priceVsFc < -0.25 ? 'bad' : Rt.priceVsFc < 0 ? 'warn' : 'good')}
     </div>
     <div class="tbl-wrap" style="margin-top:9px"><table class="ledger"><thead><tr><th>Case</th><th style="text-align:right">Probability</th><th style="text-align:right">ARR at exit</th><th style="text-align:right">Exit value</th><th style="text-align:right">Proceeds</th><th style="text-align:right">Multiple</th><th style="text-align:right">IRR</th></tr></thead>
-      <tbody>${Rt.cases.map(c => `<tr><td>${nm[c.name]}${c.estimated ? ' <span class="pill">estimate</span>' : ''}</td><td class="m" style="text-align:right">${fmtPct(c.prob * 100, 0)}</td><td class="m" style="text-align:right">${c.arr != null ? money(c.arr) : '—'}</td><td class="m" style="text-align:right">${money(c.ev)}</td><td class="m" style="text-align:right">${money(c.proceeds)}</td><td class="m" style="text-align:right">${c.moic != null ? fmtX(c.moic, 2) : '—'}</td><td class="m" style="text-align:right">${c.irr != null ? fmtPct(c.irr, 0) : '—'}</td></tr>`).join('')}
+      <tbody>${Rt.cases.map(c => `<tr><td>${nm[c.name]}${c.estimated ? ' <span class="pill">estimate</span>' : ''}</td><td class="m" style="text-align:right">${fmtPct(c.prob * 100, 0)}</td><td class="m" style="text-align:right">${c.arr != null ? money(c.arr) : 'n/a'}</td><td class="m" style="text-align:right">${money(c.ev)}</td><td class="m" style="text-align:right">${money(c.proceeds)}</td><td class="m" style="text-align:right">${c.moic != null ? fmtX(c.moic, 2) : 'n/a'}</td><td class="m" style="text-align:right">${c.irr != null ? fmtPct(c.irr, 0) : 'n/a'}</td></tr>`).join('')}
       <tr class="tot"><td>Probability-weighted</td><td class="m" style="text-align:right">100%</td><td></td><td class="m" style="text-align:right">${money(Rt.expEv)}</td><td></td><td class="m" style="text-align:right">${fmtX(Rt.expMoic, 2)}</td><td class="m" style="text-align:right">${fmtPct(Rt.expIrr, 0)}</td></tr></tbody></table></div>
-    <p class="field-hint" style="margin-top:4px">Base and upside use your ownership after ${X.I.rounds} further rounds at ${X.I.dil}% dilution, as converted, at ${fmtX(X.I.exitMult)} ARR. The downside runs through the entry waterfall, where the preference does its work, over ${Rt.cases[0].years} years. ${Rt.estimated.length ? `Estimated (edit in Exit scenarios): ${Rt.estimated.join(', ')}${Rt.estimated.includes('base') ? ` — today’s ARR grown from ${fmtPct(Rt.growthUsed, 0)} a year, with growth decaying ${Math.round((1 - EXIT_DEFAULTS.keepBase) * 100)}% a year (${Math.round((1 - EXIT_DEFAULTS.keepUp) * 100)}% in the upside)` : ''}. ` : ''}${Rt.probsPartial ? 'Probabilities left blank take the stage defaults, and all three are rescaled to 100%. ' : ''}${Rt.probsEstimated ? `Probabilities are the ${esc(STAGES.find(s => s.id === S.stage).n)} defaults (${Rt.cases.map(c => fmtPct(c.prob * 100, 0)).join(' / ')}), which lean on the downside as venture outcomes do. ` : ''}The VC Method discounts the success-case exit at the target return, which is high because it carries the risk of failure; the First Chicago Method weights the three cases by probability and discounts them at a lower rate (${fmtPct(Rt.fc, 0)}).</p>`;
+    <p class="field-hint" style="margin-top:4px">Base and upside use your ownership after ${X.I.rounds} further rounds at ${X.I.dil}% dilution, as converted, at ${fmtX(X.I.exitMult)} ARR. The downside runs through the entry waterfall, where the preference does its work, over ${Rt.cases[0].years} years. ${Rt.estimated.length ? `Estimated (edit in Exit scenarios): ${Rt.estimated.join(', ')}${Rt.estimated.includes('base') ? `: today’s ARR grown from ${fmtPct(Rt.growthUsed, 0)} a year, with growth decaying ${Math.round((1 - EXIT_DEFAULTS.keepBase) * 100)}% a year (${Math.round((1 - EXIT_DEFAULTS.keepUp) * 100)}% in the upside)` : ''}. ` : ''}${Rt.probsPartial ? 'Probabilities left blank take the stage defaults, and all three are rescaled to 100%. ' : ''}${Rt.probsEstimated ? `Probabilities are the ${esc(STAGES.find(s => s.id === S.stage).n)} defaults (${Rt.cases.map(c => fmtPct(c.prob * 100, 0)).join(' / ')}), which lean on the downside as venture outcomes do. ` : ''}The VC Method discounts the success-case exit at the target return, which is high because it carries the risk of failure; the First Chicago Method weights the three cases by probability and discounts them at a lower rate (${fmtPct(Rt.fc, 0)}).</p>`;
 }
 
 /* ── Published benchmarks: reference data the owner adds in the Studio ── */
@@ -453,7 +453,7 @@ function benchRows(R) {
 function publishedBenchHTML(R) {
   const rows = benchRows(R);
   if (!rows.length) return '';
-  const f = (k, v) => v == null ? '—' : DUNIT[k] ? dfmt(k, v) : String(Math.round(v * 100) / 100);
+  const f = (k, v) => v == null ? 'n/a' : DUNIT[k] ? dfmt(k, v) : String(Math.round(v * 100) / 100);
   return `<div class="block-title">Published benchmarks <span class="field-group-hint">reference data added by the owner of this site</span></div>
     ${detailBtn()}
     <div class="tbl-wrap" style="margin-bottom:16px"><table class="ledger"><thead><tr><th>Metric</th><th style="text-align:right">This company</th><th class="col-d" style="text-align:right">25th pct</th><th style="text-align:right">Median</th><th class="col-d" style="text-align:right">75th pct</th><th>Where it sits</th><th>Source</th></tr></thead><tbody>
@@ -473,7 +473,7 @@ function paneBench(R) {
   const body = B.total < 5 ? `<div class="empty-card"><h3>Your library is still small</h3><p>Save runs to the library, import comparables from CSV, or paste them in any format and let a model structure them. At five comparable deals the percentiles switch on; at ${CAL_MIN} per stage you can calibrate the rubric on your own data.</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="saveRunToLibrary()">Save this run</button><button class="btn btn-ghost btn-sm" onclick="goLibrary()">Open the library</button></div></div>`
     : percentileHTML(B.rows) + (ranked.length ? '' : '<p class="field-hint">No metric has five comparable deals yet.</p>');
-  const fmtField = (k, v) => { if (v == null) return '—'; const f = ALL_FIELDS().find(x => x.id === k) || {};
+  const fmtField = (k, v) => { if (v == null) return 'n/a'; const f = ALL_FIELDS().find(x => x.id === k) || {};
     return f.unit === '$' ? money(v) : f.unit === '%' ? fmtPct(v) : f.unit === 'months' ? fmtMo(v) : f.unit === 'x' ? fmtX(v, 2) : String(Math.round(v * 100) / 100); };
   let dr = '';
   if (drift) {
@@ -518,7 +518,7 @@ function paneScoring(R) {
   const dimRows = sc.dimensions.map(d => `
     <tr><td>${esc(d.label)}${d.notes.length ? `<div style="font-size:.8125rem;color:var(--t2);margin-top:3px">${d.notes.map(n => (n.good ? '+ ' : '− ') + esc(n.note)).join('<br>')}</div>` : ''}</td>
       <td class="n">${(d.weight * 100).toFixed(0)}%</td><td class="n">${Math.round(d.coverage * 100)}%</td>
-      <td class="n" style="color:${sColor(d.score)}">${d.score == null ? '—' : d.score}</td>
+      <td class="n" style="color:${sColor(d.score)}">${d.score == null ? 'n/a' : d.score}</td>
       <td style="width:110px"><div class="minibar"><i style="width:${d.score || 0}%;background:${sColor(d.score)}"></i></div></td></tr>`).join('');
   return `
     <p class="pg-desc" style="margin-bottom:10px">Weights are set by stage, not by how many fields happened to be filled. Coverage and evidence strength are shown separately from the score so a thin or unverified dimension cannot masquerade as a confident one.${sc.gates.length ? ' A gate is open, so the headline score is withheld; the dimension scores are shown for diagnosis.' : ''}</p>
@@ -563,7 +563,7 @@ function paneMetrics(R) {
   const { D, F, sc } = R;
   const metricRows = sc.dimensions.flatMap(d => d.metrics.map(m => `
     <tr class="${m.suppressed ? 'warn' : ''}"><td>${esc(m.label)}${m.calibrated ? ' <span class="pill">calibrated</span>' : ''}${/your standard/.test(m.bench || '') ? ' <span class="pill">your standard</span>' : ''}</td><td class="m">${esc(m.value)}</td>
-      <td class="m col-d" style="color:var(--t2)">${esc(m.bench || '—')}${m.note ? ` <span class="pill" data-tip="${tipAttr(esc(m.note))}">why</span>` : ''}</td>
+      <td class="m col-d" style="color:var(--t2)">${esc(m.bench || 'n/a')}${m.note ? ` <span class="pill" data-tip="${tipAttr(esc(m.note))}">why</span>` : ''}</td>
       <td class="n" style="color:${m.score == null ? 'var(--t2)' : sColor(m.score)}">${m.score == null ? 'not scored' : m.score}${m.rawScore != null && m.rawScore !== m.score ? `<div class="was" title="Before the evidence adjustment">from ${m.rawScore}</div>` : ''}${m.contested ? `<div class="pill contested" title="${esc(m.contested.join('; '))}">contested</div>` : ''}</td>
       <td class="m col-d" style="color:var(--t2)">${m.evidence != null ? Math.round(m.evidence * 100) + '%' : ''}</td>
       <td class="col-d" style="color:var(--t2)">${esc(m.suppressed || DIM_LABEL[d.id])}</td></tr>`)).join('');

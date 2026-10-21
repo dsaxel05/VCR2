@@ -62,7 +62,7 @@ function updateProviderUI() {
   mod.placeholder = p.needsKey ? `Model (default ${p.model})` : '';
   $id('memo-toggle').parentNode.style.display = p.needsKey ? '' : 'none';
   $id('api-hint').textContent = p.needsKey
-    ? `Key stored in this browser only and sent only to ${p.name}. Used for extraction, AI import and the memo draft — never for scoring. Get one at ${p.hint}. Use a restricted, low-spend key.`
+    ? `Key stored in this browser only and sent only to ${p.name}. Used for extraction, AI import and the memo draft, never for scoring. Get one at ${p.hint}. Use a restricted, low-spend key.`
     : p.hint;
   updateKeyStatus(inp.value.trim());
   const ai = document.querySelector('.sb-ai'); if (ai && p.needsKey) ai.open = true;   /* a chosen provider keeps its settings in view */
@@ -120,7 +120,7 @@ function renderIntakeStatus() {
     else {
       const L = ledgerAnalytics(S.ledger), P = ledgerPrimitives(L);
       const conflicts = Object.keys(P).filter(k => gv(k) != null && S.prov[k]?.src !== 'ledger');
-      ls.innerHTML = bad('Ledger', S._ledgerError) + `<div class="file-ok"><b>✓ ${S.ledger.customers.length} customers × ${L.months.length} months</b> · ${monthLabel(L.months[0])} – ${monthLabel(L.months[L.e])}
+      ls.innerHTML = bad('Ledger', S._ledgerError) + `<div class="file-ok"><b>✓ ${S.ledger.customers.length} customers × ${L.months.length} months</b> · ${monthLabel(L.months[0])} to ${monthLabel(L.months[L.e])}
         <div class="field-hint">Ledger ARR ${money(L.arrNow)} · cohort NRR ${fmtPct(L.nrrCohort)} · GRR ${fmtPct(L.grrCohort)} · top-5 ${fmtPct(L.top5, 0)}${L.openingKnown === false ? ' · invoices cover under 24 months, so ARR a year ago, growth and retention are not computed from this file (24+ months of invoices are needed)' : L.window < 12 ? ` · a ${L.window}-month look-back (13+ months of data are needed for the 12-month fields)` : ''}</div>
         ${(S._ledgerWarnings || []).map(w => `<div class="field-hint" style="color:var(--amber-t)">${esc(w)}</div>`).join('')}
         <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
@@ -133,7 +133,7 @@ function renderIntakeStatus() {
     if (!S.series) ss.innerHTML = bad('Financials', S._seriesError);
     else {
       const s = S.series, cols = ['revenue','cash','burn','expenses','headcount'].filter(k => s[k].some(v => v != null));
-      ss.innerHTML = bad('Financials', S._seriesError) + `<div class="file-ok"><b>✓ ${s.months.length} months</b> · ${monthLabel(s.months[0])} – ${monthLabel(s.months[s.months.length - 1])}
+      ss.innerHTML = bad('Financials', S._seriesError) + `<div class="file-ok"><b>✓ ${s.months.length} months</b> · ${monthLabel(s.months[0])} to ${monthLabel(s.months[s.months.length - 1])}
         <div class="field-hint">Columns: ${cols.join(', ') || 'none recognised'}</div>
         ${(S._seriesWarnings || []).map(w => `<div class="field-hint" style="color:var(--amber-t)">${esc(w)}</div>`).join('')}
         <div style="display:flex;gap:4px;margin-top:6px"><button class="btn btn-ghost btn-sm" onclick="S.series=null;saveDraft();renderIntakeStatus();updateProgress()">Remove</button></div></div>`;
@@ -168,7 +168,7 @@ updateProgress = function () {
   const fv = $id('files-val');
   if (fv) {
     const parts = [S.ledger ? 'ledger' : null, S.series ? 'financials' : null].filter(Boolean);
-    fv.textContent = parts.length ? parts.join(' + ') : '—';
+    fv.textContent = parts.length ? parts.join(' + ') : 'n/a';
     fv.style.color = parts.length ? 'var(--green)' : '';
   }
   const lc = $id('lib-count'); if (lc) lc.textContent = libLoad().length;

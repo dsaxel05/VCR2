@@ -32,7 +32,7 @@ function renderTextEditBanner() {
   if (!textEditActive()) { if (el) el.remove(); document.body.classList.remove('te-on'); return; }
   if (!el) { el = document.createElement('div'); el.id = 'te-banner'; el.className = 'preview-banner te-banner'; el.setAttribute('data-no-text-edit', ''); document.body.appendChild(el); }
   document.body.classList.add('te-on');
-  el.innerHTML = `Text edit mode — click any text on the page to change it. <a href="#studio" onclick="stopTextEdit();goStudio();return false">Back to the Studio</a> · <a href="#" onclick="stopTextEdit();return false">Leave edit mode</a>`;
+  el.innerHTML = `Text edit mode: click any text on the page to change it. <a href="#studio" onclick="stopTextEdit();goStudio();return false">Back to the Studio</a> · <a href="#" onclick="stopTextEdit();return false">Leave edit mode</a>`;
 }
 function textNodeAt(x, y) {
   let n = null;
@@ -160,7 +160,7 @@ function newSlug(label, taken, prefix) {
 }
 function paneStDimensions() {
   const L = ST.draft.dimensions, add = `<button class="btn btn-primary btn-sm" onclick="editItem('dimensions',-1)">Add a scoring dimension</button>`;
-  return `<p class="pg-desc">VCR2 scores six dimensions: revenue, capital, go-to-market, team, market and governance. Add another — regulatory risk, customer concentration, ESG — then put metrics in it (the “Dimension” box of a metric) and set its weight under <a href="#" onclick="studioTab('scoring');return false">Weights &amp; rules</a>. It starts at about a tenth of the headline score. Up to four.</p>
+  return `<p class="pg-desc">VCR2 scores six dimensions: revenue, capital, go-to-market, team, market and governance. Add another (regulatory risk, customer concentration, ESG) then put metrics in it (the “Dimension” box of a metric) and set its weight under <a href="#" onclick="studioTab('scoring');return false">Weights &amp; rules</a>. It starts at about a tenth of the headline score. Up to four.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Dimension</th><th>Description</th><th>Name in formulas</th><th></th></tr></thead><tbody>
       ${L.map((d, i) => `<tr><td>${esc(d.label)}</td><td style="color:var(--t2)">${esc(d.desc)}</td><td class="m">${esc(d.id)}</td>${rowActions('dimensions', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('scoring dimensions of your own', add)}`;
 }
@@ -182,7 +182,7 @@ function paneStStages() {
     <div class="block-title">Names of the built-in stages</div>${names}
     <div class="block-title" style="margin-top:14px">Stages you added</div>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Stage</th><th>ARR range</th><th>Scored like</th><th></th></tr></thead><tbody>
-      ${L.map((s, i) => `<tr><td>${esc(s.name)}</td><td class="m">${s.lo || s.hi ? esc((s.lo ? money(s.lo) : '0') + ' – ' + (s.hi ? money(s.hi) : 'and above')) : '—'}</td><td>${esc(BASE.stageName[s.like])}</td>${rowActions('stages', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('stages of your own', add)}`;
+      ${L.map((s, i) => `<tr><td>${esc(s.name)}</td><td class="m">${s.lo || s.hi ? esc((s.lo ? money(s.lo) : '0') + ' to ' + (s.hi ? money(s.hi) : 'and above')) : 'n/a'}</td><td>${esc(BASE.stageName[s.like])}</td>${rowActions('stages', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('stages of your own', add)}`;
 }
 function setStageName(st, v) {
   ST.draft.labels.stages = ST.draft.labels.stages || {};

@@ -52,7 +52,7 @@ async def main():
         await pg.evaluate("() => copyChecklistRequest()")
         # memo and markdown
         memo = await pg.evaluate("() => memoHTML(S.result)")
-        check('memo: risks, returns, terms, checklist', all(x in memo for x in ['Risks by type', 'Returns — VC Method and First Chicago', 'Diligence checklist', 'Issues found']), [x for x in ['Risks by type','Returns — VC Method and First Chicago','Diligence checklist','Issues found'] if x not in memo])
+        check('memo: risks, returns, terms, checklist', all(x in memo for x in ['Risks by type', 'Returns: VC Method and First Chicago', 'Diligence checklist', 'Issues found']), [x for x in ['Risks by type','Returns: VC Method and First Chicago','Diligence checklist','Issues found'] if x not in memo])
         async with pg.expect_download() as dlw:
             await pg.evaluate("() => downloadReport()")
         md = open(await (await dlw.value).path()).read()

@@ -496,11 +496,11 @@ const UNIT_MAP = { '$':'$', '%':'%', 'x':'x', 'months':'mo', 'mo':'mo', 'pts':'p
 function applyConfig(cfg) {
   try { applyConfigUnsafe(normalizeConfig(cfg || effectiveConfig())); }
   catch (e) {
-    if (typeof console !== 'undefined') console.warn('VCR2: configuration ignored —', e && e.message);
+    if (typeof console !== 'undefined') console.warn('VCR2: configuration ignored:', e && e.message);
     applyConfigUnsafe(EMPTY_CONFIG());
   }
   if (typeof applyLook === 'function') applyLook();
-  if (typeof txRefresh === 'function') { try { txRefresh(); } catch (e) { if (typeof console !== 'undefined') console.warn('VCR2: text replacements not applied —', e && e.message); } }
+  if (typeof txRefresh === 'function') { try { txRefresh(); } catch (e) { if (typeof console !== 'undefined') console.warn('VCR2: text replacements not applied:', e && e.message); } }
 }
 function applyConfigUnsafe(cfg) {
   CFG = cfg;
@@ -607,7 +607,7 @@ function applyStages() {
   ['preseed','seed','a','b'].forEach((st, i) => { STAGES[i].hidden = cfgHidden('stages', st); STAGES[i].n = (CFG.labels.stages && typeof CFG.labels.stages[st] === 'string' && CFG.labels.stages[st].trim()) ? CFG.labels.stages[st].trim() : BASE.stageName[st]; });
   Object.keys(STAGE_RANGE).forEach(k => { if (!['preseed','seed','a','b'].includes(k)) delete STAGE_RANGE[k]; });
   CFG.stages.forEach(s => {
-    const t = s.lo && s.hi ? `${money(s.lo)} – ${money(s.hi)} ARR` : s.hi ? `< ${money(s.hi)} ARR` : s.lo ? `${money(s.lo)}+ ARR` : (s.desc || 'Added in the Studio');
+    const t = s.lo && s.hi ? `${money(s.lo)} to ${money(s.hi)} ARR` : s.hi ? `< ${money(s.hi)} ARR` : s.lo ? `${money(s.lo)}+ ARR` : (s.desc || 'Added in the Studio');
     STAGES.push({ id:s.id, n:s.name, s:s.desc || t, custom:true, like:s.like });
     STAGE_RANGE[s.id] = { lo:s.lo != null ? s.lo : STAGE_RANGE[s.like].lo, hi:s.hi != null ? s.hi : STAGE_RANGE[s.like].hi };
   });
@@ -644,7 +644,7 @@ function applyDefaults() {
     STAGE_RANGE[st] = Object.assign({}, BASE.stageRange[st], (d.stageRange && d.stageRange[st]) || {});
     const r = STAGE_RANGE[st], changed = d.stageRange && d.stageRange[st];
     if (r.lo != null && r.hi != null && r.lo > r.hi) STAGE_RANGE[st] = Object.assign({}, BASE.stageRange[st]);   /* inconsistent: keep the built-in range */
-    STAGES[i].s = !changed ? BASE.stageText[i] : r.lo && r.hi ? `${money(r.lo)} – ${money(r.hi)} ARR` : r.hi ? `< ${money(r.hi)} ARR` : r.lo ? `${money(r.lo)}+ ARR` : BASE.stageText[i];
+    STAGES[i].s = !changed ? BASE.stageText[i] : r.lo && r.hi ? `${money(r.lo)} to ${money(r.hi)} ARR` : r.hi ? `< ${money(r.hi)} ARR` : r.lo ? `${money(r.lo)}+ ARR` : BASE.stageText[i];
   });
   EVIDENCE.forEach((e, i) => { const k = e.id === '' ? 'unverified' : e.id; e.w = d.evidence && d.evidence[k] != null ? d.evidence[k] : BASE.evidence[i];
     const l = CFG.labels.evidence && CFG.labels.evidence[k]; e.label = (typeof l === 'string' && l.trim()) ? l.trim() : BASE.evlabel[i]; });
@@ -653,10 +653,10 @@ function applyDefaults() {
   const pc = x => Math.round((1 - x) * 100);
   const H = {
     years_to_exit:`Defaults by stage: ${byStage(ex.years)}.`,
-    target_irr:`The VC Method’s discount rate, applied to the success (upside) case. It is high because it carries the risk of failure; early-stage investors typically use 40–60%. Defaults by stage: ${byStage(ex.irr).replace(/(\d+) /g, '$1% ')}.`,
+    target_irr:`The VC Method’s discount rate, applied to the success (upside) case. It is high because it carries the risk of failure; early-stage investors typically use 40 to 60%. Defaults by stage: ${byStage(ex.irr).replace(/(\d+) /g, '$1% ')}.`,
     fc_rate:`First Chicago Method. The downside case already carries the failure risk, so the rate is lower. Default ${ex.fcRate}%.`,
     exit_arr_base:`Blank = today’s ARR grown at today’s growth rate, decaying ${pc(ex.keepBase)}% a year.`,
-    exit_arr_up:`Blank = the same path with growth decaying ${pc(ex.keepUp)}% a year — the “if it works” case.`,
+    exit_arr_up:`Blank = the same path with growth decaying ${pc(ex.keepUp)}% a year, the “if it works” case.`,
     exit_value_down:`Blank = a sale at ${ex.downMultiple}× today’s ARR. Enter 0 for a wind-down.`,
     exit_multiple_assumption:`Your assumption, not a market fact. Turns an exit value into the ARR it requires. Blank = ${dl.exit_multiple}×.`,
     future_rounds:`Blank = ${byStage(dl.future_rounds)}.`,
@@ -768,7 +768,7 @@ function cfgDerive(D, F) {
   const own = Object.entries(CFG.formulas || {}).filter(([k, f]) => k in BASE.dlabel && f && !cfgHidden('metrics', k)).map(([k, f]) => ({ key:k, formula:f }));
   const done = evalCustomMetrics(D, own.concat(CFG.metrics.filter(m => !k_builtin(m.key))));
   own.forEach(m => { if (done.has(m.key)) F[m.key] = 'Your formula: ' + m.formula; else { delete D[m.key]; delete F[m.key]; } });
-  CFG.metrics.forEach(m => { if (done.has(m.key)) F[m.key] = (m.description ? m.description + ' — ' : '') + m.formula; });
+  CFG.metrics.forEach(m => { if (done.has(m.key)) F[m.key] = (m.description ? m.description + ': ' : '') + m.formula; });
 }
 /* The built-in business model a model behaves like: itself, or the one an owner-added model starts from. */
 function modelKey(id) {
@@ -868,7 +868,7 @@ const BUILTIN = {
     ['no_tech_founder','No technical founder'],['finance_hygiene','Finance and tax hygiene'],['why_now','No “why now”']],
   questions:[['gates','Gates'],['contradictions','Material contradictions'],['risk_patterns','Risk patterns'],['forensics','Forensic signals'],['inconsistencies','Minor inconsistencies'],
     ['watch_patterns','Watch patterns'],['missing_inputs','Missing required inputs'],['not_measurable','Not yet measurable'],['weak_dimensions','Weak dimensions'],['thin_evidence','Thin evidence'],
-    ['unverified_inputs','Unverified inputs'],['confirm_calls','Confirmatory — customer calls'],['confirm_funds','Confirmatory — use of funds']],
+    ['unverified_inputs','Unverified inputs'],['confirm_calls','Confirmatory: customer calls'],['confirm_funds','Confirmatory: use of funds']],
   requests:[['ledger_request','Customer ledger'],['ledger_tieout','Ledger tie-out to invoices'],['series_request','Monthly management accounts'],['cohort_table','Cohort table'],
     ['top20','Top 20 customers'],['ip_agreements','IP assignment agreements'],['cap_table','Cap table'],['sm_split','S&M split'],['qoe','Reviewed statements / QoE'],
     ['deferred_rollforward','Deferred revenue roll-forward'],['aged_ar','Aged receivables'],['soc2','SOC 2 report'],['workings','Supporting workings for contradictions'],

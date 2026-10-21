@@ -29,7 +29,7 @@
 
 - Use a restricted, low-spend API key created just for this tool.
 - Do not paste confidential or regulated material into a provider you have not cleared for it.
-- Leave the AI provider on "Deterministic only" when you only need the analysis — nothing leaves the browser.
+- Leave the AI provider on "Deterministic only" when you only need the analysis, nothing leaves the browser.
 - Export the library as a JSON backup; browser storage can be cleared.
 - Owner: give the Studio token an expiry, limit it to this one repository, and don't tick “Keep me signed in” on a shared computer. Revoke it at github.com/settings/personal-access-tokens if it is ever exposed.
 

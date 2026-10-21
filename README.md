@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.0" src="https://img.shields.io/badge/version-5.0.0-0e3b34?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.0.1" src="https://img.shields.io/badge/version-5.0.1-0e3b34?style=flat-square"></a>
   <a href="https://dsaxel05.github.io/VCR2/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
@@ -96,6 +96,8 @@ Full history in the [changelog](CHANGELOG.md).
 2. **Give it the source material.** Drop in the customer revenue ledger and monthly financials as CSV or Excel (parsed locally, no AI). Optionally paste the deck, memo or term sheet and extract figures with a model you choose; every extracted value keeps the line it came from.
 3. **Evidence.** Review every field and tag where each number came from. Figures the ledger can supply are filled for you; anything entered by hand is checked against it.
 4. **Verification, then the report.** Contradictions are shown before any score. The report has twelve views: overview (with the risk map), findings, revenue, forensics, runway & odds, deal & returns (with the VC Method, First Chicago and the term-sheet review), benchmarks, scoring (with a sensitivity tornado and "what would need to be true"), questions, all metrics, the consistency ledger and the diligence checklist.
+
+**Your work is kept for you.** Everything you enter is saved in this browser as you type, and only there. The home page then offers a **Continue your assessment** card with the company name, how much of the form is filled and when you last edited it. The two examples are never saved, so opening one cannot replace your own draft. **Reset all inputs** (on the home page and at the bottom of the sidebar) deletes the inputs, the uploaded ledger and financials, the notes and assumptions, the report in progress and the saved draft, and leaves the library, the Studio settings, the theme, the text size and any AI key alone.
 
 ## Owner Studio
 

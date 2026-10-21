@@ -91,7 +91,7 @@ function parseNum(raw, loc) {
   if (raw == null) return null;
   if (typeof raw === 'number') return isFinite(raw) ? raw : null;
   let s = String(raw).trim();
-  if (!s || s === '-' || s === '—' || /^n\/?a$/i.test(s)) return null;
+  if (!s || s === '-' || s === 'n/a' || /^n\/?a$/i.test(s)) return null;
   let neg = false;
   if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); }
   s = s.replace(/[$€£¥\s ]/g, '').replace(/usd|eur|gbp/ig, '');
@@ -244,11 +244,11 @@ const MON_LONG = ['January','February','March','April','May','June','July','Augu
 function monthLong(ym) { if (!ym) return ''; const [y, m] = ym.split('-').map(Number); return MON_LONG[m - 1] + ' ' + y; }
 
 /* ── Formatting helpers used by the new modules ── */
-function fmtPct(v, d = 1) { return v == null || !isFinite(v) ? '—' : v.toFixed(d) + '%'; }
-function fmtX(v, d = 1) { return v == null || !isFinite(v) ? '—' : v.toFixed(d) + 'x'; }
-function fmtMo(v) { return v == null || !isFinite(v) ? '—' : (v >= 99 ? '99+ mo' : v.toFixed(1) + ' mo'); }
-function fmtProb(p) { return p == null || !isFinite(p) ? '—' : (p < 0.01 ? '<1%' : p > 0.99 ? '>99%' : Math.round(p * 100) + '%'); }
-function fmtSigned(v, d = 1, unit = '') { return v == null || !isFinite(v) ? '—' : (v > 0 ? '+' : '') + v.toFixed(d) + unit; }
+function fmtPct(v, d = 1) { return v == null || !isFinite(v) ? 'n/a' : v.toFixed(d) + '%'; }
+function fmtX(v, d = 1) { return v == null || !isFinite(v) ? 'n/a' : v.toFixed(d) + 'x'; }
+function fmtMo(v) { return v == null || !isFinite(v) ? 'n/a' : (v >= 99 ? '99+ mo' : v.toFixed(1) + ' mo'); }
+function fmtProb(p) { return p == null || !isFinite(p) ? 'n/a' : (p < 0.01 ? '<1%' : p > 0.99 ? '>99%' : Math.round(p * 100) + '%'); }
+function fmtSigned(v, d = 1, unit = '') { return v == null || !isFinite(v) ? 'n/a' : (v > 0 ? '+' : '') + v.toFixed(d) + unit; }
 function cleanName(s) {
   return String(s || '').toLowerCase()
     .replace(/[.,'"()&]/g, ' ')

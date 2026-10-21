@@ -32,10 +32,10 @@ const SRC = {
 };
 /* val = the number that scores through the bars (so the report can say what score it earns). */
 const PROVENANCE = {
-  nrr: { refs:[ { s:'saascap_ret', text:'median NRR 101%', val:101 }, { s:'highalpha', text:'median NRR 100% (<$1M ARR), 104% ($1–5M), 103% ($5–20M); top quartile 110–116%', val:104 },
-                { s:'benchmarkit', text:'median NRR 102%, bottom quartile 92%, top quartile 108–110% (the report gives both)', val:102 }, { s:'bessemer23', text:'good / better / best: 100% / 110% / 120%+', val:110 } ] },
-  grr: { refs:[ { s:'saascap_ret', text:'median GRR 91%', val:91 }, { s:'highalpha', text:'median GRR 92% (<$5M ARR), 88% ($5–20M)', val:92 }, { s:'benchmarkit', text:'median GRR 84%, quartiles 76% and 91%', val:84 } ] },
-  growth_yoy: { refs:[ { s:'highalpha', text:'median growth 100% (<$1M ARR), 50% ($1–5M), 31% ($5–20M); top quartile 300% / 100% / 72%', val:50 },
+  nrr: { refs:[ { s:'saascap_ret', text:'median NRR 101%', val:101 }, { s:'highalpha', text:'median NRR 100% (<$1M ARR), 104% ($1 to 5M), 103% ($5 to 20M); top quartile 110 to 116%', val:104 },
+                { s:'benchmarkit', text:'median NRR 102%, bottom quartile 92%, top quartile 108 to 110% (the report gives both)', val:102 }, { s:'bessemer23', text:'good / better / best: 100% / 110% / 120%+', val:110 } ] },
+  grr: { refs:[ { s:'saascap_ret', text:'median GRR 91%', val:91 }, { s:'highalpha', text:'median GRR 92% (<$5M ARR), 88% ($5 to 20M)', val:92 }, { s:'benchmarkit', text:'median GRR 84%, quartiles 76% and 91%', val:84 } ] },
+  growth_yoy: { refs:[ { s:'highalpha', text:'median growth 100% (<$1M ARR), 50% ($1 to 5M), 31% ($5 to 20M); top quartile 300% / 100% / 72%', val:50 },
                        { s:'saascap_gr', text:'overall median growth 25% (calendar 2024)', val:25 },
                        { s:'benchmarkit', text:'median growth 20%, top quartile 42%', val:20 } ],
                fit:'These bars are set for venture-scale outcomes: “acceptable” sits near the top quartile of the surveyed companies, not at their median.' },
@@ -43,9 +43,9 @@ const PROVENANCE = {
                   fit:'The “good” bar is just below the surveyed software median (the excellent bar is above it): early-stage companies, usage-priced products and services mixes run lower.' },
   gross_margin_ai: { refs:[ { s:'iconiq_ai', text:'average gross margin on AI products 45% in 2025 (53% projected for 2026, 59% for 2027)', val:45 },
                             { s:'bessemer_ai', text:'“Shooting Star” AI companies about 60%; “Supernova” companies about 25% on average, often negative', val:60 } ] },
-  cac_payback: { refs:[ { s:'benchmarkit', text:'median CAC payback 16 months', val:16 }, { s:'highalpha', text:'median payback, gross-margin adjusted: 5 / 8 / 14 / 20 / 17 months for <$1M / $1–5M / $5–20M / $20–50M / >$50M ARR', val:14 },
-                       { s:'bessemer23', text:'good / better / best: 12–18 / 6–12 / 0–6 months', val:12 } ] },
-  burn_multiple: { refs:[ { s:'sacks', text:'under 1× amazing, 1–1.5× great, 1.5–2× good, 2–3× suspect, over 3× bad', val:2 } ] },
+  cac_payback: { refs:[ { s:'benchmarkit', text:'median CAC payback 16 months', val:16 }, { s:'highalpha', text:'median payback, gross-margin adjusted: 5 / 8 / 14 / 20 / 17 months for <$1M / $1 to 5M / $5 to 20M / $20 to 50M / >$50M ARR', val:14 },
+                       { s:'bessemer23', text:'good / better / best: 12 to 18 / 6 to 12 / 0 to 6 months', val:12 } ] },
+  burn_multiple: { refs:[ { s:'sacks', text:'under 1× amazing, 1 to 1.5× great, 1.5 to 2× good, 2 to 3× suspect, over 3× bad', val:2 } ] },
   runway: { refs:[ { s:'bessemer23', text:'good / better / best: 12 / 18 / 24+ months', val:18 } ] },
   liq_pref: { refs:[ { s:'cooley', text:'1× preference in 95.8% of deals; non-participating in 96.4%', val:1 } ] },
   option_pool: { refs:[ { s:'carta_pool', text:'median pool after a seed round 11.8%', val:11.8 } ] },

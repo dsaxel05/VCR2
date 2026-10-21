@@ -180,14 +180,14 @@ ${String(text).slice(0, 30000)}`;
 }
 
 function reviewImport(rows, how) {
-  if (!rows.length) { toast('Nothing to import — no rows with metrics were found.', 'err'); return; }
+  if (!rows.length) { toast('Nothing to import: no rows with metrics were found.', 'err'); return; }
   window._pendingImport = rows;
   const cols = LIB_METRICS.filter(m => m.key !== 'score' && rows.some(r => r.metrics[m.key] != null));
-  const body = `<p class="pg-desc" style="margin-bottom:8px">${rows.length} compan${rows.length === 1 ? 'y' : 'ies'} found via ${esc(how)}. Untick anything wrong before adding. ${how === 'AI' ? 'Each row keeps the quote it came from — hover the name.' : ''}</p>
+  const body = `<p class="pg-desc" style="margin-bottom:8px">${rows.length} compan${rows.length === 1 ? 'y' : 'ies'} found via ${esc(how)}. Untick anything wrong before adding. ${how === 'AI' ? 'Each row keeps the quote it came from. Hover the name.' : ''}</p>
     <div class="tbl-wrap" style="max-height:52vh;overflow:auto"><table class="ledger"><thead><tr><th></th><th>Company</th><th>Stage</th>${cols.map(c => `<th>${esc(c.label)}</th>`).join('')}</tr></thead>
     <tbody>${rows.map((r, i) => `<tr><td><input type="checkbox" checked data-imp="${i}"></td>
       <td${r.quote ? ` data-tip="${tipAttr(esc(r.quote))}"` : ''}>${esc(r.company)}</td><td class="m">${esc(STAGES.find(s => s.id === r.stage)?.n || r.stage)}</td>
-      ${cols.map(c => `<td class="m">${r.metrics[c.key] == null ? '—' : esc(libFmt(c, r.metrics[c.key]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      ${cols.map(c => `<td class="m">${r.metrics[c.key] == null ? 'n/a' : esc(libFmt(c, r.metrics[c.key]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   openModal('Review before adding to your library', body, [{ label:'Add selected', primary:true, onClick:() => {
     const pick = Array.from(document.querySelectorAll('[data-imp]')).filter(x => x.checked).map(x => window._pendingImport[+x.dataset.imp]);
     const list = libLoad();
@@ -196,7 +196,7 @@ function reviewImport(rows, how) {
   } }]);
 }
 function libFmt(m, v) {
-  if (typeof v !== 'number' || !isFinite(v)) return '—';
+  if (typeof v !== 'number' || !isFinite(v)) return 'n/a';
   if (m.unit === '$') return money(v);
   if (m.unit === '%') return v.toFixed(1) + '%';
   if (m.unit === 'x') return v.toFixed(2) + 'x';
@@ -334,7 +334,7 @@ function renderLibrary() {
   $id('library-content').innerHTML = `
     <div class="pg-eyebrow">Library</div>
     <h2 class="pg-title">Your deal data</h2>
-    <p class="pg-desc">Every assessment you save lands here, alongside any comparables you import. VCR2 ranks each new company against this set and, if you switch it on, recalibrates its thresholds on it — so the scores reflect how you invest rather than a generic benchmark. Everything stays in this browser until you export it.</p>
+    <p class="pg-desc">Every assessment you save lands here, alongside any comparables you import. VCR2 ranks each new company against this set and, if you switch it on, recalibrates its thresholds on it, so the scores reflect how you invest rather than a generic benchmark. Everything stays in this browser until you export it.</p>
 
     <div class="lib-stats">
       <div class="stat"><span class="stat-n">${lib.length}</span><span class="stat-l">Companies</span></div>
@@ -344,7 +344,7 @@ function renderLibrary() {
 
     <div class="lib-actions">
       <button class="btn btn-primary" onclick="libImportCSV()">Import CSV</button>
-      <button class="btn btn-ghost" onclick="libOpenAIPaste()">Paste anything — structure it with AI</button>
+      <button class="btn btn-ghost" onclick="libOpenAIPaste()">Paste anything: structure it with AI</button>
       <button class="btn btn-ghost" onclick="libExport()">Export backup (.json)</button>
       <button class="btn btn-ghost" onclick="libImportJSON()">Restore backup</button>
       ${syn ? `<button class="btn btn-ghost" onclick="libRemoveSynthetic()">Remove ${syn} synthetic</button>` : `<button class="btn btn-ghost" onclick="loadSyntheticLibrary()">Add synthetic sample</button>`}
@@ -378,7 +378,7 @@ function libTableHTML(rows, cols, th) {
       <td>${x.quote ? `<span data-tip="${tipAttr(esc(x.quote))}">${esc(x.company)}</span>` : esc(x.company)}${x.blocked ? ' <span class="pill red">blocked</span>' : ''}<div class="field-hint">${esc(x.date || '')}</div></td>
       <td class="m">${esc(STAGES.find(s => s.id === x.stage)?.n || x.stage)}</td>
       ${cols.map(c => `<td class="m">${esc(libFmt(c, x.metrics[c.key]))}</td>`).join('')}
-      <td><select class="mini-sel" onchange="libSetOutcome(this.closest('tr').dataset.id,this.value)">${OUTCOMES.map(o => `<option${(x.outcome || '') === o ? ' selected' : ''} value="${esc(o)}">${esc(o || '—')}</option>`).join('')}</select></td>
+      <td><select class="mini-sel" onchange="libSetOutcome(this.closest('tr').dataset.id,this.value)">${OUTCOMES.map(o => `<option${(x.outcome || '') === o ? ' selected' : ''} value="${esc(o)}">${esc(o || 'n/a')}</option>`).join('')}</select></td>
       <td class="m">${esc(x.source)}</td>
       <td style="white-space:nowrap">${x.payload ? `<button class="btn btn-ghost btn-sm" onclick="libOpen(this.closest('tr').dataset.id)">Open</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="libDelete(this.closest('tr').dataset.id)" aria-label="Delete">×</button></td></tr>`).join('')}</tbody></table></div>`;
@@ -418,7 +418,7 @@ function libImportCSV() {
 }
 function libOpenAIPaste() {
   const ai = aiReady();
-  openModal('Paste anything — structure it with AI', `
+  openModal('Paste anything: structure it with AI', `
     <p class="pg-desc" style="margin-bottom:8px">Paste a portfolio update, a newsletter, a spreadsheet dump, meeting notes or a benchmark report. The model you chose in the sidebar extracts one row per company with a quote for every value, and you review each row before anything is saved. Only explicitly stated figures are kept.</p>
     <p class="field-hint ai-own">Uses your own key and your own account. Nothing is billed to the site owner.</p>
     ${ai.ok ? '' : `<div class="warnstrip"><span>⚠</span><div>${esc(ai.why)}</div></div>`}

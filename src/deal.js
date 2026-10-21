@@ -169,7 +169,7 @@ function dealMath(D) {
     ? `Prior investors’ stake was not entered; ${priorPct.toFixed(0)}% is estimated from total raised and the last pre-money. Enter it for an exact waterfall.`
     : `Prior investors’ stake was not entered; the waterfall uses a placeholder of ${priorPct.toFixed(0)}%. Enter it (Round & returns) for an exact waterfall.`);
   if (fTop > 0.001) notes.push(`The pool top-up of ${fmtPct(fTop * 100)} comes out of the pre-money: existing holders and converting SAFEs and notes bear it, new money does not.`);
-  if (fNote > 0.001) notes.push(`Convertible notes of ${money(I.notesPrincipal)} have accrued to ${money(I.notes)} and convert at a ${money(vNote)} valuation into ${fmtPct(fNote * 100)} of the company — also out of the pre-money.`);
+  if (fNote > 0.001) notes.push(`Convertible notes of ${money(I.notesPrincipal)} have accrued to ${money(I.notes)} and convert at a ${money(vNote)} valuation into ${fmtPct(fNote * 100)} of the company, also out of the pre-money.`);
 
   const classes = [
     { id:'new', label:'This round', frac:fNew, pref:I.round * I.newPref, part:I.newPart, cap:I.newPart && I.newPartCap ? I.round * I.newPartCap : null },
@@ -289,7 +289,7 @@ function termReview(I, X) {
   const ad = gs('anti_dilution');
   if (ad) add('Anti-dilution', ad, 'Broad-based weighted average',
     ad === 'Full ratchet' ? 'off' : ad === 'Narrow-based weighted average' ? 'watch' : ad === 'None' ? 'watch' : 'ok',
-    ad === 'Full ratchet' ? 'In a down round the investor is repriced to the new, lower price in full — the dilution lands on founders and employees.'
+    ad === 'Full ratchet' ? 'In a down round the investor is repriced to the new, lower price in full, the dilution lands on founders and employees.'
       : ad === 'Narrow-based weighted average' ? 'Excludes options and warrants from the base, so the adjustment is larger than the broad-based version.'
       : ad === 'None' ? 'Unusual for a priced round; no protection in a down round.' : 'Market standard.');
   const cd = gb('cumulative_dividends');
@@ -300,7 +300,7 @@ function termReview(I, X) {
     rd ? 'Rarely exercisable in practice, but it gives the holder leverage in a sideways outcome.' : 'Market standard.');
   const ptp = gb('pay_to_play');
   if (ptp != null) add('Pay-to-play', ptp ? 'Yes' : 'No', 'Usually no; common in down rounds', ptp ? 'watch' : 'ok',
-    ptp ? 'Investors who do not take up their pro-rata in a down round lose preferences — good for the company, a commitment for us.' : 'Standard.');
+    ptp ? 'Investors who do not take up their pro-rata in a down round lose preferences. Good for the company, a commitment for us.' : 'Standard.');
   const bc = gs('board_after');
   if (bc) add('Board control', bc, early ? 'Founders control at seed' : 'Balanced, with an independent',
     bc === 'Investors control the board' ? (early ? 'off' : 'watch') : bc === 'Founders control the board' && !early ? 'watch' : 'ok',
@@ -309,7 +309,7 @@ function termReview(I, X) {
   const prr = gb('pro_rata_rights'), inf = gb('information_rights'), seat = gb('board_seat');
   if (prr != null) add('Pro-rata rights', prr ? 'Yes' : 'No', 'Yes, for major investors', prr ? 'ok' : 'watch',
     prr ? 'We can keep our ownership in the next round.' : 'No right to follow on: ownership shrinks with every round and the best companies are the hardest to get back into.');
-  if (inf != null) add('Information rights', inf ? 'Yes' : 'No', 'Yes — quarterly and annual financials', inf ? 'ok' : 'watch',
+  if (inf != null) add('Information rights', inf ? 'Yes' : 'No', 'Yes: quarterly and annual financials', inf ? 'ok' : 'watch',
     inf ? 'Standard.' : 'Without them, monitoring the investment depends on goodwill.');
   if (seat != null) add('Board or observer seat', seat ? 'Yes' : 'No', X.ownEntry != null && X.ownEntry >= seatAt ? `Usual for a lead with ${fmtPct(seatAt * 100, 0)}+` : `Not expected below ~${fmtPct(seatAt * 100, 0)}`,
     !seat && X.ownEntry != null && X.ownEntry >= seatAt ? 'watch' : 'ok',
@@ -318,7 +318,7 @@ function termReview(I, X) {
     `The pool shuffle lowers the effective pre-money to ${money(X.effPre)}. Check the pool against the 18-month hiring plan rather than a round number.`);
   const conv = X.fSafe + (X.fNote || 0);
   if (conv > 0.001) add('SAFE and note conversion', `${fmtPct(conv * 100, 1)} of the post-money`, 'Disclosed in the pre-money', conv > convMax ? 'watch' : 'ok',
-    'Conversions come out of the pre-money, so the founders — not the new round — absorb them.');
+    'Conversions come out of the pre-money, so the founders (not the new round) absorb them.');
   return out;
 }
 

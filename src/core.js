@@ -29,7 +29,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ESC_MAP[c])
 /* ── FORMATTERS ── */
 const nf = new Intl.NumberFormat('en-US');
 function money(v) {
-  if (v == null || !isFinite(v)) return '—';
+  if (v == null || !isFinite(v)) return 'n/a';
   const a = Math.abs(v), sign = v < 0 ? '-' : '';
   const cur = typeof MONEY_SYMBOL === 'string' ? MONEY_SYMBOL : '$';
   if (a >= 1e9) return sign + cur + (a / 1e9).toFixed(2) + 'B';
@@ -37,17 +37,17 @@ function money(v) {
   if (a >= 1e3) return sign + cur + Math.round(a / 1e3) + 'k';
   return sign + cur + Math.round(a);
 }
-const pctv = (v, d = 1) => v == null || !isFinite(v) ? '—' : v.toFixed(d) + '%';
-const xv   = (v, d = 2) => v == null || !isFinite(v) ? '—' : v.toFixed(d) + 'x';
-const numv = (v, d = 2) => v == null || !isFinite(v) ? '—' : v.toFixed(d);
+const pctv = (v, d = 1) => v == null || !isFinite(v) ? 'n/a' : v.toFixed(d) + '%';
+const xv   = (v, d = 2) => v == null || !isFinite(v) ? 'n/a' : v.toFixed(d) + 'x';
+const numv = (v, d = 2) => v == null || !isFinite(v) ? 'n/a' : v.toFixed(d);
 
 /* ═══════════════════════════════════════════════════════════════
    STAGES & BUSINESS MODELS
    ═══════════════════════════════════════════════════════════════ */
 const STAGES = [
   { id:'preseed', n:'Pre-seed',  s:'< $250k ARR' },
-  { id:'seed',    n:'Seed',      s:'$250k – $2M ARR' },
-  { id:'a',       n:'Series A',  s:'$2M – $10M ARR' },
+  { id:'seed',    n:'Seed',      s:'$250k to $2M ARR' },
+  { id:'a',       n:'Series A',  s:'$2M to $10M ARR' },
   { id:'b',       n:'Series B+', s:'$10M+ ARR' },
 ];
 
@@ -58,7 +58,7 @@ const MODELS = [
   { id:'fintech',     em:'💳', n:'Fintech',         s:'Regulated financial',   calib:'partial' },
 ];
 const CALIB_NOTE = {
-  full:    'The default thresholds are built for B2B SaaS and AI application companies, and the business-model section adds the metrics specific to this model. Every threshold is an editable calibration, not a market statistic — load your own deals into the Library to recalibrate them on your data.',
+  full:    'The default thresholds are built for B2B SaaS and AI application companies, and the business-model section adds the metrics specific to this model. Every threshold is an editable calibration, not a market statistic. Load your own deals into the Library to recalibrate them on your data.',
   custom:  'This business model was added by the owner of this site. The core thresholds (retention, burn, growth, team, governance) apply as they do to every model, and the business-model section shows the inputs added for it. Treat dimension scores as directional and lean on the consistency checks and the revenue ledger, which are model-independent.',
   partial: 'Core thresholds are adapted from software benchmarks, and the business-model section adds the metrics that matter for this model. Treat dimension scores as directional and lean on the consistency checks and the revenue ledger, which are model-independent. Recalibrating from your own Library makes the scores specific to how you invest.',
 };
@@ -75,7 +75,7 @@ const SECTIONS = [
       { g:'Position', id:'arr_now',   lbl:'ARR today',              t:'num', unit:'$', req:true,
         hint:'Contracted recurring revenue only. Exclude one-off services and unsigned pipeline.' },
       { g:'Position', id:'arr_12mo',  lbl:'ARR 12 months ago',      t:'num', unit:'$', req:true,
-        hint:'Same definition, same date last year. Growth is computed from this — do not enter a growth rate.' },
+        hint:'Same definition, same date last year. Growth is computed from this: do not enter a growth rate.' },
       { g:'Movement (last 12 months)', id:'new_arr_l12',        lbl:'New-logo ARR added', t:'num', unit:'$',
         hint:'ARR from customers who were not customers 12 months ago.' },
       { g:'Movement (last 12 months)', id:'expansion_arr_l12',  lbl:'Expansion ARR',      t:'num', unit:'$',
@@ -151,7 +151,7 @@ const SECTIONS = [
   },
   {
     id:'team', label:'Team', em:'🧑‍🚀', ibg:'#1a1108',
-    desc:'Verifiable facts only. This build removes the behavioural and linguistic signals from v2 — they had no validated predictive power.',
+    desc:'Verifiable facts only. This build removes the behavioural and linguistic signals from v2. They had no validated predictive power.',
     fields:[
       { g:'Size', id:'headcount_now',  lbl:'Headcount today',            t:'num', unit:'', req:true },
       { g:'Size', id:'headcount_12mo', lbl:'Headcount 12 months ago',    t:'num', unit:'' },
@@ -166,11 +166,11 @@ const SECTIONS = [
       { g:'Founders', id:'prior_exit',     lbl:'A founder has a prior acquisition or IPO', t:'bool',
         hint:'Verifiable outcome, not a claim of prior startup experience.' },
       { g:'Founders', id:'founder_departed',lbl:'A co-founder has left since inception', t:'bool',
-        hint:'If yes, ask how their equity was handled — unresolved founder equity is a cap table problem.' },
+        hint:'If yes, ask how their equity was handled. Unresolved founder equity is a cap table problem.' },
       { g:'Founders', id:'founders_years_together', lbl:'Years the founders have worked together', t:'num', unit:'years', chips:[0,1,3,5],
         hint:'Including before this company. A proxy for cohesion: teams that have already worked through hard periods together break up less.' },
       { g:'Founders', id:'technical_founder', lbl:'A founder can build the core product themselves', t:'bool',
-        hint:'Not “manages the engineers” — writes or designs the core of what is sold.' },
+        hint:'Not “manages the engineers”: writes or designs the core of what is sold.' },
       { g:'Retention', id:'eng_departures_l12', lbl:'Engineering departures, last 12 months', t:'num', unit:'',
         hint:'Turnover rate is computed against engineering headcount.' },
     ]
@@ -187,7 +187,7 @@ const SECTIONS = [
       { g:'Competition', id:'pricing_move', lbl:'Last pricing action', t:'select',
         options:['Raised prices','Held prices','Discounted to win','Never tested'] },
       { g:'Competition', id:'switching_cost', lbl:'Cost for a customer to switch away', t:'select',
-        options:['High — data or workflow lock-in','Medium — some migration effort','Low — swappable'] },
+        options:['High: data or workflow lock-in','Medium: some migration effort','Low: swappable'] },
       { g:'Competition', id:'regulated_market', lbl:'Operates under a licensing or regulatory regime', t:'bool',
         hint:'A barrier and a risk at the same time. Scored neutrally, surfaced as a diligence item.' },
       { g:'Moat', id:'moat_type', lbl:'Main source of defensibility', t:'select',
@@ -195,7 +195,7 @@ const SECTIONS = [
         hint:'What stops a well-funded competitor from taking the market. Recorded, not scored: the evidence for it is what matters.' },
       { g:'Moat', id:'patents', lbl:'Patents granted or filed', t:'num', unit:'' },
       { g:'Product-market fit', id:'mission_critical', lbl:'How essential the product is to customers', t:'select',
-        options:['Mission-critical — work stops without it','Important — painful to replace','Nice to have — discretionary'],
+        options:['Mission-critical: work stops without it','Important: painful to replace','Nice to have: discretionary'],
         hint:'The first line to be cut in a budget review is the one marked “nice to have”.' },
       { g:'Product-market fit', id:'pmf_very_disappointed', lbl:'Users who would be “very disappointed” without the product', t:'num', unit:'%', chips:[25,40,50,60],
         hint:'Sean Ellis test. 40% or more is the usual sign of product-market fit.' },
@@ -204,7 +204,7 @@ const SECTIONS = [
       { g:'Product-market fit', id:'nps', lbl:'Net Promoter Score', t:'num', unit:'', chips:[0,20,40,60],
         hint:'% promoters − % detractors, from −100 to +100.' },
       { g:'Timing', id:'why_now', lbl:'Why now', t:'txt',
-        hint:'The change — technology, regulation, cost, behaviour — that makes this possible today and was not true five years ago.' },
+        hint:'The change (technology, regulation, cost, behaviour) that makes this possible today and was not true five years ago.' },
     ]
   },
   {
@@ -241,7 +241,7 @@ const SECTIONS = [
   },
   {
     id:'govern', label:'Governance, cap table & technical risk', em:'⚖️', ibg:'#1e0a1e',
-    desc:'Four of these are hard gates. A gate does not lower the score — it stops the assessment until resolved.',
+    desc:'Four of these are hard gates. A gate does not lower the score. It stops the assessment until resolved.',
     fields:[
       { g:'Gates', id:'ip_assignments', lbl:'Every employee and contractor has signed IP assignment', t:'bool', gate:'no',
         hint:'Gate. One unsigned contractor can mean the company does not own its own product.' },
@@ -274,7 +274,7 @@ const SECTIONS = [
       { g:'Technical', id:'model_single_vendor', lbl:'A single model provider outage takes the product down', t:'bool',
         hint:'Relevant for AI applications. Also a pricing-power question, not only an availability one.' },
       { g:'Technical', id:'dpas_signed', lbl:'Data processing agreements in place with enterprise customers', t:'bool' },
-      { g:'Technical', id:'oss_reviewed', lbl:'Open-source licences reviewed — no copyleft code in what ships', t:'bool' },
+      { g:'Technical', id:'oss_reviewed', lbl:'Open-source licences reviewed: no copyleft code in what ships', t:'bool' },
     ]
   },
   {
@@ -352,13 +352,13 @@ const SECTIONS = [
       { g:'Horizon and hurdle', id:'years_to_exit', lbl:'Years to exit', t:'num', unit:'years', chips:[5,7,10],
         hint:'Defaults by stage: 8 pre-seed, 7 seed, 6 Series A, 5 Series B+.' },
       { g:'Horizon and hurdle', id:'target_irr', lbl:'Target annual return (IRR)', t:'num', unit:'%', chips:[30,40,50,60],
-        hint:'The VC Method’s discount rate, applied to the success (upside) case. It is high because it carries the risk of failure; early-stage investors typically use 40–60%.' },
+        hint:'The VC Method’s discount rate, applied to the success (upside) case. It is high because it carries the risk of failure; early-stage investors typically use 40 to 60%.' },
       { g:'Horizon and hurdle', id:'fc_rate', lbl:'Discount rate once failure is in the probabilities', t:'num', unit:'%', chips:[20,25,30],
         hint:'First Chicago Method. The downside case already carries the failure risk, so the rate is lower. Default 25%.' },
       { g:'Cases', id:'exit_arr_base', lbl:'Base case: ARR at exit', t:'num', unit:'$',
         hint:'Blank = today’s ARR grown at today’s growth rate, decaying 30% a year.' },
       { g:'Cases', id:'exit_arr_up', lbl:'Upside case: ARR at exit', t:'num', unit:'$',
-        hint:'Blank = the same path with growth decaying 15% a year — the “if it works” case.' },
+        hint:'Blank = the same path with growth decaying 15% a year, the “if it works” case.' },
       { g:'Cases', id:'exit_value_down', lbl:'Downside case: exit value', t:'num', unit:'$',
         hint:'Blank = a sale at 1× today’s ARR. Enter 0 for a wind-down.' },
       { g:'Probabilities', id:'prob_down', lbl:'Probability of the downside case', t:'num', unit:'%' },
@@ -464,10 +464,10 @@ const RUBRIC = {
   categorical: {
     soc2:      { dim:'govern', map:{ 'Type II':100, 'Type I':70, 'In progress':45, 'None':20 }, stageFloor:{ preseed:0, seed:0, a:1, b:1 } },
     books:     { dim:'govern', map:{ 'Audited':100, 'Reviewed':78, 'Compiled':52, 'Internal only':30 } },
-    switching: { dim:'market', map:{ 'High — data or workflow lock-in':100, 'Medium — some migration effort':60, 'Low — swappable':25 } },
+    switching: { dim:'market', map:{ 'High: data or workflow lock-in':100, 'Medium: some migration effort':60, 'Low: swappable':25 } },
     pricing:   { dim:'market', map:{ 'Raised prices':100, 'Held prices':62, 'Discounted to win':25, 'Never tested':45 } },
     licence:   { dim:'govern', models:['fintech'], map:{ 'Own licences':92, 'Sponsor or partner bank':58, 'Licence application pending':35, 'Not regulated':70 } },
-    critical:  { dim:'market', map:{ 'Mission-critical — work stops without it':100, 'Important — painful to replace':62, 'Nice to have — discretionary':22 } },
+    critical:  { dim:'market', map:{ 'Mission-critical: work stops without it':100, 'Important: painful to replace':62, 'Nice to have: discretionary':22 } },
   },
 
   /* Boolean modifiers: applied as point adjustments to a dimension, bounded. */
@@ -496,11 +496,11 @@ const RUBRIC = {
     { id:'contractor_ip',       when:true,  title:'A contractor may retain rights to core IP',
       why:'Ownership of the core technology is unconfirmed. Every other metric in this report is contingent on it.' },
     { id:'chain_title',         when:false, title:'Chain of title on IP is not clean',
-      why:'A break anywhere in the historical transfer chain — a predecessor entity, a university licence, acquired code — leaves the current ownership unproven.' },
+      why:'A break anywhere in the historical transfer chain (a predecessor entity, a university licence, acquired code) leaves the current ownership unproven.' },
     { id:'captable_documented', when:false, title:'The cap table is not fully documented',
       why:'Verbal or undocumented equity promises surface during a financing or an exit, when they are most expensive to settle.' },
     { id:'taxes_current',       when:false, title:'Taxes are not filed and paid to date',
-      why:'Unpaid payroll, income or sales taxes are liabilities that attach to the company — and payroll taxes can reach its officers personally. They are quantified and settled before closing.' },
+      why:'Unpaid payroll, income or sales taxes are liabilities that attach to the company, and payroll taxes can reach its officers personally. They are quantified and settled before closing.' },
   ],
 };
 
@@ -509,7 +509,7 @@ const modelLabel = id => (MODELS.find(m => m.id === id) || { n:'Custom model' })
 const blankState = () => ({
   name:'', stage:'seed', model:'saas', asof:'', section:0,
   vals:{}, bools:{}, sel:{}, prov:{}, evid:{}, assume:{}, result:null, files:[],
-  ledger:null, series:null, notes:'', checklist:{},
+  ledger:null, series:null, notes:'', checklist:{}, example:false,
 });
 let S = blankState();
 /* ═══════════════════════════════════════════════════════════════
@@ -648,7 +648,7 @@ function derive() {
 
   /* — Burn: gross versus net — */
   const gross = gv('gross_burn');
-  if (has(cash, gross) && gross > 0) put('runway_gross', cash / gross, 'cash ÷ gross monthly burn — months left if revenue stopped');
+  if (has(cash, gross) && gross > 0) put('runway_gross', cash / gross, 'cash ÷ gross monthly burn: months left if revenue stopped');
   if (has(gross, arr)) put('burn_from_gross', gross - arr / 12, 'gross burn − monthly recurring revenue (ARR ÷ 12)');
 
   /* — Product-market fit and team cohesion — */
@@ -770,7 +770,7 @@ const INPUTS_OF = {
 const inputsOf = k => INPUTS_OF[k] || [k];
 function dfmt(k, v) {
   const u = DUNIT[k];
-  if (v == null || !isFinite(v)) return '—';
+  if (v == null || !isFinite(v)) return 'n/a';
   if (u === '$') return money(v);
   if (u === '%') return v.toFixed(1) + '%';
   if (u === 'x') return v.toFixed(2) + 'x';
@@ -877,7 +877,7 @@ function runChecks(D) {
       id:'waterfall', sev: rel > tw.hard ? 'major' : 'minor', title:'The ARR waterfall does not close', flatter: arr > implied,
       stated:money(arr), computed:money(implied), delta:money(gap) + ' unexplained',
       text:`Opening ARR plus new and expansion, less churn and contraction, gives ${money(implied)}. Closing ARR is stated as ${money(arr)}. ${money(Math.abs(gap))} is unaccounted for.`,
-      ask:'Which movement line is missing from the waterfall — reactivations, FX, a reclassification between services and subscription, or an acquisition?',
+      ask:'Which movement line is missing from the waterfall: reactivations, FX, a reclassification between services and subscription, or an acquisition?',
     });
   }
 
@@ -890,7 +890,7 @@ function runChecks(D) {
       id:'stated_arr', sev: rel > ta.hard ? 'major' : 'minor', title:'Deck ARR does not match the financials', flatter: st > arr,
       stated:money(st), computed:money(arr), delta:rel.toFixed(0) + '% ' + (st > arr ? 'higher in the deck' : 'lower in the deck'),
       text:`The headline ARR in the materials is ${money(st)}. The figure carried in the financials is ${money(arr)}.`,
-      ask:'Which definition produces the deck number — is it including signed-but-not-started contracts, annualised last month, or gross bookings?',
+      ask:'Which definition produces the deck number: is it including signed-but-not-started contracts, annualised last month, or gross bookings?',
     });
   }
   cmp('stated_nrr','nrr',{ good:'hi', tol:3, hard:8, pts:true, title:'Net revenue retention', f:v=>v.toFixed(1)+'%',
@@ -902,7 +902,7 @@ function runChecks(D) {
   if (!D._notBurning) cmp('stated_runway','runway',{ good:'hi', tol:12, hard:30, title:'Runway', f:v=>v.toFixed(1)+' months',
     ask:'Does the stated runway assume the current burn, or a plan that includes hires and spend not yet committed?' });
   cmp('stated_rule40','rule40',{ good:'hi', tol:6, hard:15, pts:true, title:'Rule of 40', f:v=>v.toFixed(1),
-    ask:'Which profitability measure feeds the stated Rule of 40 — FCF margin, EBITDA margin, or net margin?' });
+    ask:'Which profitability measure feeds the stated Rule of 40: FCF margin, EBITDA margin, or net margin?' });
   cmp('stated_burn_multiple','burn_multiple',{ good:'lo', tol:18, hard:45, title:'Burn multiple', f:v=>v.toFixed(2),
     ask:'Is the stated burn multiple computed on net new ARR or on new-logo ARR alone?' });
   cmp('stated_magic_number','magic_number',{ good:'hi', tol:20, hard:50, title:'Magic number', f:v=>v.toFixed(2),
@@ -962,7 +962,7 @@ function runChecks(D) {
       else add({ id:'burn_bridge', sev:'minor', title:'Gross burn, revenue and net burn do not add up',
         stated:money(nb0) + '/mo net', computed:money(implied) + '/mo', delta:`${rel.toFixed(0)}% of gross spend unexplained`, flatter: nb0 < implied, rawStated:nb0, rawComputed:implied,
         text:`Gross spend of ${money(gb0)} a month less recurring revenue of ${money(arr / 12)} a month implies net burn of about ${money(implied)}, against the ${money(nb0)} stated. Annual upfront billing and one-off receipts explain some gap; a large one needs an answer.`,
-        ask:'Can you bridge gross burn to net burn for the last three months — cash receipts by type, including any annual prepayments or one-off income?' });
+        ask:'Can you bridge gross burn to net burn for the last three months: cash receipts by type, including any annual prepayments or one-off income?' });
     }
   }
 
@@ -1017,7 +1017,7 @@ function runChecks(D) {
     else add({ id:'logo_bridge', sev: rel > tb.hard ? 'major' : 'minor', title:'The customer count does not bridge', flatter: cn > implied,
       stated:String(cn), computed:String(implied), delta:`${d} customers unexplained`,
       text:`${c0} customers a year ago, plus ${won} won, less ${lost} lost, gives ${implied}. The count today is ${cn}.`,
-      ask:'Which customers are missing from the bridge — reactivations, acquisitions, accounts merged or split, or a different definition of "customer" a year ago?' });
+      ask:'Which customers are missing from the bridge: reactivations, acquisitions, accounts merged or split, or a different definition of "customer" a year ago?' });
   }
 
   /* 22 — take rate (marketplace / fintech) */
@@ -1177,26 +1177,26 @@ function suppressions(D) {
   const c0 = gv('customers_12mo'), nc = gv('new_customers_l12'), hc = gv('headcount_now'), arr = gv('arr_now');
   const arr0 = gv('arr_12mo');
   if (c0 != null && c0 < m.retention) {
-    const r = `only ${c0} customers a year ago — below the ${m.retention}-logo floor where a retention percentage carries signal`;
+    const r = `only ${c0} customers a year ago: below the ${m.retention}-logo floor where a retention percentage carries signal`;
     ['nrr','grr','quick_ratio','logo_ret'].forEach(k => s[k] = r);
   }
   if (nc != null && nc < m.unit_economics) {
-    const r = `only ${nc} new customers in the period — blended CAC on that few wins is not a rate, it is an anecdote`;
+    const r = `only ${nc} new customers in the period: blended CAC on that few wins is not a rate, it is an anecdote`;
     ['cac_payback','ltv_cac'].forEach(k => s[k] = r);
   }
   if (c0 != null && c0 < m.retention && !s.ltv_cac)
-    s.ltv_cac = `only ${c0} customers a year ago — the customer lifetime in LTV comes from logo churn, which needs at least ${m.retention} customers to mean anything`;
+    s.ltv_cac = `only ${c0} customers a year ago: the customer lifetime in LTV comes from logo churn, which needs at least ${m.retention} customers to mean anything`;
   if (arr0 != null && arr0 < m.growth_base)
-    s.growth_yoy = `growth measured off ${money(arr0)} of opening ARR — percentage growth off a base this small is not comparable to anything`;
+    s.growth_yoy = `growth measured off ${money(arr0)} of opening ARR: percentage growth off a base this small is not comparable to anything`;
   if (arr != null && arr < m.magic_number)
-    s.magic_number = `ARR below ${money(m.magic_number)} — quarterly magic number is dominated by single-deal timing at this scale`;
-  if (hc != null && hc < m.arr_per_fte) s.arr_per_fte = `only ${hc} employees — ARR per head is not yet a productivity measure`;
+    s.magic_number = `ARR below ${money(m.magic_number)}: quarterly magic number is dominated by single-deal timing at this scale`;
+  if (hc != null && hc < m.arr_per_fte) s.arr_per_fte = `only ${hc} employees: ARR per head is not yet a productivity measure`;
   if (gv('headcount_sales') != null && gv('headcount_sales') < m.quota)
-    s.quota_att = `fewer than ${m.quota} quota carriers — attainment is a single person's quarter`;
+    s.quota_att = `fewer than ${m.quota} quota carriers: attainment is a single person's quarter`;
   const pr = gv('pmf_respondents');
   if (D.pmf_score != null && (pr == null || pr < m.pmf_survey))
-    s.pmf_score = pr == null ? 'the number of survey respondents is not entered — the 40% test needs at least ' + m.pmf_survey + ' answers to mean anything'
-      : `only ${pr} survey responses — below ${m.pmf_survey} the percentage is mostly noise`;
+    s.pmf_score = pr == null ? 'the number of survey respondents is not entered, the 40% test needs at least ' + m.pmf_survey + ' answers to mean anything'
+      : `only ${pr} survey responses: below ${m.pmf_survey} the percentage is mostly noise`;
   return s;
 }
 
@@ -1293,7 +1293,7 @@ function scoreAll(D, checks, opts) {
       key, label:DLABEL[key] || key, value:dfmt(key, v), raw:v, score:Math.round(sc), rawScore:Math.round(raw), weight:wE, evidence:ev, calibrated:!!cfg._cal,
       withheld: shrink < 1 ? true : undefined, suppressed: shrink < 1 ? supp[key] : undefined, credibility: shrink < 1 ? Math.round(shrink * 100) / 100 : undefined,
       contested: hit.length ? [...new Set(hit.flatMap(id => contested[id]))] : null, group:corrOf(key),
-      bench: cfg.dir === 'band' ? `${cfg.ideal[0]}–${cfg.ideal[1]} ideal`
+      bench: cfg.dir === 'band' ? `${cfg.ideal[0]} to ${cfg.ideal[1]} ideal`
            : (cfg.dir === 'hi' ? '≥ ' : '≤ ') + dfmt(key, goodValue(cfg, anchors)) + ' good' + (cfg._owner ? ', your standard' : ''),
       note: cfg._note || null,
     });
@@ -1477,16 +1477,16 @@ function leverFor(q) {
 function buildQuestions(D, checks, sc, ctx) {
   ctx = ctx || {};
   const q = [];
-  sc.gates.forEach(g => q.push({ p:0, fam:'gates', ref:{ k:'gates', id:g.id }, tag:'Gate — resolve before terms', text:[g.title + '.', g.why, g.ask].filter(Boolean).join(' ') }));
-  checks.filter(c => c.sev === 'major').forEach(c => c.ask && q.push({ p:1, fam:'contradictions', ref:{ k:'checks', id:c.id }, tag:'Contradiction — ' + c.title, text:c.ask }));
-  (ctx.patterns || []).filter(p => p.sev === 'red' && p.ask).forEach(p => q.push({ p:1.5, fam:'risk_patterns', ref:{ k:'patterns', id:p.id }, tag:'Risk pattern — ' + p.title, text:p.ask }));
-  (ctx.forensics || []).filter(f => (f.status === 'fail' || f.status === 'warn') && f.ask).forEach(f => q.push({ p:1.6, fam:'forensics', tag:'Forensic signal — ' + f.title, text:f.ask }));
-  checks.filter(c => c.sev === 'minor').forEach(c => c.ask && q.push({ p:2, fam:'inconsistencies', ref:{ k:'checks', id:c.id }, tag:'Inconsistency — ' + c.title, text:c.ask }));
-  (ctx.patterns || []).filter(p => p.sev === 'amber' && p.ask).forEach(p => q.push({ p:2.2, fam:'watch_patterns', ref:{ k:'patterns', id:p.id }, tag:'Watch pattern — ' + p.title, text:p.ask }));
+  sc.gates.forEach(g => q.push({ p:0, fam:'gates', ref:{ k:'gates', id:g.id }, tag:'Gate: resolve before terms', text:[g.title + '.', g.why, g.ask].filter(Boolean).join(' ') }));
+  checks.filter(c => c.sev === 'major').forEach(c => c.ask && q.push({ p:1, fam:'contradictions', ref:{ k:'checks', id:c.id }, tag:'Contradiction: ' + c.title, text:c.ask }));
+  (ctx.patterns || []).filter(p => p.sev === 'red' && p.ask).forEach(p => q.push({ p:1.5, fam:'risk_patterns', ref:{ k:'patterns', id:p.id }, tag:'Risk pattern: ' + p.title, text:p.ask }));
+  (ctx.forensics || []).filter(f => (f.status === 'fail' || f.status === 'warn') && f.ask).forEach(f => q.push({ p:1.6, fam:'forensics', tag:'Forensic signal: ' + f.title, text:f.ask }));
+  checks.filter(c => c.sev === 'minor').forEach(c => c.ask && q.push({ p:2, fam:'inconsistencies', ref:{ k:'checks', id:c.id }, tag:'Inconsistency: ' + c.title, text:c.ask }));
+  (ctx.patterns || []).filter(p => p.sev === 'amber' && p.ask).forEach(p => q.push({ p:2.2, fam:'watch_patterns', ref:{ k:'patterns', id:p.id }, tag:'Watch pattern: ' + p.title, text:p.ask }));
 
   /* Missing required inputs */
   SECTIONS.forEach(sec => visibleFields(sec).forEach(f => {
-    if (f.req && !fieldIsFilled(f)) q.push({ p:2, fam:'missing_inputs', tag:'Missing input — ' + sec.label, text:`Obtain ${f.lbl.toLowerCase()}. Several derived metrics cannot be computed without it.` });
+    if (f.req && !fieldIsFilled(f)) q.push({ p:2, fam:'missing_inputs', tag:'Missing input: ' + sec.label, text:`Obtain ${f.lbl.toLowerCase()}. Several derived metrics cannot be computed without it.` });
   }));
 
   /* Suppressed metrics: say so out loud rather than scoring noise */
@@ -1498,28 +1498,28 @@ function buildQuestions(D, checks, sc, ctx) {
     .sort((a, b) => a.score - b.score).slice(0, sx('questionMaxWeakDims'))
     .forEach(d => {
       const worst = d.metrics.filter(m => m.score != null).sort((a, b) => a.score - b.score)[0];
-      q.push({ p:2, fam:'weak_dimensions', tag:'Weak dimension — ' + d.label, text:worst
+      q.push({ p:2, fam:'weak_dimensions', tag:'Weak dimension: ' + d.label, text:worst
         ? `${d.label} scores ${d.score}. The binding constraint is ${worst.label.toLowerCase()} at ${worst.value} against a ${worst.bench} bar. Establish whether this is structural or a timing artefact.`
         : `${d.label} scores ${d.score}. Work out which underlying metric is driving it.` });
     });
 
   /* Low coverage dimensions */
   sc.dimensions.filter(d => d.coverage < sx('questionThinCoverage')).forEach(d =>
-    q.push({ p:3, fam:'thin_evidence', tag:'Thin evidence — ' + d.label, text:`Only ${Math.round(d.coverage * 100)}% of the ${d.label.toLowerCase()} rubric is populated. The dimension score is not yet load-bearing.` }));
+    q.push({ p:3, fam:'thin_evidence', tag:'Thin evidence: ' + d.label, text:`Only ${Math.round(d.coverage * 100)}% of the ${d.label.toLowerCase()} rubric is populated. The dimension score is not yet load-bearing.` }));
 
   /* Heavily weighted metrics that rest on weak sources: confirm before relying on them. */
   const VERIFIABLE = ['growth_yoy','nrr','grr','gross_margin','runway','burn_multiple','cac_payback','ltv_cac','magic_number','top5_conc','logo_ret','arr_per_fte','rule40','quick_ratio','services_pct','hype_ratio'];
   sc.dimensions.flatMap(d => d.metrics.filter(m => VERIFIABLE.includes(m.key) && m.score != null && m.evidence != null && m.evidence < sx('questionUnverified')).map(m => ({ ...m, w:(m.weight || 1) * d.weight })))
     .sort((a, b) => b.w - a.w).slice(0, sx('questionMaxUnverified'))
-    .forEach(m => q.push({ p:3.5, fam:'unverified_inputs', tag:'Unverified input — ' + m.label, text:`Could you share the underlying data behind ${m.label.toLowerCase()} (${m.value})? We would like to tie it to a system export or statement rather than a summary.` }));
+    .forEach(m => q.push({ p:3.5, fam:'unverified_inputs', tag:'Unverified input: ' + m.label, text:`Could you share the underlying data behind ${m.label.toLowerCase()} (${m.value})? We would like to tie it to a system export or statement rather than a summary.` }));
 
   /* Confirmatory diligence that every deal should include. */
   const LED = S.ledger ? ledgerAnalytics(S.ledger) : null;
   if (LED && LED.pareto.length >= 3) {
     const top = LED.pareto.slice(0, 2).map(x => x.name).join(' and ');
-    q.push({ p:4, fam:'confirm_calls', tag:'Confirmatory — customer calls', text:`Could we speak with ${top}, and with one customer who churned in the last year, about renewal intent, alternatives considered and how the product is used?` });
-  } else q.push({ p:4, fam:'confirm_calls', tag:'Confirmatory — customer calls', text:'Could we speak with two of the largest customers and one who churned in the last year?' });
-  q.push({ p:4, fam:'confirm_funds', tag:'Confirmatory — use of funds', text:'What does the next eighteen months look like: hires by function, spend, and the specific milestones this round is meant to reach?' });
+    q.push({ p:4, fam:'confirm_calls', tag:'Confirmatory: customer calls', text:`Could we speak with ${top}, and with one customer who churned in the last year, about renewal intent, alternatives considered and how the product is used?` });
+  } else q.push({ p:4, fam:'confirm_calls', tag:'Confirmatory: customer calls', text:'Could we speak with two of the largest customers and one who churned in the last year?' });
+  q.push({ p:4, fam:'confirm_funds', tag:'Confirmatory: use of funds', text:'What does the next eighteen months look like: hires by function, spend, and the specific milestones this round is meant to reach?' });
 
   q.forEach(x => {
     const l = leverFor(x); if (l) x.lever = l;
@@ -1592,12 +1592,12 @@ function allProgress() {
   return { filled:f, total:t, pct: t ? Math.round(f / t * 100) : 0 };
 }
 
-function toast(msg, type = 'ok') {
+function toast(msg, type = 'ok', ms = 3400) {
   const el = $id('toast');
   el.textContent = msg; el.className = 'toast ' + type;
   const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (f => setTimeout(f, 16));
   raf(() => el.classList.add('show'));
-  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 3400);
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), ms);
 }
 /* On a phone or tablet the sidebar is a drawer over the page; on a desktop it is hidden or shown (and the choice is remembered). */
 function isNarrow() { return !!(window.matchMedia && matchMedia('(max-width: 780px)').matches); }
@@ -1625,6 +1625,7 @@ function sidebarToggle() {
   lsSet(SB_KEY, resolvedSidebar() === 'hidden' ? 'open' : 'hidden'); applyLook();
 }
 function showPage(id) {
+  if (id === 'intro') { if (S.example) leaveExample(); renderResumeCard(); }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const el = $id('page-' + id);
   if (el) el.classList.add('active');
@@ -1651,7 +1652,7 @@ function updateTopbar(id) {
   if (id === 'section' || id === 'verify') {
     const b = document.createElement('button');
     b.className = 'btn btn-ghost btn-sm'; b.textContent = 'Save & exit';
-    b.onclick = () => { saveSec(); saveDraft(); toast('Draft saved in this browser.'); showPage('intro'); };
+    b.onclick = () => { saveSec(); saveDraft(); toast(S.example ? 'Example closed. Nothing was saved.' : 'Draft saved in this browser.'); showPage('intro'); };
     right.appendChild(b);
   }
   if (id === 'result') {
@@ -1673,7 +1674,7 @@ function updateProgress() {
   const ck = runChecks(D);
   const maj = ck.filter(c => c.sev === 'major').length, min = ck.filter(c => c.sev === 'minor').length;
   const el = $id('consist-val');
-  if (!ck.length) { el.textContent = '—'; el.style.color = ''; }
+  if (!ck.length) { el.textContent = 'n/a'; el.style.color = ''; }
   else if (maj) { el.textContent = maj + ' material'; el.style.color = 'var(--red)'; }
   else if (min) { el.textContent = min + ' minor'; el.style.color = 'var(--amber)'; }
   else { el.textContent = 'clean'; el.style.color = 'var(--green)'; }
@@ -1974,10 +1975,10 @@ function renderSection(idx) {
 function sectionBanner(sec) {
   if (sec.id === 'revenue' || sec.id === 'gtm') {
     const LED = S.ledger ? ledgerAnalytics(S.ledger) : null;
-    if (!LED) return sec.id === 'revenue' ? `<div class="sector-note">No customer ledger loaded. Upload revenue by customer by month on the <a href="#" onclick="showPage('intake');return false">source material</a> step and VCR2 computes these fields — and true cohort retention — itself.</div>` : '';
+    if (!LED) return sec.id === 'revenue' ? `<div class="sector-note">No customer ledger loaded. Upload revenue by customer by month on the <a href="#" onclick="showPage('intake');return false">source material</a> step and VCR2 computes these fields (and true cohort retention) itself.</div>` : '';
     const P = ledgerPrimitives(LED);
     const diff = Object.keys(P).filter(k => SECTIONS.find(x => x.id === sec.id).fields.some(f => f.id === k) && gv(k) != null && S.prov[k]?.src !== 'ledger').length;
-    return `<div class="sector-note ledger-note">Customer ledger loaded — ${S.ledger.customers.length} customers × ${LED.months.length} months (${monthLabel(LED.months[0])} – ${monthLabel(LED.months[LED.e])}).
+    return `<div class="sector-note ledger-note">Customer ledger loaded: ${S.ledger.customers.length} customers × ${LED.months.length} months (${monthLabel(LED.months[0])} to ${monthLabel(LED.months[LED.e])}).
       Ledger ARR ${money(LED.arrNow)} · cohort NRR ${fmtPct(LED.nrrCohort)} · GRR ${fmtPct(LED.grrCohort)}.
       <button class="btn btn-ghost btn-sm" style="margin-left:6px" onclick="applyLedgerToForm();renderSection(S.section);toast('Ledger figures applied to the form.')">Apply ledger figures to the form</button>
       ${diff ? `<span style="display:block;margin-top:4px;color:var(--amber-t)">${diff} field${diff === 1 ? '' : 's'} here were entered by hand; the verification step compares them against the ledger.</span>` : ''}</div>`;
@@ -2012,11 +2013,11 @@ function liveDeal(slot) {
     <p style="font-size:.8125rem;color:var(--t2)">Enter the round size and the pre-money to see post-money, your ownership, the effective pre-money after the pool shuffle and SAFE conversion, and what exit would return your fund.</p></div>`; return; }
   const tiles = [
     ['Post-money', money(X.P), 'pre-money + new money'],
-    ['Your ownership at entry', X.ownEntry != null ? fmtPct(X.ownEntry * 100, 2) : '—', 'cheque ÷ post-money'],
+    ['Your ownership at entry', X.ownEntry != null ? fmtPct(X.ownEntry * 100, 2) : 'n/a', 'cheque ÷ post-money'],
     ['Effective pre-money', money(X.effPre), 'after pool top-up and SAFE conversion'],
-    ['Ownership at exit', X.ownExit != null ? fmtPct(X.ownExit * 100, 2) : '—', `after ${X.I.rounds} rounds at ${X.I.dil}% dilution`],
-    ['Exit to return the fund', X.fundReturner != null ? money(X.fundReturner) : '—', 'fund size ÷ ownership at exit'],
-    ['Entry multiple', X.entryMult != null ? fmtX(X.entryMult) + ' ARR' : '—', 'post-money ÷ ARR'],
+    ['Ownership at exit', X.ownExit != null ? fmtPct(X.ownExit * 100, 2) : 'n/a', `after ${X.I.rounds} rounds at ${X.I.dil}% dilution`],
+    ['Exit to return the fund', X.fundReturner != null ? money(X.fundReturner) : 'n/a', 'fund size ÷ ownership at exit'],
+    ['Entry multiple', X.entryMult != null ? fmtX(X.entryMult) + ' ARR' : 'n/a', 'post-money ÷ ARR'],
   ];
   slot.innerHTML = `<div class="derived-panel"><div class="derived-head"><h3>Deal maths</h3><span>computed live · full analysis in the report</span></div>
     <div class="derived-grid">${tiles.map(t => `<div class="dv n"><div class="dv-lbl">${esc(t[0])}</div><div class="dv-val">${esc(t[1])}</div><div class="dv-form">${esc(t[2])}</div></div>`).join('')}</div></div>`;
@@ -2107,35 +2108,76 @@ function restorePayload(d) {
   const n = $id('cname'); if (n) n.value = S.name;
   const a = $id('asof'); if (a) a.value = S.asof;
 }
-let _draftWarned = false;
+/* The draft lives in this browser only. An example (S.example) is kept in memory and never written, so it cannot replace a real draft. */
+let _draftWarned = false, _epoch = 0;
 function saveDraft() {
+  if (S.example) return;
+  let lost = '';
   try { localStorage.setItem('vcr3-draft', JSON.stringify(draftPayload())); }
   catch (e) {
-    try {
-      const p = draftPayload(); p.ledger = null;
-      localStorage.setItem('vcr3-draft', JSON.stringify(p));
-      if (!_draftWarned) { _draftWarned = true; toast('The ledger is too large to keep in browser storage. Export the assessment as JSON to save it.', 'err'); }
-    } catch (e2) {}
+    try { const p = draftPayload(); p.ledger = null; localStorage.setItem('vcr3-draft', JSON.stringify(p)); lost = 'ledger'; }
+    catch (e2) { lost = 'all'; }
   }
+  const t = Date.now();
+  if (lost !== 'all') try { localStorage.setItem('vcr3-draft-meta', JSON.stringify({ t, name:S.name, pct:allProgress().pct })); } catch (e) {}
+  if (lost && !_draftWarned) {
+    _draftWarned = true;
+    toast(lost === 'all' ? 'Nothing could be saved: browser storage is full or blocked. Use Export .json on the report to keep your work.'
+      : 'Saved in this browser: your answers, notes and assumptions. Not saved: the uploaded ledger, because it is too large for browser storage. Use Export .json on the report to keep everything.', 'err', 10000);
+  }
+  showSaved(lost, t);
+}
+/* The quiet "Saved in this browser" line in the top bar and the note shown while an example is open. */
+function showSaved(lost, t) {
+  const el = $id('tb-saved'), ex = $id('example-note');
+  if (ex) ex.hidden = !S.example;
+  if (!el) return;
+  el.textContent = S.example || !t ? '' : lost === 'all' ? 'Not saved' : lost ? 'Saved in this browser, except the ledger'
+    : 'Saved in this browser, ' + new Date(t).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
 }
 function loadDraft() {
+  let meta = {};
   try {
-    const raw = localStorage.getItem('vcr3-draft'); if (!raw) return;
-    restorePayload(JSON.parse(raw));
-    updateProgress();
-    if (S.name || Object.keys(S.vals).length) $id('resume-btn').style.display = '';
+    const raw = localStorage.getItem('vcr3-draft');
+    if (raw) { restorePayload(JSON.parse(raw)); updateProgress(); meta = JSON.parse(localStorage.getItem('vcr3-draft-meta') || '{}') || {}; }
   } catch (e) {}
+  renderResumeCard(); showSaved('', meta.t);
 }
-function resumeDraft() { buildStages(); buildTypes(); renderIntakeStatus(); renderSection(S.section); showPage('section'); }
-function resetApp() {
-  if (!confirm('Clear this assessment and start again? The saved draft in this browser is deleted.')) return;
-  try { localStorage.removeItem('vcr3-draft'); } catch (e) {}
+/* Home page: when a real draft exists, it is the first thing offered. Nothing jumps by itself. */
+function renderResumeCard() {
+  const c = $id('resume-card'); if (!c) return;
+  let d = null, meta = {};
+  try { d = JSON.parse(localStorage.getItem('vcr3-draft') || 'null'); meta = JSON.parse(localStorage.getItem('vcr3-draft-meta') || '{}') || {}; } catch (e) {}
+  const has = !!d && !!(d.name || Object.keys(d.vals || {}).length || Object.keys(d.bools || {}).length || Object.keys(d.sel || {}).length || d.ledger || d.series);
+  c.hidden = !has;
+  if (!has) return;
+  $id('resume-name').textContent = d.name || 'Untitled company';
+  const hm = new Date(meta.t).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }), day = new Date(meta.t);
+  $id('resume-meta').textContent = (meta.pct != null ? meta.pct + '% of the form filled' : 'Saved draft')
+    + (meta.t ? ', last edited ' + (day.toDateString() === new Date().toDateString() ? 'today' : day.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })) + ' at ' + hm : '');
+}
+function continueDraft() { loadDraft(); buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); renderSection(S.section); showPage('section'); }
+/* Going home closes an example; the person's own draft, if any, is back as it was. */
+function leaveExample() {
   S = blankState();
-  $id('cname').value = '';
-  $id('asof').value = '';
-  ['intake-deck', 'intake-fin', 'ledger-paste', 'series-paste'].forEach(id => { const el = $id(id); if (el) el.value = ''; });
-  renderIntakeStatus(); renderFileList();
-  updateProgress(); showPage('intro');
+  ['cname', 'asof', 'intake-deck', 'intake-fin', 'ledger-paste', 'series-paste'].forEach(id => { const el = $id(id); if (el) el.value = ''; });
+  loadDraft(); buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); renderFileList(); updateProgress();
+}
+/* "Reset all inputs" and "New assessment": everything this assessment holds goes; the library, Studio, theme, text size and AI key stay. */
+function resetApp() {
+  if (!confirm('Reset all inputs?\n\nThis deletes, in this browser: all inputs, the uploaded ledger and financials, notes, assumptions, the report in progress and the saved draft.\n\nIt does not touch your library, Studio settings, theme, text size or AI key.\n\nThis cannot be undone.')) return;
+  _epoch++; simAbort();
+  try { ['vcr3-draft', 'vcr3-draft-meta', 'vcr4-memo'].forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  S = blankState(); _draftWarned = false;
+  document.querySelectorAll('#page-setup input, #page-setup textarea, #page-intake input, #page-intake textarea').forEach(el => {
+    if (el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked; else el.value = '';
+  });
+  document.querySelectorAll('#page-setup select, #page-intake select').forEach(el => { el.selectedIndex = 0; });
+  ['section-content', 'verify-content', 'result-content'].forEach(id => { const el = $id(id); if (el) el.innerHTML = ''; });
+  buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); renderFileList(); updateProgress();
+  const sb = $id('sidebar'), nav = $id('sb-nav'); if (sb) sb.scrollTop = 0; if (nav) nav.scrollTop = 0;
+  showPage('intro'); renderResumeCard(); showSaved('', 0);
+  toast('All inputs were reset.');
 }
 function editData() { renderSection(S.section); showPage('section'); }
 
@@ -2223,7 +2265,7 @@ async function runExtraction() {
 
   const fieldList = extractableFields().map(f => {
     const u = f.t === 'select' ? `one of: ${f.options.join(' | ')}` : f.t === 'bool' ? 'true or false' : (f.unit === '$' ? 'number in USD, no symbols' : f.unit === '%' ? 'number, percentage points' : 'number');
-    return `${f.id} — ${f.lbl} (${u})`;
+    return `${f.id}: ${f.lbl} (${u})`;
   }).join('\n');
 
   const SYSTEM = aiSystem('extraction');
@@ -2234,7 +2276,7 @@ RULES
 - Currency: strip symbols and separators. "$4.2M" becomes 4200000.
 - Percentages: "71%" becomes 71. "1.4x" becomes 1.4.
 - Churn and contraction ARR must be positive numbers.
-- Fields beginning with stated_ are the company's own headline claims — take them exactly as presented, even if the material elsewhere implies a different number. The disagreement is the point.
+- Fields beginning with stated_ are the company's own headline claims. Take them exactly as presented, even if the material elsewhere implies a different number. The disagreement is the point.
 - Return ONLY a JSON object, no prose, in this shape:
 { "field_id": { "value": <number|boolean|string>, "line": "<the exact source sentence or cell, max 120 chars>" } }
 
@@ -2295,7 +2337,7 @@ function goVerify() {
     </div>
 
     ${majors.length >= blockAfter() && !cfgHidden('gates', 'reconcile') ? `<div class="gate"><h3>Assessment blocked</h3>
-      <p style="font-size:0.875rem;color:var(--t1);margin-bottom:6px">${majors.length} material discrepancies: headline figures that disagree with the arithmetic behind them. VCR2 will still produce the full analysis — revenue, forensics, runway, deal maths and the question list — but it will not publish a score against a data pack in this state.</p></div>` : ''}
+      <p style="font-size:0.875rem;color:var(--t1);margin-bottom:6px">${majors.length} material discrepancies: headline figures that disagree with the arithmetic behind them. VCR2 will still produce the full analysis (revenue, forensics, runway, deal maths and the question list) but it will not publish a score against a data pack in this state.</p></div>` : ''}
 
     ${opt && opt.significant ? `<div class="gate optim"><h3>Every discrepancy points the same way</h3>
       <p style="font-size:0.875rem;color:var(--t1)">${opt.k} of the ${opt.n} discrepancies that have a direction flatter the company. If these were honest, random errors, the chance of at least that many leaning in its favour would be ${fmtProb(opt.p)}. That is a pattern in how the data pack was prepared, not a series of typos.</p></div>` : ''}
@@ -2303,7 +2345,7 @@ function goVerify() {
     ${majors.length ? `<div class="block-title">Material contradictions</div>${majors.map(card).join('')}` : ''}
     ${minors.length ? `<div class="block-title" style="margin-top:15px">Minor inconsistencies</div>${minors.map(card).join('')}` : ''}
     ${fx.length ? `<div class="block-title" style="margin-top:15px">Forensic signals in the customer ledger</div>${fx.map(f => `<div class="contra minor"><div class="contra-h"><strong>${esc(f.title)}</strong><span class="sev">${esc(f.stat)}</span></div><p>${esc(f.detail)}</p>${f.ask ? `<div class="ask">${esc(f.ask)}</div>` : ''}</div>`).join('')}` : ''}
-    ${!checks.length ? `<div class="suppressed">No checks could run yet. The verification layer needs both the primitives and at least one figure in “What the company states” — or a customer ledger to test the form against.</div>` : ''}
+    ${!checks.length ? `<div class="suppressed">No checks could run yet. The verification layer needs both the primitives and at least one figure in “What the company states”, or a customer ledger to test the form against.</div>` : ''}
 
     ${oks.length ? `<div class="block-title" style="margin-top:16px">Reconciled</div>
       <div class="tbl-wrap"><table class="ledger">
@@ -2362,6 +2404,7 @@ function assessAllCore() {
 }
 
 async function runAnalysis() {
+  const ep = _epoch;
   saveSec();
   showPage('loading');
   const steps = Array.from({ length:8 }, (_, i) => $id('ls-' + i));
@@ -2392,6 +2435,7 @@ async function runAnalysis() {
     try { R.memo = await writeMemo(ai.provider, ai.key, R); }
     catch (e) { R.memo = null; toast('Memo draft failed: ' + e.message + ' The computed report is unaffected.', 'err'); }
   }
+  if (ep !== _epoch) return;
   steps.forEach(s => s.className = 'ld-step done');
   S.result = R; simRefresh(true);
   try { renderResult(S.result); }
@@ -2408,7 +2452,7 @@ const AI_RULES = {
   memo:'You are a venture investor writing the narrative section of an investment committee memo. You are given figures that have already been computed by a deterministic engine. You do not recompute, re-score or contradict them, and you never invent a number that is not in the input.',
   extraction:'You extract figures from startup fundraising material into a fixed schema. You never estimate, infer or annualise. If a value is not stated, you omit the field. You always return the exact source line for every value you return.',
 };
-const AI_VOICE_DEFAULT = 'You write in plain, unhedged English, in complete paragraphs, without headers or bullet points. You do not open with a summary of your instructions.';
+const AI_VOICE_DEFAULT = 'You write in plain, unhedged English, in complete paragraphs, without headers or bullet points. You do not open with a summary of your instructions. Do not use em dashes or en dashes.';
 function aiSystem(kind) {
   const P = (typeof CFG !== 'undefined' && CFG.meta && CFG.meta.prompts && CFG.meta.prompts[kind]) || {};
   const voice = kind === 'memo' ? (P.voice || AI_VOICE_DEFAULT) : '';
@@ -2449,12 +2493,12 @@ async function writeMemo(provider, key, R) {
   const { D, F, checks, sc, questions, proj, deal, patterns, LED } = R;
   const metricLines = Object.keys(D).filter(k => DLABEL[k]).map(k => `${DLABEL[k] || k}: ${dfmt(k, D[k])}  [${F[k]}]`).join('\n');
   const dimLines = sc.dimensions.map(d => `${d.label}: ${d.score == null ? 'not scored' : d.score + '/100'} (weight ${(d.weight * 100).toFixed(0)}%, coverage ${(d.coverage * 100).toFixed(0)}%)`).join('\n');
-  const checkLines = checks.filter(c => c.sev !== 'ok').map(c => `[${c.sev}] ${c.title}: stated ${c.stated}, computed ${c.computed} — ${c.delta}`).join('\n');
+  const checkLines = checks.filter(c => c.sev !== 'ok').map(c => `[${c.sev}] ${c.title}: stated ${c.stated}, computed ${c.computed}: ${c.delta}`).join('\n');
   const gateLines = sc.gates.map(g => '- ' + g.title).join('\n') || 'none';
   const patLines = patterns.map(p => `[${p.sev}] ${p.title}: ${p.evidence.join('; ')}`).join('\n') || 'none';
   const sim = proj.sim, da = proj.da;
   const projLines = [
-    da ? `Default-alive test at current growth and spend: ${da.alive ? 'ALIVE — profitable in ' + da.months + ' months' : 'DEAD — cash runs out in month ' + (da.deadAt || '?')}` : null,
+    da ? `Default-alive test at current growth and spend: ${da.alive ? 'ALIVE: profitable in ' + da.months + ' months' : 'DEAD: cash runs out in month ' + (da.deadAt || '?')}` : null,
     sim ? `Monte Carlo (${sim.N} paths, ${sim.H} months): P(reach ${money(sim.milestone)} ARR before cash-out) ${fmtProb(sim.pMilestone)}; P(cash-out first) ${fmtProb(sim.pDeath)}; median runway ${sim.runway.p50 > sim.H ? sim.H + '+ months' : sim.runway.p50 + ' months'}; capital needed to reach the milestone with buffer p50 ${sim.need50 == null ? 'n/a (bar not reached in horizon)' : money(sim.need50)}, p80 ${sim.need80 == null ? 'n/a (bar not reached in horizon)' : money(sim.need80)}` : null,
   ].filter(Boolean).join('\n') || 'not computed';
   const dealLines = deal ? `Post-money ${money(deal.P)}; our entry ownership ${deal.ownEntry != null ? fmtPct(deal.ownEntry * 100, 2) : 'n/a'}; ownership at exit ${deal.ownExit != null ? fmtPct(deal.ownExit * 100, 2) : 'n/a'}; effective pre-money ${money(deal.effPre)}; entry multiple ${fmtX(deal.entryMult)} ARR; exit needed to return the fund ${money(deal.fundReturner)}; ARR needed at the assumed exit multiple ${money(deal.arrForFund)}${deal.samShare != null ? ' = ' + fmtPct(deal.samShare) + ' of the serviceable market' : ''}` : 'no proposed terms entered';
@@ -2482,7 +2526,7 @@ ${metricLines}
 
 DIMENSION SCORES (deterministic, rubric ${sc.rubric})
 ${dimLines}
-Overall: ${sc.overall == null ? 'not computed' : sc.overall + '/100, band ' + sc.band[0] + '–' + sc.band[1] + ', confidence ' + sc.confidence}
+Overall: ${sc.overall == null ? 'not computed' : sc.overall + '/100, band ' + sc.band[0] + ' to ' + sc.band[1] + ', confidence ' + sc.confidence}
 
 GATES
 ${gateLines}

@@ -8,9 +8,9 @@ Rubric **5.0.0**. Everything below is implemented in the JavaScript source files
 
 VCR2 separates three kinds of input:
 
-- **Primitives** — raw figures (ARR today, churned ARR, cash, S&M spend, headcount…). Anything derivable from primitives is never asked for.
-- **Claims** — the headline figures exactly as the company presents them (“What the company states”). Never scored; only compared.
-- **Files** — the customer revenue ledger and monthly financials, parsed locally.
+- **Primitives**: raw figures (ARR today, churned ARR, cash, S&M spend, headcount…). Anything derivable from primitives is never asked for.
+- **Claims**: the headline figures exactly as the company presents them (“What the company states”). Never scored; only compared.
+- **Files**: the customer revenue ledger and monthly financials, parsed locally.
 
 Every primitive carries an **evidence tag**, weighted as follows:
 
@@ -54,7 +54,7 @@ When a ledger with at least six months of look-back is present, cohort NRR, GRR 
 
 **Cohorts.** Customers are grouped by first revenue month (quarterly when the ledger is longer than 18 months). Cell (cohort, age *a*) = revenue at age *a* ÷ revenue at start, over members old enough; partially-aged cells are marked. Customers already live in the first ledger month have no known start and are excluded. Cohort-quality trend compares the older and newer halves of cohorts at month 6 (or 3), with a linear fit across cohorts.
 
-**Concentration.** Top-1/5/10 share of current MRR and the Herfindahl–Hirschman index (Σ share², shares in %).
+**Concentration.** Top-1/5/10 share of current MRR and the Herfindahl to Hirschman index (Σ share², shares in %).
 
 ## 3. Forensic tests
 
@@ -92,9 +92,9 @@ Stated figures are compared with computed ones. Tolerances are in percentage poi
 | Customer count | 3% (min 1) | 10% |
 | Customer count bridge (customers a year ago + won − lost = customers now) | 3% (min 1) | 10% |
 | Gross margin vs hosting + support cost | 5 pts | 12 pts |
-| Stated TAM vs bottom-up (accounts × ACV) | — | > 10× |
-| Concentration ordering (top1 ≤ top5 ≤ top10 ≤ 100%) | — | any violation |
-| Form vs customer ledger (ARR, flows, counts, concentration) | 2–10% or 1–2 pts | 6–25% or 3–6 pts |
+| Stated TAM vs bottom-up (accounts × ACV) | n/a | > 10× |
+| Concentration ordering (top1 ≤ top5 ≤ top10 ≤ 100%) | n/a | any violation |
+| Form vs customer ledger (ARR, flows, counts, concentration) | 2 to 10% or 1 to 2 pts | 6 to 25% or 3 to 6 pts |
 | Form vs monthly financials (cash, burn) | 5% / 15% | 15% / 35% |
 | Burn vs headcount cost, deferred revenue > ARR, aged receivables, services share, cash > equity raised | structural flags | aged receivables > 18% of ARR |
 
@@ -102,7 +102,7 @@ Stated figures are compared with computed ones. Tolerances are in percentage poi
 
 ## 5. Scoring
 
-Each metric is mapped onto four stage-specific anchors `[poor, acceptable, good, excellent]` → `[0, 45, 72, 100]` with linear interpolation. Lower-is-better metrics are the exact mirror: `[excellent, good, acceptable, poor]` → `[100, 72, 45, 0]` (in 4.3 the code used 100 / 55 / 28 / 0, which the documentation did not say). Healthy-range metrics (option pool) score 92 inside the range and fall in a straight line to 0 at the hard limits. Metrics are weighted inside six dimensions — revenue quality, capital efficiency, go-to-market, team, market & moat, governance & technical risk — and dimensions are combined at stage weights (e.g. Series A: revenue 26%, capital 20%, go-to-market 18%, team 14%, market 12%, governance 10%). A dimension below 50% coverage carries proportionally less than its full weight. Booleans adjust a dimension by at most ±15.
+Each metric is mapped onto four stage-specific anchors `[poor, acceptable, good, excellent]` → `[0, 45, 72, 100]` with linear interpolation. Lower-is-better metrics are the exact mirror: `[excellent, good, acceptable, poor]` → `[100, 72, 45, 0]` (in 4.3 the code used 100 / 55 / 28 / 0, which the documentation did not say). Healthy-range metrics (option pool) score 92 inside the range and fall in a straight line to 0 at the hard limits. Metrics are weighted inside six dimensions (revenue quality, capital efficiency, go-to-market, team, market & moat, governance & technical risk) and dimensions are combined at stage weights (e.g. Series A: revenue 26%, capital 20%, go-to-market 18%, team 14%, market 12%, governance 10%). A dimension below 50% coverage carries proportionally less than its full weight. Booleans adjust a dimension by at most ±15.
 
 **Boundary cases are scored, not dropped.** A company that is not burning has the best runway score; one that burns while net new ARR was zero or negative has the worst burn multiple; a gross margin of zero or less means acquisition cost is never paid back (payback and LTV at their worst); no churn or contraction puts the quick ratio at its cap of 10. A worse company can no longer score higher because a metric became undefined. Customers won with no new-logo ARR at all is a result, not a blank: payback is at its cap and LTV:CAC is 0. One exception is documented rather than hidden: a metric withheld below its minimum sample (next paragraph) leaves the weighted mean, which is the same as being scored at its dimension's average, so a company just above a floor with poor figures can score lower than one just below it (measured: up to 5 points on retention). The floors themselves are settings; whether a withheld metric should count at a neutral 50 instead is an open methodology decision.
 
@@ -143,11 +143,11 @@ Conventions: the headline pre-money includes the SAFE and note conversion and an
 - Ownership at exit = cheque ÷ P × (1 − dilution)<sup>future rounds</sup>
 - Exit to return the fund = fund size ÷ ownership at exit; ARR required = that exit ÷ your exit multiple, compared with the bottom-up TAM (> 30% is flagged as implausible)
 
-**Waterfall.** Debt is paid first. Preferred classes take their preference pro rata to preference amounts if the remainder does not cover them; otherwise non-participating classes convert one at a time — largest gain first — whenever converting beats the preference, and participating classes take their preference plus their share of the residual.
+**Waterfall.** Debt is paid first. Preferred classes take their preference pro rata to preference amounts if the remainder does not cover them; otherwise non-participating classes convert one at a time (largest gain first) whenever converting beats the preference, and participating classes take their preference plus their share of the residual.
 
 ## 8. Patterns
 
-Compound rules over several metrics — never a single metric. Risk examples: bought growth (paid share > 50% and CAC payback > 24 months), leaky bucket (GRR < 80% with new ARR > 40% of opening ARR), NRR inflated by new customers (waterfall − cohort NRR > 5 pts), services business (> 20% services and GM < 62%), fragile concentration (top-5 > 45% or top-1 > 15% with < 50% annual contracts), window dressing (final-month spike, amplified 12+ months after the last round), runway cliff (< 12 months), hiring ahead of revenue, discounted wins, enterprise cycle at SMB price, AI inference-margin trap, SAFE-plus-pool overhang, default dead, low simulated odds, cohort decay, fund-returner implausibility, key-person risk, subsidised marketplace liquidity, fintech losses with fast volume growth, partner-bank findings, shelfware expansion, stage mismatch. Strength examples: efficient compounding growth, capital-light growth, default alive, funded to the next stage, improving cohorts, fully reconciled books.
+Compound rules over several metrics: never a single metric. Risk examples: bought growth (paid share > 50% and CAC payback > 24 months), leaky bucket (GRR < 80% with new ARR > 40% of opening ARR), NRR inflated by new customers (waterfall − cohort NRR > 5 pts), services business (> 20% services and GM < 62%), fragile concentration (top-5 > 45% or top-1 > 15% with < 50% annual contracts), window dressing (final-month spike, amplified 12+ months after the last round), runway cliff (< 12 months), hiring ahead of revenue, discounted wins, enterprise cycle at SMB price, AI inference-margin trap, SAFE-plus-pool overhang, default dead, low simulated odds, cohort decay, fund-returner implausibility, key-person risk, subsidised marketplace liquidity, fintech losses with fast volume growth, partner-bank findings, shelfware expansion, stage mismatch. Strength examples: efficient compounding growth, capital-light growth, default alive, funded to the next stage, improving cohorts, fully reconciled books.
 
 ## 9. Library and calibration
 
@@ -163,7 +163,7 @@ The library stores saved runs and imported comparables in the browser. CSV heade
 
 **Capped participation.** A participating class takes its preference and a pro-rata share of the residual until its total reaches the cap; the excess is redistributed to the other participants and common. Every non-participating class, and every capped participating class, takes the better of staying preferred or converting; each candidate conversion is evaluated exactly, one class at a time, until no class gains by switching.
 
-**Term-sheet review** compares each entered term with the market-standard version in the NVCA model documents and the YC Series A template — 1x non-participating preference, broad-based weighted-average anti-dilution, non-cumulative dividends, no redemption at early stage, pro-rata and information rights for major investors — and marks it market, watch or off-market with the reason.
+**Term-sheet review** compares each entered term with the market-standard version in the NVCA model documents and the YC Series A template (1x non-participating preference, broad-based weighted-average anti-dilution, non-cumulative dividends, no redemption at early stage, pro-rata and information rights for major investors) and marks it market, watch or off-market with the reason.
 
 **Exit scenarios.** Three cases: downside, base and upside. Unless entered, the base and upside ARR at exit grow today's ARR at today's growth rate (capped at 300%), with growth decaying 30% a year in the base case and 15% in the upside ("if it works") case, floored at 5% and 10%; the downside is a sale at 1× today's ARR. Base and upside use ownership after future dilution, as converted, at the exit multiple you underwrite; the downside runs through the entry waterfall over half the horizon. Default probabilities by stage (pre-seed 65/25/10, seed 60/28/12, Series A 45/40/15, Series B+ 30/50/20) lean on the downside, as venture outcomes do; all are editable assumptions, not market statistics.
 
@@ -177,7 +177,7 @@ The library stores saved runs and imported comparables in the browser. CSV heade
 
 ## 11. Risk map and diligence checklist
 
-Every gate, red and amber pattern, material contradiction, flagged forensic test and relevant yes/no input is assigned to one of six risk types — product, market & timing, execution & team, financial & reporting, legal & regulatory, deal & structure — and shown on the overview and in the memo.
+Every gate, red and amber pattern, material contradiction, flagged forensic test and relevant yes/no input is assigned to one of six risk types (product, market & timing, execution & team, financial & reporting, legal & regulatory, deal & structure) and shown on the overview and in the memo.
 
 The diligence checklist has about 60 items in ten categories, each applying from a stage onwards, compiled from common VC and startup-accountant practice. Items tied to an input or an uploaded file pre-fill their status (for example, a loaded customer ledger marks the revenue export as received; commingled funds mark the bank-account item as an issue). Statuses set by hand always win, are saved with the assessment and exported with it, and never affect the score.
 
@@ -185,15 +185,15 @@ The diligence checklist has about 60 items in ten categories, each applying from
 
 The owner can extend or narrow the engine from the Studio ([STUDIO.md](STUDIO.md)); the result is `radar-config.json`, loaded by every visitor at startup and validated entry by entry.
 
-**Order of application.** Built-in defaults are captured once when the page loads, and every configuration is applied on top of those defaults, so previewing, publishing and discarding never leave residue. Hidden fields — directly or through their section — read as empty everywhere, so they cannot feed a derivation, a check or a score. Custom names can never shadow a built-in field or metric.
+**Order of application.** Built-in defaults are captured once when the page loads, and every configuration is applied on top of those defaults, so previewing, publishing and discarding never leave residue. Hidden fields (directly or through their section) read as empty everywhere, so they cannot feed a derivation, a check or a score. Custom names can never shadow a built-in field or metric.
 
 **Custom metrics** are evaluated after all built-in derivations, in dependency order, each exactly once; a metric that depends on itself (directly or through others) is “no data”. A scored custom metric uses the same interpolation as built-in metrics: four ascending anchors per stage scoring 0 / 45 / 72 / 100 (100 / 72 / 45 / 0 when lower is better), weighted inside its dimension. Custom checks compare a stated field with a formula using the owner's tolerances (percent or points), feed the binomial optimism test through their “flatters the company” direction, and count towards the blocking threshold when material.
 
-**Overrides of built-in rules.** Every built-in number in this document that is a judgement rather than arithmetic can be replaced by the owner, and the replacement is used everywhere the built-in was: the healthy ranges and weights of every scored metric; the score of each answer to a choice question and its weight; the points of each yes/no answer (the ±15 cap per dimension still applies); dimension weights by stage; the exit, deal and simulation defaults used when a field is blank, the stage ARR ranges and the evidence-source weights (§ 10–11, § 5); the trigger values of every built-in pattern and of the term-sheet norms (§ 8); and the minor and material tolerances of each built-in consistency check (§ 3; the material tolerance is never below the minor one). The owner can also add deal-breakers — conditions that withhold the score like the built-in gates — and publish external benchmarks, which are shown against the company by quartile (for lower-is-better metrics, a lower value ranks higher) but never change the score. The figures quoted in this document are the built-in values; a report's rubric version tells you whether the owner has changed any that affect scores.
+**Overrides of built-in rules.** Every built-in number in this document that is a judgement rather than arithmetic can be replaced by the owner, and the replacement is used everywhere the built-in was: the healthy ranges and weights of every scored metric; the score of each answer to a choice question and its weight; the points of each yes/no answer (the ±15 cap per dimension still applies); dimension weights by stage; the exit, deal and simulation defaults used when a field is blank, the stage ARR ranges and the evidence-source weights (§ 10 to 11, § 5); the trigger values of every built-in pattern and of the term-sheet norms (§ 8); and the minor and material tolerances of each built-in consistency check (§ 3; the material tolerance is never below the minor one). The owner can also add deal-breakers (conditions that withhold the score like the built-in gates) and publish external benchmarks, which are shown against the company by quartile (for lower-is-better metrics, a lower value ranks higher) but never change the score. The figures quoted in this document are the built-in values; a report's rubric version tells you whether the owner has changed any that affect scores.
 
 **Formula semantics.** Arithmetic on a missing value is missing; division by zero is missing; comparisons with a missing side are missing; `and`, `or` and `not` follow three-valued logic (`missing and false` is false, `missing or true` is true, otherwise missing); a question, request or pattern fires only when its condition is true. `has(x)` and `coalesce(…)` are the only ways to act on missing data deliberately.
 
-**Reproducibility.** A signature of everything in the configuration that can change a score — hidden items, thresholds, weights, answer scores and yes/no points, sample-size and blocking settings, check tolerances, deal-breakers, evidence weights, custom metrics and checks — is appended to the rubric version (`4.3.0+cfg.3f9a2c`), and to the run hash through it. It is computed on a canonical form, so the order in which things were edited does not matter. Texts, renamed labels, pattern triggers, deal defaults and benchmarks do not change a score and do not change the signature.
+**Reproducibility.** A signature of everything in the configuration that can change a score (hidden items, thresholds, weights, answer scores and yes/no points, sample-size and blocking settings, check tolerances, deal-breakers, evidence weights, custom metrics and checks) is appended to the rubric version (`4.3.0+cfg.3f9a2c`), and to the run hash through it. It is computed on a canonical form, so the order in which things were edited does not matter. Texts, renamed labels, pattern triggers, deal defaults and benchmarks do not change a score and do not change the signature.
 
 ## 13. Where the default ranges come from
 
@@ -203,22 +203,22 @@ Every default range is VCR2's own calibration for venture-backed companies, not 
 | Metric | Source | Edition | Reference point | Population | Status |
 |---|---|---|---|---|---|
 | Net revenue retention | SaaS Capital, B2B SaaS retention benchmarks (Research Brief 32) | 2025-09 | median NRR 101% | 1,000+ private B2B SaaS companies, mixed funding, Q1 2025 survey on calendar 2024 (the by-ACV figures exclude companies under $1M ARR) | verified |
-|  | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median NRR 100% (<$1M ARR), 104% ($1–5M), 103% ($5–20M); top quartile 110–116% | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
-|  | Benchmarkit, 2026 SaaS & AI-Native Metrics Benchmarks | 2026-06 | median NRR 102%, bottom quartile 92%, top quartile 108–110% (the report gives both) | 342 B2B SaaS and AI-native companies, calendar 2025, funding mix not disclosed | verified |
+|  | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median NRR 100% (<$1M ARR), 104% ($1 to 5M), 103% ($5 to 20M); top quartile 110 to 116% | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
+|  | Benchmarkit, 2026 SaaS & AI-Native Metrics Benchmarks | 2026-06 | median NRR 102%, bottom quartile 92%, top quartile 108 to 110% (the report gives both) | 342 B2B SaaS and AI-native companies, calendar 2025, funding mix not disclosed | verified |
 |  | Bessemer Venture Partners, State of the Cloud 2023 | 2023-04 | good / better / best: 100% / 110% / 120%+ | targets for a typical Series B or C enterprise software company (not medians) | verified |
 | Gross revenue retention | SaaS Capital, B2B SaaS retention benchmarks (Research Brief 32) | 2025-09 | median GRR 91% | 1,000+ private B2B SaaS companies, mixed funding, Q1 2025 survey on calendar 2024 (the by-ACV figures exclude companies under $1M ARR) | verified |
-|  | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median GRR 92% (<$5M ARR), 88% ($5–20M) | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
+|  | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median GRR 92% (<$5M ARR), 88% ($5 to 20M) | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
 |  | Benchmarkit, 2026 SaaS & AI-Native Metrics Benchmarks | 2026-06 | median GRR 84%, quartiles 76% and 91% | 342 B2B SaaS and AI-native companies, calendar 2025, funding mix not disclosed | verified |
-| Growth YoY | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median growth 100% (<$1M ARR), 50% ($1–5M), 31% ($5–20M); top quartile 300% / 100% / 72% | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
+| Growth YoY | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median growth 100% (<$1M ARR), 50% ($1 to 5M), 31% ($5 to 20M); top quartile 300% / 100% / 72% | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
 |  | SaaS Capital, benchmarking private SaaS company growth rates (2025 PDF; the 2026 page is undated) | 2025-06 | overall median growth 25% (calendar 2024) | private B2B SaaS companies, mixed funding, calendar 2024; the 2026 page adds equity-backed 25%, overall 22% | verified |
 |  | Benchmarkit, 2026 SaaS & AI-Native Metrics Benchmarks | 2026-06 | median growth 20%, top quartile 42% | 342 B2B SaaS and AI-native companies, calendar 2025, funding mix not disclosed | verified |
 | Gross margin | Benchmarkit, 2026 SaaS & AI-Native Metrics Benchmarks | 2026-06 | median software gross margin 80% (total-revenue gross margin 76%) | 342 B2B SaaS and AI-native companies, calendar 2025, funding mix not disclosed | verified |
 | Gross margin (AI application) | ICONIQ, 2026 State of AI: The Builder’s Economy | 2026-07 | average gross margin on AI products 45% in 2025 (53% projected for 2026, 59% for 2027) | 287 companies building AI products (AI-native included), Q2 2026 survey; an average, not a median | verified |
 |  | Bessemer Venture Partners, State of AI 2025 | 2025-08 | “Shooting Star” AI companies about 60%; “Supernova” companies about 25% on average, often negative | 20 AI startups from its portfolio and beyond (split not disclosed) | verified |
 | CAC payback | Benchmarkit, 2026 SaaS & AI-Native Metrics Benchmarks | 2026-06 | median CAC payback 16 months | 342 B2B SaaS and AI-native companies, calendar 2025, funding mix not disclosed | verified |
-|  | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median payback, gross-margin adjusted: 5 / 8 / 14 / 20 / 17 months for <$1M / $1–5M / $5–20M / $20–50M / >$50M ARR | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
-|  | Bessemer Venture Partners, State of the Cloud 2023 | 2023-04 | good / better / best: 12–18 / 6–12 / 0–6 months | targets for a typical Series B or C enterprise software company (not medians) | verified |
-| Burn multiple | David Sacks, “The Burn Multiple” (Craft Ventures) | 2020-04 | under 1× amazing, 1–1.5× great, 1.5–2× good, 2–3× suspect, over 3× bad | a venture-stage rule of thumb, not a statistic; the band table is an image and was not verified as text | secondary |
+|  | High Alpha, 2025 SaaS Benchmarks Report | 2025-11 | median payback, gross-margin adjusted: 5 / 8 / 14 / 20 / 17 months for <$1M / $1 to 5M / $5 to 20M / $20 to 50M / >$50M ARR | 800+ respondents (founder-heavy), funding mix not disclosed, Q2 2025 | verified |
+|  | Bessemer Venture Partners, State of the Cloud 2023 | 2023-04 | good / better / best: 12 to 18 / 6 to 12 / 0 to 6 months | targets for a typical Series B or C enterprise software company (not medians) | verified |
+| Burn multiple | David Sacks, “The Burn Multiple” (Craft Ventures) | 2020-04 | under 1× amazing, 1 to 1.5× great, 1.5 to 2× good, 2 to 3× suspect, over 3× bad | a venture-stage rule of thumb, not a statistic; the band table is an image and was not verified as text | secondary |
 | Runway | Bessemer Venture Partners, State of the Cloud 2023 | 2023-04 | good / better / best: 12 / 18 / 24+ months | targets for a typical Series B or C enterprise software company (not medians) | verified |
 | Liquidation preference | Cooley, Q2 2026 Venture Financing Report | 2026-08 | 1× preference in 95.8% of deals; non-participating in 96.4% | 166 financings of Cooley clients (law-firm sample) | verified |
 | Option pool | Carta data post on option pools after seed | not verified | median pool after a seed round 11.8% | 15,000+ startups over five years (page could not be read; figure from a search snippet) | unconfirmed |

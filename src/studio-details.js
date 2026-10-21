@@ -44,12 +44,12 @@ function paneStDetails() {
     const base = BASE.fmeta[f.id] || {};
     return `<tr data-q="${esc((f.id + ' ' + BASE.flabel[f.id]).toLowerCase())}"><td>${esc(BASE.flabel[f.id])}<div class="field-hint">${esc(f.id)}</div></td>
       <td>${inp('fields', f.id, 'group', base.g || 'Group heading')}</td>
-      <td>${f.t === 'num' ? inp('fields', f.id, 'chips', (base.chips || []).join(', ') || 'e.g. 10, 20, 30') : f.t === 'select' ? inp('fields', f.id, 'addOptions', 'Extra choices, comma-separated', true) : '—'}</td>
-      <td>${f.t === 'num' ? sel('fields', f.id, 'unit', [['', 'Built-in'], ['$', '$'], ['%', '%'], ['x', 'x'], ['months', 'months'], ['pts', 'points'], ['count', 'count']]) : '—'}</td>
+      <td>${f.t === 'num' ? inp('fields', f.id, 'chips', (base.chips || []).join(', ') || 'e.g. 10, 20, 30') : f.t === 'select' ? inp('fields', f.id, 'addOptions', 'Extra choices, comma-separated', true) : 'n/a'}</td>
+      <td>${f.t === 'num' ? sel('fields', f.id, 'unit', [['', 'Built-in'], ['$', '$'], ['%', '%'], ['x', 'x'], ['months', 'months'], ['pts', 'points'], ['count', 'count']]) : 'n/a'}</td>
       <td>${sel('fields', f.id, 'required', [['', base.req ? 'Built-in: required' : 'Built-in: optional'], ['yes', 'Required'], ['no', 'Optional']])}</td></tr>`;
   })).join('');
   const recRow = `<tr data-q="reconcile contradictions figures do not reconcile"><td>Figures do not reconcile<div class="field-hint">reconcile (blocks after the number of material contradictions set in Weights &amp; rules)</div></td>
-      <td>${inp('gates', 'reconcile', 'why', 'Built-in explanation', true)}</td><td>—</td><td>${inp('gates', 'reconcile', 'lever', LEVER_DEFAULTS.gates, true)}</td><td>—</td></tr>`;
+      <td>${inp('gates', 'reconcile', 'why', 'Built-in explanation', true)}</td><td>n/a</td><td>${inp('gates', 'reconcile', 'lever', LEVER_DEFAULTS.gates, true)}</td><td>n/a</td></tr>`;
   const gateRows = RUBRIC.gates.map(g => `<tr data-q="${esc((g.id + ' ' + g.title).toLowerCase())}"><td>${esc(BASE.gtitle[g.id])}<div class="field-hint">${esc(g.id)}</div></td>
       <td>${inp('gates', g.id, 'why', BASE.gwhy ? BASE.gwhy[g.id] : '', true)}</td><td>${inp('gates', g.id, 'ask', 'Built-in request to the founder', true)}</td>
       <td>${inp('gates', g.id, 'lever', LEVER_DEFAULTS.gates, true)}</td>
@@ -80,7 +80,7 @@ function paneStDetails() {
       <td><input class="st-num" type="number" min="0" max="10" step="any" value="${esc(metaVal('families', f, 'p') != null ? metaVal('families', f, 'p') : '')}" placeholder="${esc(QUESTION_P[f] != null ? QUESTION_P[f] : '')}" aria-label="Order of ${esc(FAM_LABELS[f] || f)}" onchange="setMeta('families','${esc(f)}','p', this.value)"></td></tr>`).join('');
   const promptRows = ['memo', 'extraction'].map(k => `<tr data-q="ai prompt ${k}"><td>${k === 'memo' ? 'Memo narrative' : 'Extraction from pasted material'}</td>
       <td class="field-hint">${esc(AI_RULES[k])}</td>
-      <td>${k === 'memo' ? inp('prompts', k, 'voice', AI_VOICE_DEFAULT, true) : '—'}</td><td>${inp('prompts', k, 'note', 'Nothing added', true)}</td></tr>`).join('');
+      <td>${k === 'memo' ? inp('prompts', k, 'voice', AI_VOICE_DEFAULT, true) : 'n/a'}</td><td>${inp('prompts', k, 'note', 'Nothing added', true)}</td></tr>`).join('');
   const boolRows = RUBRIC.booleans.map(b => `<tr data-q="${esc((b.id + ' ' + b.note).toLowerCase())}"><td>${esc(b.id)}<div class="field-hint">${esc(b.pts > 0 ? '+' + b.pts : String(b.pts))} points</div></td>
       <td>${inp('booleans', b.id, 'note', b.note, true)}</td>
       <td>${sel('booleans', b.id, 'dim', [['', 'Built-in']].concat(Object.keys(BASE.dimlabel).map(k => [k, BASE.dimlabel[k]])).concat(dimensionChoices()))}</td></tr>`).join('');

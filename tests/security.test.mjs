@@ -35,7 +35,7 @@ eq('library: unknown metrics are dropped', Object.keys(fine.metrics).sort(), ['a
 const proto = cleaned.find(e => e.id === 'a2');
 ok('library: stated figures, outcomes, flags and counts are bounded', proto && Object.keys(proto.stated).join() === 'stated_arr' && proto.outcome === '' && proto.blocked === false && proto.majors === 100 && proto.payload === null, proto);
 ok('library: every metric value is a finite number', cleaned.every(e => Object.values(e.metrics).every(v => typeof v === 'number' && isFinite(v))), '');
-eq('library: formatting never throws on odd values', ['x', '5', null, NaN, {}].map(v => libFmt({ unit:'%' }, v)), ['—', '—', '—', '—', '—']);
+eq('library: formatting never throws on odd values', ['x', '5', null, NaN, {}].map(v => libFmt({ unit:'%' }, v)), ['n/a', 'n/a', 'n/a', 'n/a', 'n/a']);
 localStorage.setItem(LIB_KEY, JSON.stringify(hostile));
 let loadErr = null, loaded = [];
 try { loaded = libLoad(); } catch (e) { loadErr = e; }

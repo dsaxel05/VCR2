@@ -122,19 +122,19 @@ function reviewPublish() {
   const errs = validateDraft();
   if (errs.length) { openModal('Fix these before publishing', `<ul class="howto">${errs.map(e => `<li>${esc(e)}</li>`).join('')}</ul>`); return; }
   const ch = configChanges(CFG_PUBLISHED, ST.draft);
-  if (!ch.length) { toast('Nothing to publish — the live site already matches your draft.'); return; }
+  if (!ch.length) { toast('Nothing to publish: the live site already matches your draft.'); return; }
   let impact = [];
   try { impact = impactPreview(CFG_PUBLISHED, ST.draft); } catch (e) { impact = []; }
   const mark = { added:'new', changed:'changed', removed:'back to built-in' };
-  const num = v => v == null ? '—' : v;
+  const num = v => v == null ? 'n/a' : v;
   const delta = (a, b) => a == null || b == null ? '' : (b - a === 0 ? 'no change' : (b > a ? '+' : '') + Math.round((b - a) * 10) / 10);
   const body = `<p class="pg-desc" style="margin-bottom:6px">${ch.length} change${ch.length === 1 ? '' : 's'} compared with the live site. Nothing is live until you publish.</p>
     <div class="tbl-wrap" style="max-height:220px;overflow:auto"><table class="ledger"><tbody>${ch.slice(0, 80).map(c => `<tr><td><span class="pill ${c.kind === 'removed' ? '' : 'amber'}">${esc(mark[c.kind])}</span></td><td>${esc(c.text)}</td></tr>`).join('')}</tbody></table></div>
     ${ch.length > 80 ? `<p class="field-hint">…and ${ch.length - 80} more.</p>` : ''}
     <div class="block-title" style="margin-top:10px">What this does to the two examples</div>
     ${impact.length ? `<div class="tbl-wrap"><table class="ledger"><thead><tr><th>Example</th><th>Live now</th><th>With your draft</th><th>Change</th></tr></thead><tbody>
-      ${impact.map(r => `<tr><td>${esc(r.name)}</td><td>${r.a.gates ? 'withheld (' + r.a.gates + ' gate' + (r.a.gates === 1 ? '' : 's') + ')' : num(r.a.overall) + ' (' + r.a.band[0] + '–' + r.a.band[1] + ')'}</td>
-        <td>${r.b.gates ? 'withheld (' + r.b.gates + ' gate' + (r.b.gates === 1 ? '' : 's') + ')' : num(r.b.overall) + ' (' + r.b.band[0] + '–' + r.b.band[1] + ')'}</td><td>${esc(delta(r.a.overall, r.b.overall))}${r.a.reds !== r.b.reds ? ` · ${r.b.reds - r.a.reds > 0 ? '+' : ''}${r.b.reds - r.a.reds} red flags` : ''}</td></tr>`).join('')}</tbody></table></div>
+      ${impact.map(r => `<tr><td>${esc(r.name)}</td><td>${r.a.gates ? 'withheld (' + r.a.gates + ' gate' + (r.a.gates === 1 ? '' : 's') + ')' : num(r.a.overall) + ' (' + r.a.band[0] + ' to ' + r.a.band[1] + ')'}</td>
+        <td>${r.b.gates ? 'withheld (' + r.b.gates + ' gate' + (r.b.gates === 1 ? '' : 's') + ')' : num(r.b.overall) + ' (' + r.b.band[0] + ' to ' + r.b.band[1] + ')'}</td><td>${esc(delta(r.a.overall, r.b.overall))}${r.a.reds !== r.b.reds ? ` · ${r.b.reds - r.a.reds > 0 ? '+' : ''}${r.b.reds - r.a.reds} red flags` : ''}</td></tr>`).join('')}</tbody></table></div>
       <p class="field-hint">Run in your browser only. Your own companies are not affected by this preview.</p>` : '<div class="field-hint">The preview could not be run for this draft.</div>'}`;
   openModal('Review before publishing', body, [{ label:'Publish now', primary:true, onClick:() => { closeModal(); publishDraft(); } }]);
   const pb = document.querySelector('.modal-f .btn-primary'); if (pb) pb.id = 'rv-publish';

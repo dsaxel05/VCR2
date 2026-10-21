@@ -25,6 +25,12 @@ function simWait(key) {
   if (SIM_CACHE.has(key)) return Promise.resolve();
   return new Promise(r => { const w = _simWaiters.get(key); if (w) w.push(r); else _simWaiters.set(key, [r]); });
 }
+/* A reset: stop the worker and forget every job, so no answer can come back to a report that no longer exists. */
+function simAbort() {
+  _simJobs.clear();
+  if (_simWorker) { try { _simWorker.terminate(); } catch (e) {} _simWorker = null; }
+  _simWaiters.forEach(w => w.forEach(f => f())); _simWaiters.clear();
+}
 /* A worker that has not answered after ten seconds is not waited for: the simulation runs here, and the answer is the same. */
 function simGuard(key) {
   const e = Array.from(_simJobs.entries()).find(x => x[1].key === key); if (!e) return;

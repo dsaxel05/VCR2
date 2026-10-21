@@ -137,7 +137,7 @@ function detectPatterns(ctx) {
   if (v('runway') != null && v('runway') < pp('runway_cliff', 'amber'))
     add(v('runway') < pp('runway_cliff', 'red') ? 'red' : 'amber', 'runway_cliff', 'Raising from a position of need',
       [`runway ${fmtMo(v('runway'))}`, D._cashOut ? `cash-out around ${monthLabel(D._cashOut)}` : null, f('months_since_round') != null ? `${f('months_since_round')} months since the last round` : null],
-      'Under nine to twelve months of cash, the company negotiates against its own deadline — which shows up in terms, and in how numbers are presented.',
+      'Under nine to twelve months of cash, the company negotiates against its own deadline, which shows up in terms, and in how numbers are presented.',
       'What is the plan if this round takes six months longer than expected? Which costs come out first?');
 
   if (v('headcount_growth') != null && v('growth_yoy') != null && v('headcount_growth') > v('growth_yoy') && v('burn_multiple') > pp('hiring_ahead', 'burn'))
@@ -190,7 +190,7 @@ function detectPatterns(ctx) {
       'How does the round size compare with the capital the model says is needed to reach next-stage metrics with six months of buffer?');
     else if (pm < pp('sim', 'mid') / 100) add('amber', 'sim_mid', 'Coin-flip odds of reaching the next-stage bar',
       [`${fmtProb(pm)} of simulated paths reach ${money(sim.milestone)} ARR before cash-out`],
-      'The outcome turns on execution in the next four quarters rather than on the current plan.', 'Which two levers — growth or burn — does management expect to move, and by how much?');
+      'The outcome turns on execution in the next four quarters rather than on the current plan.', 'Which two levers (growth or burn) does management expect to move, and by how much?');
     else if (pm > pp('sim', 'high') / 100) add('green', 'sim_high', 'Funded to the next-stage bar',
       [`${fmtProb(pm)} of simulated paths reach ${money(sim.milestone)} ARR before cash-out`], 'Most simulated futures reach next-stage metrics on existing cash.', null);
   }
@@ -268,7 +268,7 @@ function detectPatterns(ctx) {
     const off = deal.terms.filter(t => t.flag === 'off');
     if (off.length) add(off.length >= 2 || off.some(t => t.term === 'Anti-dilution') ? 'red' : 'amber', 'offmarket_terms', 'Off-market terms on this round',
       off.map(t => `${t.term.toLowerCase()}: ${t.value}`),
-      'Terms like these protect this round’s money but shift risk onto founders and every later investor — and they tend to be copied into each round that follows.',
+      'Terms like these protect this round’s money but shift risk onto founders and every later investor, and they tend to be copied into each round that follows.',
       'Which of these terms are required, and would market-standard terms (1x non-participating, broad-based weighted-average anti-dilution) be acceptable at a different price?');
     const rights = deal.terms.filter(t => (t.term === 'Pro-rata rights' || t.term === 'Information rights') && t.flag !== 'ok');
     if (rights.length) add('amber', 'investor_rights', 'Standard investor rights are missing',
@@ -282,7 +282,7 @@ function detectPatterns(ctx) {
       `probability-weighted ${fmtX(Rt.expMoic, 1)}`, `VC Method post-money ${money(Rt.justifiedPost)} vs ${money(deal.P)} offered`];
     if (b.irr != null && b.irr < Rt.r) add(Rt.expMoic < pp('price_return', 'redMoic') ? 'red' : 'amber', 'price_return', 'The price does not clear the target return', ev,
       'Even if the company succeeds, this post-money earns less than the return the fund underwrites to. Either the exit has to be larger or the price lower.',
-      'What gets the company to the exit that returns our target — which milestones, by when?');
+      'What gets the company to the exit that returns our target: which milestones, by when?');
     else if (b.irr != null) add('green', 'price_return', 'The success case clears the target return', ev,
       'If the company succeeds, the price leaves the return the power law needs.', null);
   }
@@ -299,14 +299,14 @@ function detectPatterns(ctx) {
       'Close, but not yet the pull that makes growth cheap.', 'What would move the “very disappointed” share above the bar, and for which segment?');
     else add('green', 'strong_pmf', 'Clear product-market fit signal',
       [`${fmtPct(pmf, 0)} “very disappointed” (${pmfN} responses)`, v('nps') != null ? `NPS ${Math.round(v('nps'))}` : null],
-      'Four in ten users or more would be very disappointed without the product — the threshold associated with durable demand.', null);
+      'Four in ten users or more would be very disappointed without the product, the threshold associated with durable demand.', null);
   }
   const crit = gs('mission_critical');
   if (crit && /^Nice to have/.test(crit))
     add(v('grr') != null && v('grr') < pp('nice_to_have', 'grr') ? 'red' : 'amber', 'nice_to_have', 'A discretionary product',
       ['customers describe it as nice to have', v('grr') != null ? `GRR ${fmtPct(v('grr'))}` : null],
       'Discretionary spend is the first line cut in a budget review, so retention depends on the customer’s economy rather than the product.',
-      'What happens to usage and renewals when a customer’s budget is cut — do you have an example?');
+      'What happens to usage and renewals when a customer’s budget is cut. Do you have an example?');
   const moat = gs('moat_type');
   if (moat === 'None identified yet' && (stageKey() === 'a' || stageKey() === 'b'))
     add('amber', 'moat_unproven', 'No defensibility identified at scale',
@@ -337,7 +337,7 @@ function detectPatterns(ctx) {
   if (whyAsked && !String(S.vals.why_now || '').trim() && (stageKey() === 'preseed' || stageKey() === 'seed') && ctx.sc && ctx.sc.coverage > 0.25)
     add('amber', 'why_now', 'No answer yet to “why now?”',
       ['the timing thesis is blank'], 'Being early is indistinguishable from being wrong. The change that makes this possible today is the core of an early-stage case.',
-      'What changed in the last two years — technology, cost, regulation or behaviour — that makes this possible now, and why did earlier attempts fail?');
+      'What changed in the last two years (technology, cost, regulation or behaviour) that makes this possible now, and why did earlier attempts fail?');
 
   const bad = checks.filter(c => c.sev !== 'ok').length;
   if (checks.length >= pp('clean_books', 'minChecks') && bad === 0)

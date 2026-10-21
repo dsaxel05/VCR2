@@ -1,6 +1,22 @@
 # Changelog
 
-## v5.0.0 — 2026-10-21
+## v5.0.1: 2026-10-21 (prepared, not yet published)
+
+A patch: plainer wording, an autosave that cannot lose your work, and one button to start clean. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Changed
+- **No dashes in the text.** Em dashes, en dashes and spaced hyphens used as sentence dashes are gone from everything you can read: labels, help, toasts, errors, the report, the memo (screen, print and Markdown), the founder email, the exports, the Studio, the home page, the README and the other documents. Sentences were rewritten, not just searched and replaced: asides are in parentheses, ranges read "5 to 10", and an empty value reads "n/a" everywhere. The built-in voice of the AI memo now also says not to use em dashes or en dashes. A test (`tests/browser/dash_test.py`) fails if one comes back.
+
+### Fixed
+- **An example can no longer replace your draft.** Opening an example used to overwrite the saved draft. Examples now live in memory only, autosave is off while one is open, and a note says "Example data, not saved". Going back to the home page closes the example and your own draft is intact.
+- **Resuming is obvious.** When a draft exists the home page shows a "Continue your assessment" card with the company name, how much of the form is filled and when it was last edited. Nothing jumps by itself. The top bar shows a quiet "Saved in this browser" with the time.
+- **A ledger too large for browser storage** now gets a plain message: what was saved (answers, notes, assumptions), what was not (the uploaded ledger), and that Export .json keeps everything.
+
+### Added
+- **Reset all inputs**, on the home page next to the Continue card and at the bottom of the sidebar (the "New assessment" button on the report does the same). The confirmation lists exactly what is deleted and says it does not touch the library, the Studio settings, the theme, the text size or the AI key. It also stops any simulation still running, so no old report comes back.
+- Tests: `autosave_test.py` (30 checks), `dash_test.py` (7 checks).
+
+## v5.0.0: 2026-10-21
 
 A rebuild of how companies are scored and of how the site looks, found and checked by independent reviews. Rubric **5.0.0**: scores change, mostly downwards by 5 to 10 points on the same inputs because figures without a source now count for less; the order of companies is broadly kept; four companies move past others (the leaky-bucket and subsidised-marketplace archetypes rise above the flat and the burning ones, and the clean seed AI example falls below the Halcyon sample).
 
@@ -67,7 +83,7 @@ A rebuild of how companies are scored and of how the site looks, found and check
 - **The longest task while the page loads is 344 ms under a 4x CPU slowdown (target 100 ms).** Largest contentful paint is 1.19 s (target 2.0 s). Fixing it means loading the Studio, the spreadsheet reader and the exports on demand, which ends the single-file page; this is the first job of v5.1.
 
 ### Performance
-- The Monte Carlo simulation runs in a background worker and gives the same numbers; assessing a company takes 12–20 ms instead of 57–67 ms. Measured before and after.
+- The Monte Carlo simulation runs in a background worker and gives the same numbers; assessing a company takes 12 to 20 ms instead of 57 to 67 ms. Measured before and after.
 - The generated page is about 50 KB smaller than the first v5.0 builds (comments and indentation removed from the scripts; the stylesheet is compacted and 72 unused and 662 overridden rules are removed, with a browser test that every rule still means the same; the readable sources are in `src/`).
 
 ### Security and privacy (additional)
@@ -78,7 +94,7 @@ A rebuild of how companies are scored and of how the site looks, found and check
 ### Tests
 - 400+ tests: 16 fictional companies with expected orderings, property tests, old-configuration fixtures, importer, forensic and deal-convention suites; browser suites run by one command; CI checks that `index.html` is a fresh build and enforces a size budget.
 
-## v4.3.1 — 2026-09-28
+## v4.3.1: 2026-09-28
 
 ### Fixed
 - The rubric version shown in the sidebar and on every report now reads **4.3.0**, matching the scoring changes shipped since 4.0 (it still read 4.0.0). Two reports with the same inputs and the same rubric version always have the same score.
@@ -88,7 +104,7 @@ A rebuild of how companies are scored and of how the site looks, found and check
 ### Added
 - Link previews for the live site (Open Graph and Twitter cards): sharing the link on LinkedIn, iMessage, Slack or WhatsApp now shows the title, a description and the preview image.
 
-## v4.3.0 — 2026-09-24
+## v4.3.0: 2026-09-24
 
 Everything that decides how a company is judged can now be changed from the Owner Studio, without touching code.
 
@@ -108,12 +124,12 @@ Everything that decides how a company is judged can now be changed from the Owne
 - The rubric version ignores the order in which items were switched off or edited: the same configuration always gives the same version.
 - The Studio shows the value the site will actually use when a default is out of range, and refuses inconsistent stage ranges and all-zero probabilities.
 
-## v4.2.1 — 2026-09-24
+## v4.2.1: 2026-09-24
 
 ### Added
 - **Healthy ranges** tab in the Studio: every scored metric with its “good” bar at each stage in one table, a search box, and an editor that reads your values back in plain language, shows the built-in values alongside, and records why you changed them. Reports mark owner-set bars as “your standard”, with the reason on hover.
 
-## v4.2.0 — 2026-09-24
+## v4.2.0: 2026-09-24
 
 ### Added
 - **VC Method and First Chicago returns**: downside, base and upside exit cases with probabilities; multiple and IRR for each and probability-weighted; the post-money a target return justifies on the success case (VC Method) and on the probability-weighted value (First Chicago); the exit needed for the target return. Every default is shown and editable in the new **Exit scenarios** section.
@@ -122,12 +138,12 @@ Everything that decides how a company is judged can now be changed from the Owne
 - **Gross burn**: runway if revenue stopped, and a new consistency check that gross burn − revenue equals net burn (29 checks).
 - **Product-market fit and team signals**: Sean Ellis survey (scored, withheld below 30 responses), NPS, how essential the product is, main source of defensibility, patents, why now, years the founders have worked together, technical founder.
 - **Tax and finance hygiene**: unpaid taxes gate the score; commingled funds, a missing 409A, D&O insurance and open-source review are recorded.
-- **Risk map**: every signal grouped into product, market & timing, execution & team, financial & reporting, legal & regulatory, deal & structure — on the overview and in the memo.
+- **Risk map**: every signal grouped into product, market & timing, execution & team, financial & reporting, legal & regulatory, deal & structure, on the overview and in the memo.
 - **Diligence checklist by stage**: ~60 items in ten categories, pre-filled from inputs and uploads, tracked per item, exported to the memo, Markdown and JSON, and extendable from the Studio.
 - 11 new patterns (off-market terms, missing investor rights, price vs. target return, weak/strong product-market fit, discretionary product, unproven moat, new founding team, no technical founder, finance hygiene, no "why now").
 - 113 engine tests, run in CI on every push.
 
-## v4.1.0 — 2026-09-24
+## v4.1.0: 2026-09-24
 
 ### Added
 - **Owner Studio** (`/#studio`): add evidence fields, formula metrics (scored or informational), stated-vs-computed checks, conditional questions, patterns and document requests; switch off or rename any built-in item; retune thresholds, weights, sample-size minimums, the next-stage ARR bar and the score-blocking rule; edit the home-page texts. Drafts preview in the owner's browser only and publish to the live site by committing `radar-config.json` through the GitHub API. Access is limited to the repository owner with write access, and publishing refuses to overwrite a newer revision.
@@ -140,7 +156,7 @@ Everything that decides how a company is judged can now be changed from the Owne
 - The founder email always includes the owner's own questions and document requests.
 - Opened assessments, drafts and library backups are validated field by field before use, and simulation settings are bounded.
 
-## v4.0.0 — 2026-09-24
+## v4.0.0: 2026-09-24
 
 A rebuild of the engine around the company's own data.
 

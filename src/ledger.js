@@ -102,7 +102,7 @@ function parseLedger(text, unitHint) {
     }
     if (amtIdx < 0) amtIdx = head.findIndex((_, i) => i !== nameIdx && i !== monIdx && rows.slice(1, 12).every(r => parseNum(r[i]) != null));
     if (nameIdx < 0 || monIdx < 0 || amtIdx < 0)
-      return { ok:false, error:'Could not identify the customer, month and amount columns. Use headers such as customer, month, mrr — or a wide layout with one column per month.' };
+      return { ok:false, error:'Could not identify the customer, month and amount columns. Use headers such as customer, month, mrr, or a wide layout with one column per month.' };
     if (!unitHint && /\barr\b/i.test(head[amtIdx])) unit = 'arr';
     const dataRows = rows.slice(1);
     const colOrder = detectDateOrder(dataRows.map(r => r[monIdx]));
@@ -130,7 +130,7 @@ function parseLedger(text, unitHint) {
   const T = monthDiff(first, last) + 1;
   /* The period the file covers must be three months or more. Invoices on two annual dates (every customer renews on 1 January) cover thirteen. */
   if (T < 3) return { ok:false, error:'At least three months of data are needed.' };
-  if (T > 120) return { ok:false, error:'More than ten years of months detected — check the month column.' };
+  if (T > 120) return { ok:false, error:'More than ten years of months detected. Check the month column.' };
   const months = Array.from({ length:T }, (_, k) => monthAdd(first, k));
   const gapMonths = T - monthsSorted.length;
   /* A list of invoices is not MRR: most customers billed once a year, twelve months apart. Spread each invoice over the
@@ -377,7 +377,7 @@ function benfordTest(values) {
   const xs = values.filter(v => v >= 1);
   const n = xs.length;
   const res = { n, obs:Array(9).fill(0), exp:BENFORD };
-  if (n < 50) return Object.assign(res, { applicable:false, why:`only ${n} distinct values — the first-digit distribution needs several hundred to carry any signal` });
+  if (n < 50) return Object.assign(res, { applicable:false, why:`only ${n} distinct values: the first-digit distribution needs several hundred to carry any signal` });
   xs.forEach(v => { const d = +String(Math.floor(v)).replace(/^0+/, '')[0]; if (d >= 1 && d <= 9) res.obs[d - 1]++; });
   const p = res.obs.map(c => c / n);
   res.prop = p;
@@ -389,9 +389,9 @@ function benfordTest(values) {
   const top3 = Array.from(freq.values()).sort((a, b) => b - a).slice(0, 3);
   res.tierShare = sum(top3) / n;
   res.applicable = n >= pp('forensic_benford', 'minN') && res.span >= pp('forensic_benford', 'span') && res.tierShare < 0.3;
-  if (!res.applicable) res.why = n < 300 ? `${n} distinct values — below the ~300 where the test has power`
-    : res.span < 1.3 ? `values span only ${res.span.toFixed(1)} orders of magnitude — Benford needs data that spans several`
-    : `${Math.round(res.tierShare * 100)}% of values sit on three price points — tiered pricing breaks the Benford assumption`;
+  if (!res.applicable) res.why = n < 300 ? `${n} distinct values: below the ~300 where the test has power`
+    : res.span < 1.3 ? `values span only ${res.span.toFixed(1)} orders of magnitude. Benford needs data that spans several`
+    : `${Math.round(res.tierShare * 100)}% of values sit on three price points. Tiered pricing breaks the Benford assumption`;
   res.band = res.mad < pp('forensic_benford_bands', 'close') ? 'close conformity' : res.mad < pp('forensic_benford_bands', 'ok') ? 'acceptable conformity' : res.mad < pp('forensic_benford_bands', 'marginal') ? 'marginal conformity' : 'nonconformity';
   return res;
 }
@@ -549,7 +549,7 @@ function ledgerForensics(L, A) {
       detail:'Customers who pause and return make gross churn look higher and new-logo growth look better than it is if the two are not separated.',
       method:'Reactivated MRR ÷ (new-logo + reactivated MRR), last twelve months.',
       caveat:'Seasonal businesses pause legitimately.',
-      ask: rs > 10 ? 'How does the company report returning customers — as new logos, or as reactivations?' : null });
+      ask: rs > 10 ? 'How does the company report returning customers: as new logos, or as reactivations?' : null });
   }
 
   /* 9. Benford on distinct customer-level values. */
@@ -558,7 +558,7 @@ function ledgerForensics(L, A) {
   const bf = benfordTest(distinct);
   add({ id:'benford', title:'First-digit (Benford) test', bf,
     status: !bf.applicable ? 'na' : bf.mad > 0.015 ? 'warn' : bf.mad > 0.012 ? 'info' : 'pass',
-    stat: bf.applicable ? `MAD ${bf.mad.toFixed(4)} — ${bf.band} (n = ${bf.n})` : 'not applicable to this data',
+    stat: bf.applicable ? `MAD ${bf.mad.toFixed(4)}: ${bf.band} (n = ${bf.n})` : 'not applicable to this data',
     detail: bf.applicable ? `Chi-square ${bf.chi2.toFixed(1)} on 8 degrees of freedom (5% critical value 15.5). ${bf.mad > 0.015 ? 'The distribution of leading digits departs from what naturally occurring amounts usually show.' : 'Leading digits look like naturally occurring amounts.'}` : `Not run: ${bf.why}.`,
     method:'Leading digit of each distinct customer revenue level, compared with the Benford distribution; conformity bands from Nigrini (MAD 0.006 / 0.012 / 0.015).',
     caveat:'Benford nonconformity is a reason to look, never evidence on its own. Price lists, minimum commitments and currency conversion all distort it legitimately.',

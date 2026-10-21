@@ -644,3 +644,14 @@ input[type="radio"] { border-radius: 50% !important; }
 @media (max-width: 780px) { .tb-cov { display: inline-block; } }
 @media (max-width: 480px) { .tb-cov-w { display: none; } .tb-company { max-width: 5rem; } }
 @media (prefers-reduced-motion: no-preference) { .sidebar { transition: transform .2s; } .main { transition: margin-left .2s; } }
+
+/* Saved-draft line, example note and the Continue card */
+.tb-saved { font-family: var(--font-ui); font-size: .8125rem; color: var(--text-3); white-space: nowrap; margin-left: var(--sp-2); }
+@media (max-width: 780px) { .tb-saved { display: none; } }
+.example-note { margin: 0; padding: var(--sp-1) var(--sp-3); background: var(--warn-soft); color: var(--warn-text); border-bottom: 1px solid var(--warn-line); font-family: var(--font-ui); font-size: .875rem; line-height: 1.5; }
+.example-note[hidden], .resume-card[hidden] { display: none; }
+.resume-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); margin: 0 0 var(--sp-3); padding: var(--sp-2) var(--sp-3); background: var(--surface); border: 1px solid var(--accent-line); border-radius: var(--radius-card); }
+.resume-main { display: flex; flex-direction: column; min-width: 0; }
+.resume-h { font-family: var(--font-ui); font-size: 1rem; color: var(--text); }
+.resume-name { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.resume-actions { display: flex; flex-wrap: wrap; gap: var(--sp-1); }

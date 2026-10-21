@@ -19,13 +19,13 @@ Everything that decides how a company is judged can be changed here. The Studio 
 | “Team matters more than revenue at pre-seed.” | **Weights & rules** | Dimension weights by stage, metric weights, sample-size minimums, the next-stage bar and the score-blocking rule. |
 | “Model a 5-year exit at 35%, with a 6x multiple.” | **Defaults & assumptions** | Every value used when a field is blank: exit years, target return, case probabilities, First Chicago rate, growth decay, downside multiple, exit multiple, dilution, option pool, further rounds, runway simulation, stage ARR ranges, evidence weights. |
 | “Deck ARR within 5% of the books is fine.” | **Check tolerances** | How big a gap must be before a stated figure is a minor inconsistency, then a material contradiction. |
-| “Always ask how much of the pipeline is expansion.” | **Questions** | Add a question to the list and the founder email — always, or only when a condition is true. |
+| “Always ask how much of the pipeline is expansion.” | **Questions** | Add a question to the list and the founder email, always, or only when a condition is true. |
 | “Ask for bank statements too.” | **Document requests** / **Checklist** | Add a request to “Documents to request”, or a diligence item (in any category, from any stage). |
-| “Median gross margin at Series A is 74% in this report.” | **Benchmark data** | Publish medians and quartiles with the source — one at a time or paste many rows. Reports show where the company sits. |
+| “Median gross margin at Series A is 74% in this report.” | **Benchmark data** | Publish medians and quartiles with the source, one at a time or paste many rows. Reports show where the company sits. |
 | “We also look at hardware companies.” | **Business models** | Add a model to the setup page; limit your inputs and metrics to it. |
 | “That metric doesn’t matter for us.” | **Switch on or off** | Hide any built-in section, input, metric, answer, check, forensic test, red flag, question family, request, checklist item or deal-breaker. |
 | “We call it net dollar retention.” | **Rename** | Rename any built-in input, hint, metric, section, dimension, red flag, deal-breaker or checklist item. |
-| — | **Texts** | App name, home-page headline, introduction and footnote. |
+| n/a | **Texts** | App name, home-page headline, introduction and footnote. |
 
 Every change has a way back: switched-off items come back with one tick, every value can be cleared to return to the built-in one (shown in grey next to yours), and nothing reaches visitors until you publish.
 
@@ -33,15 +33,15 @@ Every change has a way back: switched-off items come back with one tick, every v
 
 | Area | What you can change |
 |---|---|
-| **Healthy ranges** | For every scored metric and every stage, the values VCR2 reads as poor, good and excellent — with a plain-language reading as you type, the built-in values next to yours, and an optional note on why you changed it (shown in reports as “your standard”). One click takes a metric back to the built-in values. |
-| **Scored answers** | The score (0–100) of each answer to SOC 2 status, financial statement quality, switching cost, last pricing action, regulatory model and how essential the product is, and each one's weight; the points each yes/no answer adds or removes (0 makes it neutral). |
+| **Healthy ranges** | For every scored metric and every stage, the values VCR2 reads as poor, good and excellent, with a plain-language reading as you type, the built-in values next to yours, and an optional note on why you changed it (shown in reports as “your standard”). One click takes a metric back to the built-in values. |
+| **Scored answers** | The score (0 to 100) of each answer to SOC 2 status, financial statement quality, switching cost, last pricing action, regulatory model and how essential the product is, and each one's weight; the points each yes/no answer adds or removes (0 makes it neutral). |
 | **Weights & rules** | Dimension weights by stage, how many material contradictions withhold the score, minimum sample sizes, and the next-stage ARR bar used by the simulation. |
 | **Defaults & assumptions** | Exit scenarios (years, target return and probabilities by stage; First Chicago rate; growth decay in the base and upside cases; downside multiple), deal (exit multiple, dilution per round, option pool, further rounds by stage), runway simulation (growth fade, horizon, reserve), stage ARR ranges, and how much each source of evidence counts. Out-of-range values are brought back into range and you see the value actually used. |
 | **Inputs** | Add new inputs (number, yes/no, choice list, text), put them in any section or in a new “Additional evidence” section, mark them required, limit them to some business models. |
 | **Metrics** | Add metrics computed with a formula from any input or metric. Give one a dimension and stage thresholds and it is scored like a built-in metric; leave it unscored and it is simply shown with its formula. |
 | **Checks** | Compare a figure the company states with one VCR2 computes. Set the tolerances, whether an overstatement flatters the company, and the question to ask when it does not reconcile. |
 | **Deal-breakers** | Conditions that withhold the score while true, with the reason, the question for the founders and the risk-map row. |
-| **Questions** | Add questions to the question list, the founder email and the IC memo — always, or only when a condition is true (`nrr < 100`, `model == 'fintech'`). |
+| **Questions** | Add questions to the question list, the founder email and the IC memo, always, or only when a condition is true (`nrr < 100`, `model == 'fintech'`). |
 | **Red flags & strengths** | Add risk, watch or strength cards to the overview that fire on a condition (`burn_multiple > 3 and runway < 15`), and choose where each one sits on the risk map. |
 | **Document requests** | Add items to “Documents to request”, the memo and the founder email. |
 | **Checklist** | Add the diligence items your fund always asks for, in a built-in category or one of your own, from the stage you choose. |
@@ -104,7 +104,7 @@ After the first sign-in, an **Owner Studio** link appears in the sidebar of that
 3. Click **Publish to the live site**. This commits `radar-config.json` to the repository. GitHub Pages redeploys and visitors get the new version within about a minute.
 4. **Discard draft** throws away unpublished changes. **Download config** saves the file; **Import config** loads one into your draft (useful as a backup, or to move a setup between repositories).
 
-If the live configuration changed after you started a draft — you published from another computer, or edited the file on GitHub — the Studio says so and asks whether to start again from the live version or keep your draft. It never overwrites someone else's change silently.
+If the live configuration changed after you started a draft (you published from another computer, or edited the file on GitHub) the Studio says so and asks whether to start again from the live version or keep your draft. It never overwrites someone else's change silently.
 
 ## Formulas
 

@@ -110,11 +110,11 @@ function ledgerFromSpec(g) {
 
 function loadDemo(which) {
   which = which || 'northwind';
-  S = blankState();
+  S = blankState(); S.example = true;       /* in memory only: an example never replaces a saved draft */
   if (which === 'halcyon') loadHalcyon(); else loadNorthwind();
   $id('cname').value = S.name;
   $id('asof').value = S.asof;
-  buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); updateProgress(); saveDraft();
+  buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); updateProgress(); showSaved();
   startSections();
   toast(which === 'halcyon' ? 'Clean example loaded: every figure reconciles, so it earns a score.' : 'Messy example loaded. It contains deliberate inconsistencies and ledger anomalies.');
 }
@@ -159,8 +159,8 @@ function loadNorthwind() {
     technical_founder:true, taxes_current:true, funds_separate:true, valuation_409a:false, insurance_dno:true, oss_reviewed:false,
     cumulative_dividends:false, redemption_rights:false, pay_to_play:false, pro_rata_rights:true, information_rights:true, board_seat:true,
   };
-  S.sel = { soc2:'In progress', audited_financials:'Reviewed', pricing_move:'Discounted to win', switching_cost:'Medium — some migration effort',
-    moat_type:'High switching costs', mission_critical:'Important — painful to replace', anti_dilution:'Broad-based weighted average',
+  S.sel = { soc2:'In progress', audited_financials:'Reviewed', pricing_move:'Discounted to win', switching_cost:'Medium: some migration effort',
+    moat_type:'High switching costs', mission_critical:'Important: painful to replace', anti_dilution:'Broad-based weighted average',
     board_after:'Balanced, with an independent director' };
   ['arr_now','arr_12mo','new_arr_l12','expansion_arr_l12','churned_arr_l12','contraction_arr_l12','customers_now','customers_12mo','logos_lost_l12','top1_pct','top5_pct','top10_pct','cash_on_hand','net_burn']
     .forEach(k => S.evid[k] = 'model');
@@ -211,8 +211,8 @@ function loadHalcyon() {
     technical_founder:true, taxes_current:true, funds_separate:true, valuation_409a:true, oss_reviewed:true,
     cumulative_dividends:false, redemption_rights:false, pay_to_play:false, pro_rata_rights:true, information_rights:true, board_seat:true,
   };
-  S.sel = { soc2:'Type I', audited_financials:'Reviewed', pricing_move:'Raised prices', switching_cost:'High — data or workflow lock-in',
-    moat_type:'Proprietary data', mission_critical:'Mission-critical — work stops without it', anti_dilution:'Broad-based weighted average',
+  S.sel = { soc2:'Type I', audited_financials:'Reviewed', pricing_move:'Raised prices', switching_cost:'High: data or workflow lock-in',
+    moat_type:'Proprietary data', mission_critical:'Mission-critical: work stops without it', anti_dilution:'Broad-based weighted average',
     board_after:'Founders control the board' };
   applyLedgerToForm(['arr_now','arr_12mo','new_arr_l12','expansion_arr_l12','churned_arr_l12','contraction_arr_l12','customers_now','customers_12mo','logos_lost_l12','top1_pct','top5_pct','top10_pct']);
   ['cash_on_hand','net_burn','total_raised','pre_money','safes_outstanding'].forEach(k => S.evid[k] = 'bank');

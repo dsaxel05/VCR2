@@ -7,16 +7,16 @@
    pre-fill their status, and whatever the user sets always wins.
    ═══════════════════════════════════════════════════════════════ */
 const STAGE_ORDER = { preseed:0, seed:1, a:2, b:3 };
-const CL_STATUS = [['todo','Not started'],['requested','Requested'],['received','Received'],['reviewed','Reviewed — fine'],['issue','Issue found'],['na','Not applicable']];
+const CL_STATUS = [['todo','Not started'],['requested','Requested'],['received','Received'],['reviewed','Reviewed: fine'],['issue','Issue found'],['na','Not applicable']];
 const CL_CATS = ['Founders & team','Financial','Tax','Cap table & legal','Customers & market','Product & technology','Intellectual property','People & HR','IT & security','Insurance & risk'];
 const DILIGENCE = [
   /* Founders & team */
-  { id:'ref_checks', cat:'Founders & team', from:'preseed', text:'Back-channel references on each founder — former colleagues, co-founders, investors', why:'The single best predictor of how a founder behaves under pressure is how they behaved before.' },
-  { id:'founder_backgrounds', cat:'Founders & team', from:'preseed', text:'Founder backgrounds verified — education, employment, prior companies and outcomes' },
+  { id:'ref_checks', cat:'Founders & team', from:'preseed', text:'Back-channel references on each founder: former colleagues, co-founders, investors', why:'The single best predictor of how a founder behaves under pressure is how they behaved before.' },
+  { id:'founder_backgrounds', cat:'Founders & team', from:'preseed', text:'Founder backgrounds verified: education, employment, prior companies and outcomes' },
   { id:'founder_docs', cat:'Founders & team', from:'preseed', text:'Founder stock purchase and vesting agreements', auto:() => gb('founder_vesting') === true ? 'received' : null },
   { id:'org_chart', cat:'Founders & team', from:'seed', text:'Org chart, key hires and critical open roles' },
   { id:'hiring_plan', cat:'Founders & team', from:'seed', text:'18-month hiring plan tied to the milestones this round funds' },
-  { id:'mgmt_comp', cat:'Founders & team', from:'a', text:'Management compensation — salary, bonus and equity' },
+  { id:'mgmt_comp', cat:'Founders & team', from:'a', text:'Management compensation: salary, bonus and equity' },
   { id:'key_person', cat:'Founders & team', from:'a', text:'Key-person dependencies and succession plan' },
   /* Financial */
   { id:'fin_model', cat:'Financial', from:'preseed', text:'Financial model with use of funds, burn plan and runway' },
@@ -48,7 +48,7 @@ const DILIGENCE = [
   { id:'option_plan', cat:'Cap table & legal', from:'seed', text:'Equity incentive plan and grant records' },
   { id:'litigation', cat:'Cap table & legal', from:'seed', text:'Pending or threatened litigation and disputes', auto:() => gb('litigation') === true ? 'issue' : gb('litigation') === false ? 'reviewed' : null },
   { id:'licences_reg', cat:'Cap table & legal', from:'seed', text:'Regulatory licences and correspondence with regulators', when:() => gb('regulated_market') === true || S.model === 'fintech' },
-  { id:'material_contracts', cat:'Cap table & legal', from:'a', text:'Material contracts — top customers, suppliers and partners' },
+  { id:'material_contracts', cat:'Cap table & legal', from:'a', text:'Material contracts: top customers, suppliers and partners' },
   /* Customers & market */
   { id:'customer_calls', cat:'Customers & market', from:'seed', text:'Customer reference calls, including one customer who churned' },
   { id:'market_sizing', cat:'Customers & market', from:'seed', text:'Bottom-up market sizing workings', auto:() => gv('target_accounts') != null ? 'received' : null },
@@ -57,7 +57,7 @@ const DILIGENCE = [
   { id:'top_customers', cat:'Customers & market', from:'a', text:'Top 20 customers with contract dates, terms and renewal dates' },
   { id:'cohorts', cat:'Customers & market', from:'a', text:'Cohort retention table, gross and net, in dollars', auto:() => S.ledger ? 'received' : null },
   { id:'pipeline', cat:'Customers & market', from:'a', text:'CRM pipeline export with stage history' },
-  { id:'channel_cac', cat:'Customers & market', from:'a', text:'Customer acquisition by channel — spend, conversion and CAC' },
+  { id:'channel_cac', cat:'Customers & market', from:'a', text:'Customer acquisition by channel: spend, conversion and CAC' },
   /* Product & technology */
   { id:'demo', cat:'Product & technology', from:'preseed', text:'Product demo and roadmap' },
   { id:'usage', cat:'Product & technology', from:'seed', text:'Product usage and engagement data' },
@@ -138,7 +138,7 @@ function paneChecklist() {
 }
 function copyChecklistRequest() {
   const s = checklistSummary();
-  if (!s.open.length) { toast('Nothing open — every item is received, reviewed or not applicable.'); return; }
+  if (!s.open.length) { toast('Nothing open: every item is received, reviewed or not applicable.'); return; }
   const byCat = checklistCats(s.open).map(c => [c, s.open.filter(it => it.cat === c)]).filter(x => x[1].length);
-  copyText(`Diligence request list — ${S.name || 'company'}\n\n` + byCat.map(([c, L]) => `${c}\n${L.map(it => '- ' + it.text).join('\n')}`).join('\n\n'), 'Request list copied.');
+  copyText(`Diligence request list: ${S.name || 'company'}\n\n` + byCat.map(([c, L]) => `${c}\n${L.map(it => '- ' + it.text).join('\n')}`).join('\n\n'), 'Request list copied.');
 }

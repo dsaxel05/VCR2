@@ -304,7 +304,7 @@ eq('default exit multiple and dilution', [d1.I.exitMult, d1.I.dil, d1.I.rounds],
 eq('built-in defaults before the change', [d0.I.exitMult, d0.I.dil], [BASE.deal.exit_multiple, BASE.deal.dilution]);
 applyConfig({ defaults:{ sim:{ horizon:48 }, stageRange:{ seed:{ lo:500000, hi:3000000 } }, evidence:{ verbal:0.1 } } });
 eq('default simulation horizon', assumptions().horizon, 48);
-eq('stage range used by the setup page', [STAGE_RANGE.seed.lo, STAGE_RANGE.seed.hi, STAGES[1].s], [500000, 3000000, money(500000) + ' – ' + money(3000000) + ' ARR']);
+eq('stage range used by the setup page', [STAGE_RANGE.seed.lo, STAGE_RANGE.seed.hi, STAGES[1].s], [500000, 3000000, money(500000) + ' to ' + money(3000000) + ' ARR']);
 eq('evidence weight', EVIDENCE.find(e => e.id === 'verbal').w, 0.1);
 applyConfig(EMPTY_CONFIG());
 eq('defaults return to the built-ins', [EXIT_DEFAULTS.years.seed, DEAL_DEFAULTS.exit_multiple, ASSUME_DEFAULTS.horizon, STAGE_RANGE.seed.lo, EVIDENCE.find(e => e.id === 'verbal').w],
