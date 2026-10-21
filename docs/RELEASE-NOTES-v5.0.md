@@ -1,6 +1,6 @@
 # VCR2 v5.0.0: release notes
 
-Released 2026-10-14. Replaces v4.3.1.
+Released 2026-10-21. Replaces v4.3.1.
 
 ## In one paragraph
 
