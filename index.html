@@ -8462,7 +8462,7 @@ ${err ? `<div class="warnstrip"><span>⚠</span><div>${esc(err)}</div></div>` : 
 <li>Under <b>Permissions → Repository permissions</b>, set <b>Contents</b> to <b>Read and write</b>. Nothing else: leave every other permission at <b>No access</b>.</li>
 <li>Click <b>Generate token</b>, copy it, and paste it above.</li>
 </ol>
-<p class="field-hint">The token stays in this browser and is sent only to api.github.com. Anyone can see the site; only this token can change it. <b>Treat it like a key to the whole site:</b> it can change every file in the repository, not only the configuration. Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only, and leave “Keep me signed in” unticked on a shared computer.</p>
+<p class="field-hint">The token stays in this browser and is sent only to api.github.com. Anyone can see the site; only this token can change it. <b>Treat it like a password to the whole site.</b> Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only, and leave “Keep me signed in” unticked on a shared computer.</p>
 </details>`}
     </div>`;
 const b=$id('gh-signin');

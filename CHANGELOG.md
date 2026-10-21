@@ -2,7 +2,7 @@
 
 ## v5.0.0 — 2026-10-13 (prepared, not yet published)
 
-A rebuild of how companies are scored and of how the site looks, found and checked by independent reviews (`docs/overhaul/verify/`). Rubric **5.0.0**: scores change, mostly downwards by 5 to 10 points on the same inputs because figures without a source now count for less; the order of companies is broadly kept; four companies move past others (the leaky-bucket and subsidised-marketplace archetypes rise above the flat and the burning ones, and the clean seed AI example falls below the Halcyon sample), as `docs/overhaul/scores-5.0.0.md` shows beside `baseline-scores.md`.
+A rebuild of how companies are scored and of how the site looks, found and checked by independent reviews. Rubric **5.0.0**: scores change, mostly downwards by 5 to 10 points on the same inputs because figures without a source now count for less; the order of companies is broadly kept; four companies move past others (the leaky-bucket and subsidised-marketplace archetypes rise above the flat and the burning ones, and the clean seed AI example falls below the Halcyon sample).
 
 ### Scoring
 - Lower-is-better metrics use the mirrored curve the documentation always described (100 / 72 / 45 / 0).
@@ -22,7 +22,7 @@ A rebuild of how companies are scored and of how the site looks, found and check
   - "1786% of the market reachable" and "161% of bottom-up TAM" are now plain sentences ("18 times the whole market reachable in five years", "1.6 times the bottom-up market").
   - The static page no longer names an old rubric; the Markdown export date is "15 Oct 2026"; a ledger or financials file that is refused keeps its reason under the drop zone, not only in a toast; the link-preview image address comes from `site.json` (so it follows your own domain) instead of being typed into the page.
   - The build also drops the spaces after commas and around `=` and `=>` in code (strings, templates, regular expressions and comments untouched): the page is 20 KB smaller (`tests/jsstrip_test.py`).
-- **Found by the end-to-end company tests (2026-10-14):** a SAFE line that cannot be read is named in the deal notes instead of being dropped, and the SAFE list is a text area (it said "one per line" in a single-line box); a form with no revenue, no cash and no burn no longer gets a 120-month runway and a Strong score; the overview tiles say "no growth" and "not burning" instead of 99.00 and 120 months; invoices on two annual billing dates are read as a ledger. Details in `docs/overhaul/verify/2026-10-14-e2e.md`.
+- **Found by the end-to-end company tests (2026-10-14):** a SAFE line that cannot be read is named in the deal notes instead of being dropped, and the SAFE list is a text area (it said "one per line" in a single-line box); a form with no revenue, no cash and no burn no longer gets a 120-month runway and a Strong score; the overview tiles say "no growth" and "not burning" instead of 99.00 and 120 months; invoices on two annual billing dates are read as a ledger.
 - **Accessibility (axe-core scan, 2026-10-14):** every field has a name, every page has one h1 and no skipped heading level, navigation landmarks are named, scrolling tables can be reached by keyboard, the cohort heatmap and the status text read at 4.5:1 in both themes. A second pass closed the last findings: every strip of report tabs keeps a keyboard stop, empty table headers carry a hidden name, headings never jump from level 1 to 3, and tables with the same name are numbered; the scan now finds nothing.
 - **Runway simulator:** a simulated path that reached the next-stage bar could never run out of cash, so fast-burning companies showed “36+ months”. Cash-out is now the first month cash goes below zero, whatever revenue did.
 - **A list of SAFEs** (amount, cap, discount per line) converts each at its own price; before, one aggregate cap approximated them and understated the SAFE stake in a tenth of cases.
@@ -65,11 +65,10 @@ A rebuild of how companies are scored and of how the site looks, found and check
 - **Studio**: section descriptions can be renamed; a stage's weights have their own way back; the sign-in page says to use a 7-day token limited to this repository with Contents read and write only.
 
 ### Known issues
-- **A Studio token can write every file in the repository, not only the configuration** (design property, noted in SECURITY.md). Mitigation for this release: a 7-day token limited to this one repository with Contents read and write only. Moving the configuration to a separate repository or a protected branch is planned.
 - **The longest task while the page loads is 344 ms under a 4x CPU slowdown (target 100 ms).** Largest contentful paint is 1.19 s (target 2.0 s). Fixing it means loading the Studio, the spreadsheet reader and the exports on demand, which ends the single-file page; this is the first job of v5.1.
 
 ### Performance
-- The Monte Carlo simulation runs in a background worker and gives the same numbers; assessing a company takes 12–20 ms instead of 57–67 ms. Measured before and after in `docs/overhaul/perf-budgets.md`.
+- The Monte Carlo simulation runs in a background worker and gives the same numbers; assessing a company takes 12–20 ms instead of 57–67 ms. Measured before and after.
 - The generated page is about 50 KB smaller than the first v5.0 builds (comments and indentation removed from the scripts; the stylesheet is compacted and 72 unused and 662 overridden rules are removed, with a browser test that every rule still means the same; the readable sources are in `src/`).
 
 ### Security and privacy (additional)

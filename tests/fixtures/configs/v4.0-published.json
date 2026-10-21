@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "updated": null,
+  "owner": "dsaxel05",
+  "repo": "VCR2",
+  "branch": "main",
+  "path": "radar-config.json",
+  "branding": {},
+  "settings": {},
+  "hidden": { "sections": [], "fields": [], "metrics": [], "checks": [], "patterns": [], "forensics": [], "questions": [], "requests": [], "gates": [] },
+  "labels": { "fields": {}, "hints": {}, "metrics": {} },
+  "thresholds": {},
+  "metricWeights": {},
+  "stageWeights": {},
+  "fields": [],
+  "metrics": [],
+  "checks": [],
+  "questions": [],
+  "patterns": [],
+  "requests": []
+}

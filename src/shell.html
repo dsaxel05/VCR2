@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VCR2 — evidence-first diligence engine</title>
+<meta name="description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
+<meta name="author" content="Axel De Sousa" />
+<meta name="theme-color" content="#0E3B34" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="VCR2" />
+<meta property="og:title" content="VCR2 — check whether the numbers reconcile" />
+<meta property="og:description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
+<meta property="og:image" content="@@SITE_URL@@assets/social-preview.png" />
+<meta property="og:image:width" content="1280" />
+<meta property="og:image:height" content="640" />
+<meta property="og:image:alt" content="VCR2 — check whether the numbers reconcile" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="VCR2 — check whether the numbers reconcile" />
+<meta name="twitter:description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
+<meta name="twitter:image" content="@@SITE_URL@@assets/social-preview.png" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E3B34'/%3E%3Cpath d='M32 12l17 10v20L32 52 15 42V22z' fill='none' stroke='white' stroke-width='4'/%3E%3C/svg%3E" />
+<meta name="color-scheme" content="light dark" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta name="referrer" content="no-referrer" />
+<script>
+(function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; } })();</script>
+<script>
+(function () { try {
+  var d = document.documentElement, ls = window.localStorage, s = {};
+  try { s = JSON.parse(ls.getItem('vcr2-look-style') || '{}') || {}; } catch (e) { s = {}; }
+  d.setAttribute('data-direction', 'privatebank');
+  d.setAttribute('data-accent', /^(brass|garnet|emerald)$/.test(s.accent) ? s.accent : 'brass');
+  d.setAttribute('data-frame', s.frame === 'off' ? 'off' : 'on');
+  d.setAttribute('data-divider', s.divider === 'plain' ? 'plain' : 'diamond');
+  if (s.corners === 'soft' || s.corners === 'round') d.setAttribute('data-corners', s.corners);
+  [['st', 'data-sz-t'], ['sf', 'data-sz-f'], ['sq', 'data-sz-q']].forEach(function (a) { if (/^(small|large|xlarge)$/.test(s[a[0]])) d.setAttribute(a[1], s[a[0]]); });
+  var tx = ls.getItem('vcr2-text') || ls.getItem('vcr2-text-default') || 'normal';
+  d.setAttribute('data-text', /^(normal|large|xlarge)$/.test(tx) ? tx : 'normal');
+  if (s.page === '90' || s.page === '100') d.setAttribute('data-page', s.page);
+  d.setAttribute('data-sidebar', (ls.getItem('vcr2-sidebar') || s.sb) === 'hidden' ? 'hidden' : 'open');
+  var p = ls.getItem('vcr2-theme') || ls.getItem('vcr2-theme-default') || 'light';
+  d.setAttribute('data-theme', p === 'dark' || p === 'light' ? p : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+} catch (e) { document.documentElement.setAttribute('data-direction', 'privatebank'); document.documentElement.setAttribute('data-theme', 'light'); } })();
+</script>
+<style>
+/*@@CSS@@*/
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <button type="button" class="sb-logo-row" onclick="showPage('intro')" aria-label="VCR2, home">
+        <span class="sb-logo-icon" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22"><rect x="3" y="15" width="5" height="12" rx="1" fill="currentColor" opacity=".55"/><rect x="11" y="9" width="5" height="18" rx="1" fill="currentColor" opacity=".78"/><rect x="19" y="4" width="5" height="23" rx="1" fill="currentColor"/><path d="M2 28.5h28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span class="sb-logo-name">VCR2</span>
+      </button>
+      <div class="sb-logo-sub" id="sb-rubric">Evidence engine</div>
+    </div>
+
+    <div class="sb-progress">
+      <div class="sb-progress-row">
+        <span>Form filled</span><span id="pct-val">0%</span>
+      </div>
+      <div class="track"><div class="fill" id="pct-fill" style="width:0%"></div></div>
+      <details class="sb-more sb-status">
+        <summary>Show details</summary>
+        <div class="sb-progress-row">
+          <span>Consistency</span><span id="consist-val">—</span>
+        </div>
+        <div class="sb-progress-row">
+          <span>Data files</span><span id="files-val">—</span>
+        </div>
+      </details>
+    </div>
+
+    <nav class="sb-nav" id="sb-nav" aria-label="Assessment sections">
+      <div class="sb-nav-label">Evidence sections</div>
+    </nav>
+
+    <div class="sb-footer">
+      <button type="button" class="nav-item lib-link" onclick="goLibrary()"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
+      <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" onclick="goStudio()"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
+      <p class="api-hint">Alt + M shows or hides this menu.</p>
+      <details class="sb-more sb-ai">
+      <summary>AI assist (optional)</summary>
+      <select class="api-sel" id="api-provider">
+        <option value="local">Deterministic only — no AI</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="groq">Groq</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+      <div class="api-row">
+        <input class="api-inp" id="api-key" type="password" placeholder="No key needed" autocomplete="off" spellcheck="false" aria-label="API key" />
+        <button class="api-eye" id="api-eye" type="button" title="Show or hide the key" aria-label="Show or hide the key">ICON:eye</button>
+      </div>
+      <label class="api-check"><input type="checkbox" id="api-remember" /> Remember this key on this computer</label>
+      <div class="api-hint" id="api-remember-hint">Off: the key is kept in this tab only and forgotten when you close it. It is never saved in a deal, a draft, an export or the library.</div>
+      <button type="button" class="btn btn-ghost btn-sm" id="api-forget" style="margin:4px 0 8px">Forget the key</button>
+      <input class="api-inp" id="api-model" type="text" placeholder="Model name (optional override)" autocomplete="off" spellcheck="false" style="width:100%;margin-bottom:5px" aria-label="Model name override" />
+      <label class="api-check"><input type="checkbox" id="memo-toggle" /> Also send the company name and the computed figures to this provider to draft a memo narrative</label>
+      <div class="api-hint ai-own">Uses your own key and your own account. Nothing is billed to the site owner.</div>
+      <div class="api-status ok" id="api-status">Deterministic engine ready</div>
+      <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere.</div>
+      </details>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <h1 class="sr-only" id="app-h1" hidden></h1>
+    <div class="topbar">
+      <div class="tb-left">
+        <button type="button" class="btn btn-ghost btn-sm tb-menu" id="sb-toggle" onclick="sidebarToggle()" aria-controls="sidebar" aria-expanded="true" aria-keyshortcuts="Alt+M" title="Show or hide the menu (Alt + M)">ICON:menu Menu</button>
+        <span class="tb-company" id="tb-company">New assessment</span>
+        <span class="tb-sep">/</span>
+        <span class="tb-section" id="tb-section">Start</span>
+      </div>
+      <span class="tb-cov" id="tb-cov" title="Share of the form's fields you have filled in"><span class="tb-cov-w">Form filled</span> <b id="tb-cov-v">0%</b></span>
+      <div class="tb-right" id="tb-right"></div>
+      <button type="button" class="tb-icon tb-text" id="text-toggle" onclick="cycleTextSize()" aria-label="Change the text size">Aa</button>
+      <button type="button" class="tb-icon" id="theme-toggle" onclick="cycleTheme()" aria-label="Switch theme"></button>
+    </div>
+
+    <!-- ── INTRO ── -->
+    <div class="page active" id="page-intro">
+      <div class="intro">
+        <section class="hero" aria-labelledby="intro-h1">
+          <div class="hero-copy">
+            <p class="hero-kicker" id="intro-kicker">Free, private due diligence that runs in your browser</p>
+            <h1 class="intro-h1" id="intro-h1">Check whether the numbers <span class="mark">reconcile</span></h1>
+            <p class="intro-sub" id="intro-sub">Founders send a deck, a model and an update. VCR2 rebuilds the revenue from the company’s own customer ledger, recomputes every headline metric, shows where the stated figures disagree with the arithmetic, stress-tests the runway, prices the deal, and turns every gap into the question to ask on the next call.</p>
+            <div class="intro-cta">
+              <button class="btn btn-primary btn-lg" onclick="goSetup()">Start an assessment</button>
+              <button class="btn btn-ghost btn-lg" onclick="loadDemo('northwind')">Open the Series A example</button>
+              <button class="btn btn-ghost btn-lg" id="resume-btn" style="display:none" onclick="resumeDraft()">Resume saved draft</button>
+            </div>
+            <ul class="trust-list">
+              <li><span class="trust-ico" aria-hidden="true">ICON:shield</span>Nothing you enter leaves this browser</li>
+              <li><span class="trust-ico" aria-hidden="true">ICON:check</span>Every point of the score is explained</li>
+              <li><span class="trust-ico" aria-hidden="true">ICON:doc</span>Same inputs, same result, with a run ID</li>
+            </ul>
+          </div>
+          <figure class="specimen" aria-label="Example finding from the fictional Northwind Data sample">
+            <figcaption class="spec-cap"><span>Northwind Data</span><span class="spec-tag">fictional sample, Series A</span></figcaption>
+            <div class="spec-row"><span class="spec-l">Net revenue retention in the deck</span><b class="spec-v claimed">134%</b></div>
+            <div class="spec-row"><span class="spec-l">Rebuilt from the customer ledger</span><b class="spec-v proven"><span class="ev-mark">98.8%</span></b></div>
+            <div class="spec-gap"><span class="spec-gap-ico" aria-hidden="true">ICON:warn</span><span><b>35.2 points apart</b>, in the company’s favour. Nine more headline figures in this deck disagree with the arithmetic.</span></div>
+            <p class="spec-ask"><span>Question for the founders</span>Which cohort and which period does the deck’s NRR cover, and does it include customers who left?</p>
+          </figure>
+        </section>
+
+        <section class="intro-stats" aria-label="What VCR2 checks">
+          <div class="stat"><span class="stat-n" id="st-metrics">60+</span><span class="stat-l">metrics derived from raw figures</span></div>
+          <div class="stat"><span class="stat-n" id="st-checks">29</span><span class="stat-l">consistency checks</span></div>
+          <div class="stat"><span class="stat-n" id="st-forensics">9</span><span class="stat-l">forensic tests on billing data</span></div>
+          <div class="stat"><span class="stat-n" id="st-patterns">30</span><span class="stat-l">risk and strength patterns</span></div>
+        </section>
+
+        <section class="feature-grid" aria-label="What you get">
+          <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:ledger</span><h2 class="feat-title">Revenue rebuilt from the ledger</h2><p class="feat-desc">Drop in revenue by customer by month. VCR2 builds the MRR bridge, true cohort retention, concentration and cohort heatmaps: two days of associate work, in a second.</p></div>
+          <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:compare</span><h2 class="feat-title">Stated against computed</h2><p class="feat-desc">If the deck says 134% NRR and the cohorts say 99%, that gap is the finding. A binomial test tells you when every error happens to flatter the company.</p></div>
+          <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:forensics</span><h2 class="feat-title">Forensics on the billing data</h2><p class="feat-desc">Pre-raise booking spikes, one-off charges booked as recurring, duplicate customers, quarter-end pull-forward and a Benford test, each with its method and its limits.</p></div>
+          <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:odds</span><h2 class="feat-title">Runway odds, not a runway number</h2><p class="feat-desc">A seeded Monte Carlo gives the chance of reaching next-stage metrics before the cash runs out, and how much capital that takes at 80% confidence.</p></div>
+          <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:deal</span><h2 class="feat-title">Deal maths to the exit</h2><p class="feat-desc">Pool shuffle, SAFE and note conversion, a term-sheet review against market standard, VC Method and First Chicago returns, and a full liquidation waterfall.</p></div>
+          <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:library</span><h2 class="feat-title">Learns from your deals</h2><p class="feat-desc">Save runs and import comparables to see percentiles against your own deal flow, and recalibrate the healthy ranges on it.</p></div>
+        </section>
+
+        <div class="intro-more">
+          <span class="intro-more-l">Also:</span>
+          <button class="btn btn-link" onclick="loadDemo('halcyon')">a clean seed-stage AI example</button>
+          <button class="btn btn-link" onclick="importAssessment()">open a saved assessment</button>
+          <button class="btn btn-link" onclick="goLibrary()">your library</button>
+        </div>
+        <p class="intro-note" id="intro-note">VCR2 is a workflow tool. It does not give investment advice and its score is not a recommendation to buy or sell a security. Both examples are fictional companies with synthetic data.</p>
+      </div>
+    </div>
+
+    <!-- ── SETUP ── -->
+    <div class="page" id="page-setup">
+      <div class="content-wrap">
+        <div class="pg-eyebrow">Step 1 of 4</div>
+        <h2 class="pg-title">What are you looking at?</h2>
+        <p class="pg-desc">Stage sets the benchmark thresholds and the dimension weights. Business model selects which metrics are scored and which are suppressed.</p>
+
+        <div class="field-group-title">Stage</div>
+        <div class="stage-grid" id="stage-grid"></div>
+
+        <div class="field-group-title">Business model</div>
+        <div class="type-grid" id="type-grid"></div>
+        <p class="sector-note" id="calib-note"></p>
+
+        <div class="setup-grid">
+          <div>
+            <label class="form-lbl" for="cname">Company name</label>
+            <input class="form-inp" id="cname" placeholder="e.g. Northwind Data" oninput="S.name=this.value;saveDraft()" />
+          </div>
+          <div>
+            <label class="form-lbl" for="asof">Data as of</label>
+            <input class="form-inp" id="asof" type="month" oninput="S.asof=this.value;saveDraft()" />
+          </div>
+        </div>
+
+        <div class="sec-nav">
+          <button class="btn btn-ghost" onclick="showPage('intro')">Back</button>
+          <div class="sec-nav-right">
+            <button class="btn btn-primary" onclick="goIntake()">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INTAKE ── -->
+    <div class="page" id="page-intake">
+      <div class="content-wrap wide">
+        <div class="pg-eyebrow">Step 2 of 4</div>
+        <h2 class="pg-title">Give it the source material</h2>
+        <p class="pg-desc">The strongest evidence is the company’s own data. Structured files are parsed in your browser — nothing is sent anywhere. Narrative material can optionally be read by a model you choose, and every extracted value keeps the line it came from.</p>
+
+        <div class="block-title">Structured data · parsed locally, no AI</div>
+        <div class="intake-grid">
+          <div class="intake-box" id="ledger-box">
+            <h3>Customer revenue ledger <span class="pill">most valuable</span></h3>
+            <p>Revenue by customer by month from the billing system. Wide (one column per month) or long (customer, month, amount). Unlocks cohort retention, the MRR bridge, concentration and the forensic tests.</p>
+            <div class="drop-zone" id="ledger-drop">Drop a .csv or Excel .xlsx here, or click to choose</div>
+            <details class="paste"><summary>…or paste it</summary><textarea class="intake-ta" id="ledger-paste" placeholder="customer,2025-01,2025-02,2025-03&#10;Acme,4200,4200,4600"></textarea>
+              <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="loadLedgerText(document.getElementById('ledger-paste').value,'pasted')">Load pasted ledger</button></details>
+            <div class="unit-row"><label for="ledger-unit">Values are</label>
+              <select class="field-select mini" id="ledger-unit"><option value="mrr">Monthly recurring revenue (MRR)</option><option value="arr">Annualised (ARR)</option><option value="rev">Monthly billed revenue</option></select>
+              <a href="#" onclick="downloadTemplate('ledger');return false">template</a></div>
+            <div id="ledger-status"></div>
+          </div>
+          <div class="intake-box" id="series-box">
+            <h3>Monthly financials</h3>
+            <p>Month by month: revenue, cash balance, net burn or total expenses, headcount. Any subset works. Unlocks burn trend, default-alive and a calibrated runway simulation.</p>
+            <div class="drop-zone" id="series-drop">Drop a .csv or Excel .xlsx here, or click to choose</div>
+            <details class="paste"><summary>…or paste it</summary><textarea class="intake-ta" id="series-paste" placeholder="month,revenue,cash,burn,headcount&#10;2025-01,210000,6400000,290000,31"></textarea>
+              <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="loadSeriesText(document.getElementById('series-paste').value,'pasted')">Load pasted financials</button></details>
+            <div class="unit-row"><span></span><a href="#" onclick="downloadTemplate('series');return false">template</a></div>
+            <div id="series-status"></div>
+          </div>
+        </div>
+
+        <div class="block-title" style="margin-top:26px">Narrative material · optional AI extraction</div>
+        <div class="warnstrip" id="intake-warn">
+          <span>⚠</span>
+          <div>Extraction sends the pasted text to the model provider you chose in the sidebar. Everything else in VCR2 — the ledger, the derivations, the checks, the simulation and the score — runs in your browser and sends nothing.</div>
+        </div>
+        <div class="intake-grid">
+          <div class="intake-box">
+            <h3>Deck, memo, founder update or term sheet</h3>
+            <p>Plain text. Slide notes, an email update, a data-room summary, the term sheet.</p>
+            <textarea class="intake-ta" id="intake-deck" placeholder="Paste the narrative material here…"></textarea>
+          </div>
+          <div class="intake-box">
+            <h3>Financial summary</h3>
+            <p>A P&amp;L, ARR waterfall or metrics tab. CSV or tab-separated works.</p>
+            <textarea class="intake-ta" id="intake-fin" placeholder="Month,ARR,New,Expansion,Churn…"></textarea>
+            <div class="drop-zone" id="dropzone" style="margin-top:10px">Or drop a .csv / .xlsx / .txt / .md file here</div>
+            <div id="file-list"></div>
+          </div>
+        </div>
+
+        <p class="field-hint ai-own">Uses your own key and your own account. Nothing is billed to the site owner.</p>
+        <div class="sec-nav">
+          <button class="btn btn-ghost" onclick="showPage('setup')">Back</button>
+          <div class="sec-nav-right">
+            <button class="btn btn-ghost" onclick="startSections()">Continue to the evidence form</button>
+            <button class="btn btn-primary" id="extract-btn" onclick="runExtraction()">Extract figures with AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTIONS ── -->
+    <div class="page" id="page-section">
+      <div class="section-wrap" id="section-content" tabindex="0"></div>
+    </div>
+
+    <!-- ── VERIFY ── -->
+    <div class="page" id="page-verify">
+      <div class="content-wrap" id="verify-content"></div>
+    </div>
+
+    <!-- ── LOADING ── -->
+    <div class="page" id="page-loading">
+      <div class="loading-wrap">
+        <div class="radar-anim">
+          <div class="r-ring"></div><div class="r-ring"></div><div class="r-ring"></div><div class="r-core"></div>
+        </div>
+        <h2 class="ld-title" id="ld-title">Computing</h2>
+        <p class="ld-msg" id="ld-msg">Recomputing headline metrics from primitives…</p>
+        <div class="ld-steps" id="ld-steps">
+          <div class="ld-step" id="ls-0"><div class="ld-dot"></div>Rebuilding revenue from the ledger</div>
+          <div class="ld-step" id="ls-1"><div class="ld-dot"></div>Deriving metrics from primitives</div>
+          <div class="ld-step" id="ls-2"><div class="ld-dot"></div>Running consistency and forensic checks</div>
+          <div class="ld-step" id="ls-3"><div class="ld-dot"></div>Scoring against stage thresholds</div>
+          <div class="ld-step" id="ls-4"><div class="ld-dot"></div>Simulating runway paths</div>
+          <div class="ld-step" id="ls-5"><div class="ld-dot"></div>Pricing the deal and matching patterns</div>
+          <div class="ld-step" id="ls-6"><div class="ld-dot"></div>Building the question list</div>
+          <div class="ld-step" id="ls-7"><div class="ld-dot"></div>Drafting the memo narrative</div>
+        </div>
+        <div class="stream-box" id="stream-box">Idle</div>
+      </div>
+    </div>
+
+    <!-- ── RESULT ── -->
+    <div class="page" id="page-result">
+      <div class="result-wrap" id="result-content"></div>
+    </div>
+
+    <!-- ── LIBRARY ── -->
+    <div class="page" id="page-library">
+      <div class="result-wrap" id="library-content"></div>
+    </div>
+
+    <!-- ── OWNER STUDIO (reached through #studio) ── -->
+    <div class="page" id="page-studio" data-no-text-edit>
+      <div class="result-wrap" id="studio-content"></div>
+    </div>
+
+  </main>
+</div>
+
+<div id="print-root" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/*@@JS@@*/
+</script>
+</body>
+</html>

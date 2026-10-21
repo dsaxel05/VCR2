@@ -1,0 +1,5 @@
+{
+  "about": "Performance budgets checked by `python tools/perf_measure.py --check`. Every number is a ceiling set from measurements, with headroom for run-to-run noise. Raise on purpose only.",
+  "throttled": { "cpu_slowdown": 4, "down_mbit": 10, "rtt_ms": 40, "lcp_ms": 2000, "fcp_ms": 1000, "worst_event_ms": 200, "transfer_kb": 320, "longest_task_ms": 300 },
+  "unthrottled": { "assess_ms": 50, "longest_task_ms": 100, "worst_event_ms": 100, "lcp_ms": 1000 }
+}

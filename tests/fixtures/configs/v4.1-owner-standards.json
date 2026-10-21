@@ -1,0 +1,17 @@
+{
+  "version": 1, "updated": "2026-09-01T10:00:00Z", "owner": "dsaxel05", "repo": "VCR2", "branch": "main", "path": "radar-config.json",
+  "branding": { "appName": "VC Risk Radar", "headline": "Check whether the numbers reconcile" },
+  "settings": {},
+  "hidden": { "sections": [], "fields": ["patents"], "metrics": ["sales_cycle"], "checks": ["services"], "patterns": [], "forensics": [], "questions": [], "requests": [], "gates": [] },
+  "labels": { "fields": { "arr_now": "ARR (contracted) today" }, "hints": {}, "metrics": { "nrr": "Net dollar retention" } },
+  "thresholds": { "nrr": { "a": [95, 105, 115, 130], "note": "Our Series A bar" }, "growth_yoy": { "a": [60, 100, 160, 260] } },
+  "metricWeights": { "nrr": 3, "magic_number": 1 },
+  "stageWeights": { "a": { "revenue": 0.3, "capital": 0.2, "gtm": 0.16, "team": 0.14, "market": 0.1, "govern": 0.1 } },
+  "fields": [ { "id": "eng_cost", "label": "Annual engineering cost", "section": "capital", "type": "num", "unit": "$" } ],
+  "metrics": [ { "key": "arr_per_eng", "label": "ARR per engineer", "formula": "arr_now / headcount_eng", "unit": "$", "dim": "capital", "dir": "hi", "weight": 1,
+                 "thresholds": { "a": [100000, 200000, 300000, 500000] } } ],
+  "checks": [ { "id": "k_cust", "title": "Customers vs logos", "stated": "stated_customers", "computed": "customers_now", "mode": "rel", "tol": 5, "hard": 15, "good": "hi" } ],
+  "questions": [ { "id": "q_pricing", "text": "How did the last price increase land?", "when": "has(arr_now)", "priority": "normal" } ],
+  "patterns": [ { "id": "p_thin", "title": "Thin engineering team", "sev": "amber", "when": "headcount_eng < 5", "why": "Few engineers for this ARR." } ],
+  "requests": []
+}

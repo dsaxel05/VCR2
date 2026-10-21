@@ -1,0 +1,220 @@
+{
+  "about": "Fictional companies used to validate VCR2 scoring. Not market data. Each archetype may 'extends' another and override vals/bools/sel. Tests assert ORDERINGS and FLAGS, never exact scores, so a legitimate recalibration does not break them; a change that reverses an ordering must be explained.",
+  "companies": {
+    "typical_a": {
+      "label": "Typical Series A SaaS",
+      "stage": "a", "model": "saas",
+      "vals": {
+        "arr_now": 5250000, "arr_12mo": 2800000, "new_arr_l12": 2200000, "expansion_arr_l12": 600000,
+        "churned_arr_l12": 250000, "contraction_arr_l12": 100000, "gross_margin": 76,
+        "cogs_hosting": 735000, "cogs_support": 525000, "services_pct": 6, "pct_annual": 70,
+        "deferred_revenue": 1200000, "ar_over_90": 80000,
+        "cash_on_hand": 9000000, "net_burn": 350000, "gross_burn": 787500, "total_raised": 16000000,
+        "pre_money": 30000000, "months_since_round": 14,
+        "customers_now": 140, "customers_12mo": 95, "logos_lost_l12": 9,
+        "top1_pct": 6, "top5_pct": 21, "top10_pct": 33,
+        "sm_spend_l12": 3200000, "new_customers_l12": 54, "sm_spend_prior_q": 900000, "new_arr_prior_q": 700000,
+        "win_rate": 24, "sales_cycle": 65, "pipeline_coverage": 3.1, "quota_attainment": 58, "pct_paid": 30,
+        "headcount_now": 45, "headcount_12mo": 30, "headcount_eng": 18, "headcount_sales": 12, "avg_loaded_comp": 160000,
+        "founders_count": 2, "founder_max_equity": 42, "founder_domain_years": 6, "eng_departures_l12": 2, "founders_years_together": 3,
+        "target_accounts": 20000, "reachable_pct": 10, "win_rate_vs_primary": 45, "nps": 35,
+        "pmf_very_disappointed": 38, "pmf_respondents": 60,
+        "liq_pref": 1, "option_pool": 11, "uptime_90d": 99.9, "p1_incidents": 2
+      },
+      "bools": {
+        "ip_assignments": true, "contractor_ip": false, "chain_title": true, "captable_documented": true, "taxes_current": true,
+        "participating": false, "founder_vesting": true, "litigation": false, "technical_founder": true, "prior_exit": false,
+        "founder_departed": false, "funds_separate": true, "valuation_409a": true, "dpas_signed": true,
+        "infra_single_vendor": false, "oss_reviewed": true
+      },
+      "sel": {
+        "soc2": "Type I", "audited_financials": "Reviewed", "pricing_move": "Held prices",
+        "switching_cost": "Medium — some migration effort", "mission_critical": "Important — painful to replace"
+      }
+    },
+    "efficient_grower": {
+      "label": "Efficient compounder (Series A)", "extends": "typical_a",
+      "vals": {
+        "arr_now": 5120000, "arr_12mo": 2400000, "new_arr_l12": 2000000, "expansion_arr_l12": 900000,
+        "churned_arr_l12": 120000, "contraction_arr_l12": 60000, "gross_margin": 80,
+        "cogs_hosting": 614400, "cogs_support": 409600, "net_burn": 220000, "gross_burn": 646667,
+        "total_raised": 12000000, "logos_lost_l12": 4, "sm_spend_l12": 2400000,
+        "sm_spend_prior_q": 700000, "new_arr_prior_q": 850000
+      },
+      "sel": { "pricing_move": "Raised prices" }
+    },
+    "zombie": {
+      "label": "Flat and cheap (Series A)", "extends": "typical_a",
+      "vals": {
+        "arr_now": 3020000, "arr_12mo": 2800000, "new_arr_l12": 300000, "expansion_arr_l12": 150000,
+        "churned_arr_l12": 160000, "contraction_arr_l12": 70000, "cogs_hosting": 422800, "cogs_support": 302000,
+        "cash_on_hand": 4000000, "net_burn": 120000, "gross_burn": 371667, "total_raised": 14000000,
+        "customers_now": 100, "customers_12mo": 95, "logos_lost_l12": 6, "new_customers_l12": 11,
+        "sm_spend_l12": 900000, "sm_spend_prior_q": 220000, "new_arr_prior_q": 60000,
+        "headcount_now": 30, "headcount_12mo": 30
+      }
+    },
+    "leaky_bucket": {
+      "label": "Growth through a leaky bucket (Series A)", "extends": "typical_a",
+      "vals": {
+        "new_arr_l12": 3100000, "expansion_arr_l12": 300000, "churned_arr_l12": 700000, "contraction_arr_l12": 250000,
+        "logos_lost_l12": 30
+      }
+    },
+    "concentrated": {
+      "label": "One customer dominates, short contracts (Series A)", "extends": "typical_a",
+      "vals": { "top1_pct": 38, "top5_pct": 72, "top10_pct": 85, "pct_annual": 30 }
+    },
+    "services_in_disguise": {
+      "label": "Services booked as ARR (Series A)", "extends": "typical_a",
+      "vals": { "services_pct": 42, "gross_margin": 49, "cogs_support": 1942500 }
+    },
+    "hypergrowth_burner": {
+      "label": "Hypergrowth bought with burn (Series A)", "extends": "typical_a",
+      "vals": {
+        "arr_now": 5800000, "arr_12mo": 1600000, "new_arr_l12": 3900000, "expansion_arr_l12": 500000,
+        "churned_arr_l12": 150000, "contraction_arr_l12": 50000, "cogs_hosting": 812000, "cogs_support": 580000,
+        "cash_on_hand": 11000000, "net_burn": 1400000, "gross_burn": 1883333, "total_raised": 40000000,
+        "headcount_now": 120, "headcount_12mo": 30, "headcount_eng": 45, "headcount_sales": 40,
+        "sm_spend_l12": 9000000, "new_customers_l12": 120, "customers_now": 230, "customers_12mo": 110, "logos_lost_l12": 10,
+        "sm_spend_prior_q": 2600000, "new_arr_prior_q": 1300000
+      }
+    },
+    "ip_gate": {
+      "label": "Efficient compounder whose IP assignments are incomplete", "extends": "efficient_grower",
+      "bools": { "ip_assignments": false }
+    },
+    "contradictions": {
+      "label": "Deck numbers that do not reconcile (Series A)", "extends": "typical_a",
+      "vals": {
+        "stated_arr": 6000000, "stated_growth": 120, "stated_nrr": 125, "stated_grr": 95, "stated_runway": 36,
+        "stated_burn_multiple": 0.8, "stated_cac": 30000, "stated_ltv_cac": 6, "stated_customers": 180
+      }
+    },
+    "seed_ai_clean": {
+      "label": "Clean seed-stage AI application",
+      "stage": "seed", "model": "ai_app",
+      "vals": {
+        "arr_now": 1600000, "arr_12mo": 500000, "new_arr_l12": 1050000, "expansion_arr_l12": 150000,
+        "churned_arr_l12": 70000, "contraction_arr_l12": 30000, "gross_margin": 70, "gm_12mo": 62,
+        "cogs_hosting": 336000, "cogs_support": 144000, "services_pct": 4, "pct_annual": 75,
+        "cash_on_hand": 5000000, "net_burn": 150000, "gross_burn": 283333, "total_raised": 6500000, "pre_money": 18000000,
+        "customers_now": 80, "customers_12mo": 25, "logos_lost_l12": 3, "top1_pct": 7, "top5_pct": 24, "top10_pct": 38,
+        "sm_spend_l12": 900000, "new_customers_l12": 58, "sm_spend_prior_q": 260000, "new_arr_prior_q": 330000,
+        "win_rate": 30, "sales_cycle": 40, "pipeline_coverage": 3.4, "pct_paid": 20,
+        "headcount_now": 16, "headcount_12mo": 9, "headcount_eng": 9, "headcount_sales": 3, "avg_loaded_comp": 170000,
+        "founders_count": 3, "founder_max_equity": 36, "founder_domain_years": 8, "eng_departures_l12": 0, "founders_years_together": 3,
+        "inference_pct": 18, "seat_util": 80, "usage_based_pct": 30, "top_model_share": 50,
+        "target_accounts": 90000, "reachable_pct": 12, "win_rate_vs_primary": 55, "nps": 50,
+        "pmf_very_disappointed": 46, "pmf_respondents": 110,
+        "liq_pref": 1, "option_pool": 9, "uptime_90d": 99.9, "p1_incidents": 1
+      },
+      "bools": {
+        "ip_assignments": true, "contractor_ip": false, "chain_title": true, "captable_documented": true, "taxes_current": true,
+        "participating": false, "founder_vesting": true, "litigation": false, "technical_founder": true, "prior_exit": true,
+        "founder_departed": false, "funds_separate": true, "valuation_409a": true, "dpas_signed": true,
+        "infra_single_vendor": false, "model_single_vendor": false, "proprietary_data": true, "oss_reviewed": true
+      },
+      "sel": {
+        "soc2": "Type I", "audited_financials": "Reviewed", "pricing_move": "Raised prices",
+        "switching_cost": "High — data or workflow lock-in", "mission_critical": "Important — painful to replace"
+      }
+    },
+    "seed_ai_inflated": {
+      "label": "Seed AI application living on a supplier's price list", "extends": "seed_ai_clean",
+      "vals": {
+        "arr_now": 1540000, "new_arr_l12": 1220000, "expansion_arr_l12": 60000, "churned_arr_l12": 180000, "contraction_arr_l12": 60000,
+        "gross_margin": 38, "gm_12mo": 50, "inference_pct": 52, "top_model_share": 95, "cogs_hosting": 800800, "cogs_support": 154000
+      },
+      "bools": { "model_single_vendor": true, "proprietary_data": false }
+    },
+    "marketplace_subsidised": {
+      "label": "Marketplace whose GMV is bought with incentives (seed)",
+      "stage": "seed", "model": "marketplace",
+      "vals": {
+        "arr_now": 1200000, "arr_12mo": 400000, "gross_margin": 62, "cash_on_hand": 3000000, "net_burn": 180000, "total_raised": 5000000,
+        "customers_now": 900, "customers_12mo": 300, "logos_lost_l12": 60,
+        "headcount_now": 14, "headcount_12mo": 8, "founders_count": 2, "founder_max_equity": 45, "founder_domain_years": 4,
+        "gmv_now": 9000000, "gmv_12mo": 2500000, "repeat_gmv_pct": 18, "contrib_margin": -18, "incentives_pct": 22, "top_supplier_pct": 30
+      },
+      "bools": { "ip_assignments": true, "contractor_ip": false, "chain_title": true, "captable_documented": true, "taxes_current": true }
+    },
+    "fintech_losses": {
+      "label": "Fintech lender with losses rising faster than volume (Series A)",
+      "stage": "a", "model": "fintech",
+      "vals": {
+        "arr_now": 6000000, "arr_12mo": 2500000, "gross_margin": 55, "cash_on_hand": 12000000, "net_burn": 600000, "total_raised": 30000000,
+        "customers_now": 40000, "customers_12mo": 15000, "logos_lost_l12": 3000,
+        "headcount_now": 60, "headcount_12mo": 35, "founders_count": 2, "founder_max_equity": 40, "founder_domain_years": 8,
+        "loss_rate": 5.2, "volume_now": 400000000, "volume_12mo": 150000000
+      },
+      "bools": { "ip_assignments": true, "contractor_ip": false, "chain_title": true, "captable_documented": true, "taxes_current": true, "regulatory_findings": true },
+      "sel": { "licence_model": "Sponsor or partner bank" }
+    },
+    "preseed_team": {
+      "label": "Pre-seed: strong team, no revenue yet",
+      "stage": "preseed", "model": "saas",
+      "vals": {
+        "cash_on_hand": 1500000, "net_burn": 60000, "total_raised": 1800000, "headcount_now": 4,
+        "founders_count": 2, "founder_max_equity": 50, "founder_domain_years": 10, "founders_years_together": 5,
+        "target_accounts": 40000, "reachable_pct": 8, "pmf_very_disappointed": 45, "pmf_respondents": 40, "option_pool": 10
+      },
+      "bools": {
+        "ip_assignments": true, "contractor_ip": false, "chain_title": true, "captable_documented": true, "taxes_current": true,
+        "technical_founder": true, "prior_exit": true, "founder_departed": false, "founder_vesting": true
+      },
+      "sel": { "mission_critical": "Important — painful to replace" }
+    },
+    "series_b_clean": {
+      "label": "Efficient Series B, standard terms",
+      "stage": "b", "model": "saas", "extends": "typical_a",
+      "vals": {
+        "arr_now": 24000000, "arr_12mo": 14000000, "new_arr_l12": 8500000, "expansion_arr_l12": 3200000,
+        "churned_arr_l12": 1100000, "contraction_arr_l12": 600000, "cogs_hosting": 3120000, "cogs_support": 2640000,
+        "cash_on_hand": 40000000, "net_burn": 900000, "gross_burn": 2900000, "total_raised": 60000000, "pre_money": 150000000,
+        "customers_now": 420, "customers_12mo": 300, "logos_lost_l12": 24, "new_customers_l12": 144,
+        "sm_spend_l12": 12000000, "sm_spend_prior_q": 3200000, "new_arr_prior_q": 2900000,
+        "headcount_now": 140, "headcount_12mo": 100, "headcount_eng": 50, "headcount_sales": 40, "eng_departures_l12": 5,
+        "top1_pct": 4, "top5_pct": 15, "top10_pct": 24, "liq_pref": 1, "option_pool": 12
+      },
+      "sel": { "soc2": "Type II", "audited_financials": "Audited" }
+    },
+    "series_b_participating": {
+      "label": "The same Series B with a 2x participating senior preference", "extends": "series_b_clean",
+      "vals": { "liq_pref": 2 },
+      "bools": { "participating": true }
+    }
+  },
+  "orderings": [
+    { "higher": "efficient_grower", "lower": "typical_a", "why": "better growth, retention, burn and payback on the same base" },
+    { "higher": "typical_a", "lower": "zombie", "why": "a flat company with a high burn multiple" },
+    { "higher": "efficient_grower", "lower": "zombie", "why": "transitivity" },
+    { "higher": "typical_a", "lower": "leaky_bucket", "why": "same ARR and burn, far worse retention" },
+    { "higher": "typical_a", "lower": "concentrated", "why": "only concentration differs" },
+    { "higher": "typical_a", "lower": "services_in_disguise", "why": "lower gross margin and more services revenue" },
+    { "higher": "seed_ai_clean", "lower": "seed_ai_inflated", "why": "margin trap and worse retention" },
+    { "higher": "series_b_clean", "lower": "series_b_participating", "why": "only the preference terms differ" },
+    { "higher": "efficient_grower", "lower": "hypergrowth_burner", "dimension": "capital", "why": "capital efficiency" },
+    { "higher": "typical_a", "lower": "hypergrowth_burner", "dimension": "capital", "why": "capital efficiency" },
+    { "higher": "hypergrowth_burner", "lower": "typical_a", "metric": "growth_yoy", "why": "the burner does grow faster" }
+  ],
+  "flags": [
+    { "company": "leaky_bucket", "pattern": "leaky_bucket" },
+    { "company": "concentrated", "pattern": "fragile_concentration" },
+    { "company": "services_in_disguise", "pattern": "services" },
+    { "company": "hypergrowth_burner", "pattern": "runway_cliff" },
+    { "company": "hypergrowth_burner", "pattern": "hiring_ahead" },
+    { "company": "seed_ai_inflated", "pattern": "ai_margin" },
+    { "company": "marketplace_subsidised", "pattern": "subsidised" },
+    { "company": "fintech_losses", "pattern": "loss_growth" },
+    { "company": "efficient_grower", "pattern": "efficient" },
+    { "company": "contradictions", "pattern": "optimism" },
+    { "company": "ip_gate", "gate": "ip_assignments" },
+    { "company": "contradictions", "gate": "reconcile" }
+  ],
+  "noFlags": [
+    { "company": "typical_a", "gate": "*", "why": "a typical company has no gate" },
+    { "company": "efficient_grower", "pattern": "leaky_bucket" },
+    { "company": "typical_a", "pattern": "optimism" }
+  ]
+}
