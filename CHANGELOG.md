@@ -1,6 +1,6 @@
 # Changelog
 
-## v5.0.1: 2026-10-21 (prepared, not yet published)
+## v5.0.1: 2026-10-21
 
 A patch: plainer wording, an autosave that cannot lose your work, and one button to start clean. Scoring is unchanged (rubric 5.0.0, same run IDs).
 
