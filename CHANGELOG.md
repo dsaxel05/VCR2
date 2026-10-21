@@ -1,6 +1,6 @@
 # Changelog
 
-## v5.0.0 — 2026-10-13 (prepared, not yet published)
+## v5.0.0 — 2026-10-21
 
 A rebuild of how companies are scored and of how the site looks, found and checked by independent reviews. Rubric **5.0.0**: scores change, mostly downwards by 5 to 10 points on the same inputs because figures without a source now count for less; the order of companies is broadly kept; four companies move past others (the leaky-bucket and subsidised-marketplace archetypes rise above the flat and the burning ones, and the clean seed AI example falls below the Halcyon sample).
 
@@ -43,7 +43,6 @@ A rebuild of how companies are scored and of how the site looks, found and check
 - **Compact and readable by design**: a 75% page scale (measured against the first approved look: the same screens are 30% shorter, the sidebar 26% narrower, spacing and control heights 25 to 35% smaller, text 19% smaller because it stops at the floors) with floors for the type: body text 16 px, form labels and table text 14 px, table headings and help text 13 px, nothing smaller than 13 px on screen, line height 1.6. One spacing scale (6, 12, 18, 30, 48 px), one-column forms with 39 px fields, and a quiet "5 of 12 filled" line. Secondary fields sit behind "More options", secondary table columns behind "Show details", secondary report views behind "More views", and AI assist and consistency detail behind a disclosure in the sidebar. Every empty field shows an example and every group a one-line guide.
 - **Retractable sidebar**: a "Menu" button in the top bar (and Alt + M) hides the left menu so the form has the whole width. While it is hidden the top bar keeps the coverage percentage and a "Sections" list to jump between evidence sections; Previous and Next stay at the bottom of each section. On a phone or tablet the menu is a drawer that closes when a section is picked. The visitor's choice is kept in their own browser only; the owner sets the starting state in Studio > Look & feel > Sidebar on start.
 - **Text size and page scale**: Normal (default), Large or Extra large text, and a page scale of 75% (default), 90% or 100%, set in Studio > Look & feel; each visitor can change the text size with the "Aa" button.
-- Three identities (Highlighter, Thermal, Six dimensions), each in light and dark, with a theme toggle; every text colour passes WCAG 2.2 AA; chart colours stay distinguishable for colour-blind readers.
 - New home page built around a real finding from the sample; icons instead of emoji; report tabs and navigation work with the keyboard.
 
 ### Owner Studio
