@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.2" src="https://img.shields.io/badge/version-5.0.2-0e3b34?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.0.3" src="https://img.shields.io/badge/version-5.0.3-0e3b34?style=flat-square"></a>
   <a href="https://vcr2.app/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
@@ -157,7 +157,8 @@ A few of the formulas:
 - The site loads its published configuration (`radar-config.json`) from the same repository. The Owner Studio talks only to `api.github.com`, with the owner's own token.
 - **AI is off by default.** The only other network calls are the optional AI features (extraction, AI import, memo narrative), which send text to the provider **you** choose (Anthropic, OpenAI, Gemini, Groq or OpenRouter) using **your own** key and your own account. Nothing is billed to the site owner. Use a restricted, low-spend key and do not paste confidential data-room material into a provider you have not cleared.
 - Your AI key is kept in the tab only and forgotten when you close it, unless you tick "Remember this key on this computer". It is never in a draft, an export or the library. Your library is stored in your browser's `localStorage`.
-- A Content-Security-Policy limits the page to this site, the GitHub API (Studio only) and the five AI providers. Library backups are rebuilt from a whitelist, and a spreadsheet that inflates beyond a budget is refused. Continuous integration fails if the page makes a request to any other host.
+- A Content-Security-Policy limits the page to this site, the GitHub API (Studio only) and the five AI providers, and lets only the page's own scripts run (each is listed by its fingerprint). Library backups are rebuilt from a whitelist, and a spreadsheet that inflates beyond a budget is refused. Continuous integration fails if the page makes a request to any other host, or if hostile text planted in any file, AI reply or configuration ever runs.
+- Every six hours a check confirms that https://vcr2.app/ serves exactly the files in this repository.
 
 See [SECURITY.md](SECURITY.md).
 

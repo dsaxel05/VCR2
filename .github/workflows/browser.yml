@@ -22,7 +22,7 @@ jobs:
           python-version: '3.12'
       - name: Install Playwright (test tool only; the app itself has no dependencies)
         run: |
-          pip install playwright pillow
+          pip install -r requirements.txt   # exact versions, so a new release of a test tool cannot change what runs here
           python -m playwright install --with-deps chromium
       - name: Build
         run: python build.py

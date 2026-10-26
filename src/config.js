@@ -59,7 +59,9 @@ function normalizeConfig(c) {
   const out = EMPTY_CONFIG();
   if (!isObj(c)) return out;
   out.updated = str(c.updated, 40) || null;
-  ['owner','repo','branch'].forEach(k => { const v = str(c[k], 100); if (v && /^[A-Za-z0-9._\/-]+$/.test(v)) out[k] = v; });
+  /* Owner and repository are plain names (no slash, not only dots); a branch may hold slashes but no ".." step. */
+  ['owner','repo'].forEach(k => { const v = str(c[k], 100); if (v && /^(?!\.+$)[A-Za-z0-9._-]+$/.test(v)) out[k] = v; });
+  { const v = str(c.branch, 100); if (v && /^[A-Za-z0-9._\/-]+$/.test(v) && !/(^|\/)\.\.?(\/|$)|^\/|\/$/.test(v)) out.branch = v; }
   const obj = k => isObj(c[k]) ? c[k] : {};
   Object.entries(obj('branding')).forEach(([k, v]) => { if (['appName','kicker','headline','subtitle','note','customSectionLabel','pageTitle'].includes(k) && str(v).trim()) out.branding[k] = k === 'pageTitle' ? str(v, 70).trim() : str(v, 600); });
   /* Look & feel (added in 5.0; older files have none and keep the built-in look). Colours are checked again for contrast when applied. */

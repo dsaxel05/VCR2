@@ -1,5 +1,20 @@
 # Changelog
 
+## v5.0.3: 2026-10-26
+
+A security release, from a full audit of the site. No weakness that could expose a visitor's data was found; this release adds walls behind the ones that already held. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Security
+- **Script blocks run only if they are the page's own.** The security policy now lists the SHA-256 fingerprint of each script in this build (`build.py` computes them). An injected `<script>` element, a `javascript:` link or a script inside a frame is refused by the browser, even if text ever slipped past escaping. The policy is now the first thing in the page and also refuses every frame.
+- **The Studio's GitHub token can only reach this repository.** Owner and repository names must be plain names, never a path or a `..` step, and a branch name may not hold one either, whatever a configuration file says.
+- **The live site is watched.** Every six hours a GitHub check (`tools/live_check.py`) confirms that https://vcr2.app/ serves exactly the files in this repository over a valid certificate. A hijacked domain or a page changed outside the repository makes it fail, and GitHub emails the owner. SECURITY.md says what to do then.
+- **Exact test tool versions in CI.** The browser workflow installs Playwright from `requirements.txt` instead of the latest release.
+
+### Tests
+- `tests/browser/xss_sweep_test.py` (72 checks): hostile markup in a shared deal file, ledger and financials files and their names, the resume card, the library (backup, CSV, AI import), AI replies (extraction, memo), the published configuration, a configuration imported into the Studio and the Studio's history; every report view, the memo, the founder email, the library and all 29 Studio tabs and their editors are opened. Nothing planted may run or appear as live markup.
+- `tests/browser/csp_test.py` (20 checks): the policy as the browser enforces it, against planted scripts, links, frames, requests, image beacons and framing by another site.
+- `tests/browser/live_check_test.py` (6 checks) and `tests/security-round3.test.mjs` (repository names, and the formula interpreter against property access, calls, deep nesting and overflow).
+
 ## v5.0.2: 2026-10-25
 
 ### Changed

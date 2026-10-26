@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem 'sha256-0oKSZmBhfi2HhtwNLqsM75zJlfgnM9Ulw6zMq/56QDY=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-LFZAg3IHdDzxV8fvVtGlCmJhTW84XGMUDhbtOm0fmnY='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
 <meta name="description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
@@ -23,8 +26,6 @@
 <link rel="icon" href="assets/logo/png/favicon.ico" sizes="any" />
 <link rel="apple-touch-icon" href="assets/logo/png/favicon-180.png" />
 <meta name="color-scheme" content="light dark" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; object-src 'none'" />
-<meta name="referrer" content="no-referrer" />
 <script>
 (function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; } })();</script>
 <script>
@@ -6131,7 +6132,8 @@ function normalizeConfig(c) {
 const out=EMPTY_CONFIG();
 if (!isObj(c)) return out;
 out.updated=str(c.updated,40) || null;
-['owner','repo','branch'].forEach(k=>{ const v=str(c[k],100); if (v && /^[A-Za-z0-9._\/-]+$/.test(v)) out[k]=v; });
+['owner','repo'].forEach(k=>{ const v=str(c[k],100); if (v && /^(?!\.+$)[A-Za-z0-9._-]+$/.test(v)) out[k]=v; });
+{ const v=str(c.branch,100); if (v && /^[A-Za-z0-9._\/-]+$/.test(v) && !/(^|\/)\.\.?(\/|$)|^\/|\/$/.test(v)) out.branch=v; }
 const obj=k=>isObj(c[k]) ? c[k] : {};
 Object.entries(obj('branding')).forEach(([k,v])=>{ if (['appName','kicker','headline','subtitle','note','customSectionLabel','pageTitle'].includes(k) && str(v).trim()) out.branding[k]=k === 'pageTitle' ? str(v,70).trim() : str(v,600); });
 const lk=obj('look');
@@ -8367,7 +8369,7 @@ const DIM_OPTS=[['','Not scored'],['revenue','Revenue quality'],['capital','Capi
 const UNIT_OPTS=[['','None'],['$','Dollars ($)'],['%','Percent (%)'],['x','Multiple (x)'],['months','Months'],['count','Count']];
 const STAGE_IDS=['preseed','seed','a','b'];
 function repoTarget() {
-const ok=v=>typeof v === 'string' && /^[A-Za-z0-9._-]+$/.test(v);
+const ok=v=>typeof v === 'string' && /^(?!\.+$)[A-Za-z0-9._-]{1,100}$/.test(v);
 let owner=null,repo=null;
 if (typeof location !== 'undefined' && /\.github\.io$/i.test(location.hostname)) {
 owner=location.hostname.split('.')[0];

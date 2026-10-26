@@ -33,5 +33,13 @@ if (root/'site.json').exists():
     site = str(json.loads((root/'site.json').read_text(encoding='utf-8')).get('url') or site)
 site = site.rstrip('/') + '/'
 out = shell.replace('/*@@CSS@@*/', css).replace('/*@@JS@@*/', js).replace('@@SITE_URL@@', site)
+# Script blocks run only if they are the page's own: the Content-Security-Policy lists the SHA-256 of each inline <script> of this build,
+# so a <script> element or a javascript: link that ever got into the page would be refused by the browser (tests/browser/csp_test.py).
+import hashlib, base64
+blocks = re.findall(r'<script>(.*?)</script>', out, flags=re.S)
+assert blocks and '@@SCRIPT_HASHES@@' in out, 'the shell needs its inline scripts and the @@SCRIPT_HASHES@@ slot in the policy'
+assert not re.search(r'<script\s+[^>]', out), 'a <script> with attributes would not be covered by the hashes'
+hashes = ' '.join("'sha256-" + base64.b64encode(hashlib.sha256(b.encode('utf-8')).digest()).decode('ascii') + "'" for b in blocks)
+out = out.replace('@@SCRIPT_HASHES@@', hashes)
 (root/'index.html').write_text(out, encoding='utf-8', newline='\n')  # LF everywhere: CI compares builds byte for byte
 print('built index.html', len(out.splitlines()), 'lines', len(out.encode())//1024, 'KB')

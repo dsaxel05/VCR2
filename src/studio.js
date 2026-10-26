@@ -21,7 +21,8 @@ const STAGE_IDS = ['preseed','seed','a','b'];
 /* Where Publish writes. Never taken from a draft or an imported file: the path is fixed,
    the repository comes from the site's own address, and the branch from GitHub. */
 function repoTarget() {
-  const ok = v => typeof v === 'string' && /^[A-Za-z0-9._-]+$/.test(v);
+  /* A GitHub owner or repository name: never a path, and never "." or ".." (the token must only ever reach this one repository). */
+  const ok = v => typeof v === 'string' && /^(?!\.+$)[A-Za-z0-9._-]{1,100}$/.test(v);
   let owner = null, repo = null;
   if (typeof location !== 'undefined' && /\.github\.io$/i.test(location.hostname)) {
     owner = location.hostname.split('.')[0];

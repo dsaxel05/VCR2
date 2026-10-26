@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<!-- The security policy comes first so that it covers everything after it. Script blocks run only if they are this build's own
+     (build.py fills in their SHA-256); click handlers stay inline (script-src-attr). Browsers without script-src-elem fall back to script-src. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem @@SCRIPT_HASHES@@; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
 <meta name="description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
@@ -23,8 +27,6 @@
 <link rel="icon" href="assets/logo/png/favicon.ico" sizes="any" />
 <link rel="apple-touch-icon" href="assets/logo/png/favicon-180.png" />
 <meta name="color-scheme" content="light dark" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; object-src 'none'" />
-<meta name="referrer" content="no-referrer" />
 <script>
 (function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; } })();</script>
 <script>

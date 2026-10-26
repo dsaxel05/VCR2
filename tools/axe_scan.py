@@ -32,7 +32,7 @@ def main():
         b = p.chromium.launch()
         for scheme in ('light', 'dark'):
             for vname, vp in (('desktop', {'width': 1360, 'height': 860}), ('phone', {'width': 390, 'height': 844})):
-                ctx = b.new_context(viewport=vp, reduced_motion='reduce'); pg = ctx.new_page(); pg.route('https://api.github.com/**', gh)
+                ctx = b.new_context(viewport=vp, reduced_motion='reduce', bypass_csp=True); pg = ctx.new_page()   # axe is injected as a script block, which the page's policy refuses; pg.route('https://api.github.com/**', gh)
                 pg.goto(URL); pg.wait_for_timeout(400)
                 pg.evaluate("t => { localStorage.setItem('vcr2-theme', t); applyLook(); }", scheme)
                 if os.environ.get('SCAN_SIDEBAR'): pg.evaluate("s => { localStorage.setItem('vcr2-sidebar', s); applyLook(); }", os.environ['SCAN_SIDEBAR'])

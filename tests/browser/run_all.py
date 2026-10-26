@@ -14,7 +14,7 @@ import http.server, os, pathlib, re, socket, subprocess, sys, threading, functoo
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
-SUITES = ['logo_test.py', 'dash_test.py', 'autosave_test.py', 'sim_refresh_test.py', 'clarity_test.py', 'ai_rule_test.py', 'studio_test.py', 'owner_test.py', 'privacy_test.py', 'security2_test.py', 'studio2_test.py', 'sim_worker_test.py', 'v43_test.py', 'v42_test.py', 'xl_test.py', 'test_all.py', 'edge.py', 'comfort_test.py', 'a11y_test.py', 'sidebar_test.py']
+SUITES = ['logo_test.py', 'dash_test.py', 'autosave_test.py', 'sim_refresh_test.py', 'clarity_test.py', 'ai_rule_test.py', 'studio_test.py', 'owner_test.py', 'privacy_test.py', 'security2_test.py', 'xss_sweep_test.py', 'csp_test.py', 'live_check_test.py', 'studio2_test.py', 'sim_worker_test.py', 'v43_test.py', 'v42_test.py', 'xl_test.py', 'test_all.py', 'edge.py', 'comfort_test.py', 'a11y_test.py', 'sidebar_test.py']
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
