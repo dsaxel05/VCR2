@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.0.2: 2026-10-25
+
+### Changed
+- **The site now lives at https://vcr2.app/.** The link-preview image address (`site.json`), the README and the Studio guide use it. The Studio still publishes to the same repository, so nothing changes for publishing.
+- **A new logo: the VCR2 seal.** It marks the sidebar, the browser tab (favicon, with an Apple touch icon), the README header (with a dark-page variant) and the link-preview picture (1280 by 640). The files are in `assets/logo/` and are loaded from the site itself: no third-party request, and the page itself got smaller because the old inline mark and the data-URI favicon are gone.
+
 ## v5.0.1: 2026-10-21
 
 A patch: plainer wording, an autosave that cannot lose your work, and one button to start clean. Scoring is unchanged (rubric 5.0.0, same run IDs).

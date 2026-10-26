@@ -15,7 +15,7 @@
 - Configuration ids such as `constructor` or `__proto__` are refused, and a calculation or condition longer than 1,000 characters is refused whole rather than cut short.
 - A page that another site frames hides itself.
 - Sending figures to an AI provider is chosen in each session; the choice is not remembered.
-- **Shared origin.** Every GitHub Pages project of one account is served from the same origin (`<name>.github.io`), so another page on that account could read this site's `localStorage`. Do not publish other projects on this account, or serve VCR2 from its own domain.
+- **Shared origin.** On the free `<name>.github.io` address every GitHub Pages project of one account shares one origin, so another page on that account could read this site's `localStorage`; on its own domain (vcr2.app) VCR2 has an origin of its own. Do not publish other projects on this account, or serve VCR2 from its own domain.
 
 ## Owner Studio
 

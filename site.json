@@ -1,4 +1,4 @@
 {
-  "url": "https://dsaxel05.github.io/VCR2/",
+  "url": "https://vcr2.app/",
   "about": "The address the site is published at. The link-preview image (og:image, twitter:image) must be an absolute address, so the build writes it from here. Change it when the site moves to your own domain, then run python build.py."
 }

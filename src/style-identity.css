@@ -655,3 +655,6 @@ input[type="radio"] { border-radius: 50% !important; }
 .resume-h { font-family: var(--font-ui); font-size: 1rem; color: var(--text); }
 .resume-name { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
 .resume-actions { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+/* The seal mark in the sidebar: the picture carries its own gold edge, so no frame or fill around it. */
+.sb-logo-icon { width: 34px; height: 34px; border: 0; background: transparent; border-radius: 0; }
+.sb-logo-icon img { display: block; width: 100%; height: 100%; }

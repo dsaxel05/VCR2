@@ -79,7 +79,7 @@ What cannot be a setting is listed, with the reason, in [EDITING.md](EDITING.md)
 Only the owner of the repository. The Studio is not linked from the site; you reach it at:
 
 ```
-https://dsaxel05.github.io/VCR2/#studio
+https://vcr2.app/#studio
 ```
 
 Anyone can open that address, but the Studio stays locked until you sign in with a GitHub token. It then checks with GitHub that the token belongs to the owner of the repository (`dsaxel05`) and can write to it. Publishing works by committing `radar-config.json` to the repository through the GitHub API, which only someone with write access can do. A visitor who got past the lock screen through the browser's developer tools could play with the editor in their own browser, but could not publish anything: the site everyone else sees only ever reads the committed file.
@@ -91,7 +91,7 @@ Anyone can open that address, but the Studio stays locked until you sign in with
 3. **Repository access:** choose **Only select repositories** and pick **VCR2**.
 4. **Permissions → Repository permissions → Contents:** set it to **Read and write**. Leave everything else as it is (GitHub adds read-only “Metadata” automatically).
 5. Click **Generate token** and copy it. It starts with `github_pat_`. GitHub shows it only once.
-6. Open `https://dsaxel05.github.io/VCR2/#studio`, paste the token and click **Sign in**.
+6. Open `https://vcr2.app/#studio`, paste the token and click **Sign in**.
 
 Tick **Keep me signed in on this computer** only on your own machine. Unticked, the token is forgotten when you close the tab. The token is only ever sent to `api.github.com`. If it leaks, delete it at github.com/settings/personal-access-tokens; it can only touch the VCR2 repository.
 

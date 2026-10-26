@@ -27,7 +27,7 @@ if not (len(sys.argv) > 1 and sys.argv[1] == '--readable'):
     # HTML comments and the indentation of the shell carry no meaning for a browser: the page ships without them.
     shell = re.sub(r'<!--.*?-->', '', shell, flags=re.S)
     shell = re.sub(r'(?m)^[ 	]+', '', shell)
-site = 'https://dsaxel05.github.io/VCR2/'
+site = 'https://vcr2.app/'
 if (root/'site.json').exists():
     import json
     site = str(json.loads((root/'site.json').read_text(encoding='utf-8')).get('url') or site)

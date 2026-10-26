@@ -1,4 +1,9 @@
-<h1 align="center">VCR2</h1>
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/svg/logo-dark.svg">
+    <img src="assets/logo/svg/logo-light.svg" alt="VCR2, evidence engine" width="380">
+  </picture>
+</h1>
 
 <p align="center">
   <strong>Check whether the numbers reconcile.</strong><br>
@@ -6,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://dsaxel05.github.io/VCR2/"><strong>Open the live app</strong></a>
+  <a href="https://vcr2.app/"><strong>Open the live app</strong></a>
   &nbsp;·&nbsp;
   <a href="docs/media/demo.mp4">Watch the one-minute video</a>
   &nbsp;·&nbsp;
@@ -16,8 +21,8 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.1" src="https://img.shields.io/badge/version-5.0.1-0e3b34?style=flat-square"></a>
-  <a href="https://dsaxel05.github.io/VCR2/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.0.2" src="https://img.shields.io/badge/version-5.0.2-0e3b34?style=flat-square"></a>
+  <a href="https://vcr2.app/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
   <img alt="Dependencies: 0" src="https://img.shields.io/badge/dependencies-0-0e3b34?style=flat-square">
@@ -54,7 +59,7 @@ VCR2 rebuilds them from the raw figures in about a second, shows its working, ne
 
 ## Try it in 30 seconds
 
-1. Open **[dsaxel05.github.io/VCR2](https://dsaxel05.github.io/VCR2/)**.
+1. Open **[vcr2.app](https://vcr2.app/)**.
 2. Click **Open the Series A example** (Northwind Data, a fictional company with synthetic data). A clean seed-stage example is on the same page.
 3. Go to **Verification & report**, then **Generate report**.
 
