@@ -77,8 +77,8 @@ function normalizeConfig(c) {
   if (['90','100'].includes(String(lk.page))) out.look.page = String(lk.page);
   /* Sidebar on start: open is built in, so only "hidden" is stored. The visitor's own choice, kept in their browser, wins over it. */
   if (lk.sidebar === 'hidden') out.look.sidebar = 'hidden';
-  /* Shape and size: square corners and normal title, figure and question sizes are the built-in values, so only the others are stored. */
-  if (['soft','round'].includes(lk.corners)) out.look.corners = lk.corners;
+  /* Shape and size: round corners and normal title, figure and question sizes are the built-in values, so only the others are stored. */
+  if (['soft','square'].includes(lk.corners)) out.look.corners = lk.corners;
   ['sizeTitle','sizeFigure','sizeQuestion'].forEach(k => { if (['small','large','xlarge'].includes(lk[k])) out.look[k] = lk[k]; });
   /* Which report views are in sight, in order (the rest sit behind "More views"). */
   if (Array.isArray(lk.views)) {

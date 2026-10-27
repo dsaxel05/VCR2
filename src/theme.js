@@ -52,7 +52,7 @@ function lookStyle() {
   const L = (CFG && CFG.look) || {};
   const sz = v => (v === 'small' || v === 'large' || v === 'xlarge') ? v : '';
   return { accent:ACCENTS.some(a => a[0] === L.accent) ? L.accent : 'brass', frame:L.frame === 'off' ? 'off' : 'on', divider:L.divider === 'plain' ? 'plain' : 'diamond',
-    corners:L.corners === 'soft' || L.corners === 'round' ? L.corners : '', st:sz(L.sizeTitle), sf:sz(L.sizeFigure), sq:sz(L.sizeQuestion),
+    corners:L.corners === 'soft' || L.corners === 'square' ? L.corners : '', st:sz(L.sizeTitle), sf:sz(L.sizeFigure), sq:sz(L.sizeQuestion),
     page:L.page === '90' || L.page === '100' ? L.page : '' };
 }
 /* Owner colour overrides, checked before use. Returns the list of problems (empty when all applied). */

@@ -49,12 +49,16 @@ print(('PASS ' if ok else 'FAIL ') + 'html: the default still keeps template ind
 # tight=True (the build uses it): spaces after commas and around "=" and "=>" go, in code only
 TIGHT = [
     ('commas and assignments', "var a = 1, b = 2;", "var a=1,b=2;"),
-    ('arrow function', "var f = (a, b) => a + b;", "var f=(a,b)=>a + b;"),
+    ('arrow function', "var f = (a, b) => a + b;", "var f=(a,b)=>a+b;"),
     ('a string is left alone', "var s = 'a, b = c => d';", "var s='a, b = c => d';"),
     ('a double-quoted string is left alone', 'var s = "a, b = c";', 'var s="a, b = c";'),
     ('a template literal is left alone', "var t = `a, b = c ${x, y = 1}`;", "var t=`a, b = c ${x, y = 1}`;"),
     ('a regular expression is left alone', "var r = /a, b = c/g;", "var r=/a, b = c/g;"),
-    ('comparisons and compound assignments are left alone', "if (a == b || c === d || e != f || g <= h) x += 1, y -= 2;", "if (a == b || c === d || e != f || g <= h) x += 1,y -= 2;"),
+    ('comparisons, logic and compound assignments lose their spaces', "if (a == b || c === d || e != f || g <= h) x += 1, y -= 2;", "if (a==b||c===d||e!=f||g<=h) x+=1,y-=2;"),
+    ('a ternary and brackets lose their spaces', "var v = ok ? [ a, b ] : { c: 1 };", "var v=ok?[a,b]:{c: 1};"),
+    ('"+" and "-" next to another "+" or "-" keep their space', "x = a + +b; y = a - -b; z = a + ++b; w = c-- - d;", "x=a + +b;y=a - -b;z=a + ++b;w=c-- - d;"),
+    ('optional chaining and words are left alone', "var r = typeof a?.b === 'x' && c instanceof D;", "var r=typeof a?.b==='x'&&c instanceof D;"),
+    ('comparisons with < and > lose their spaces', "var s = a < b && c > d;", "var s=a<b&&c>d;"),
     ('a division after an assignment is not a regex', "var q = a / 2, w = b / 3;", "var q=a / 2,w=b / 3;"),
     ('a comment is still removed', "var a = 1; // x, y = z" + chr(10) + "var b = 2;", "var a=1;" + chr(10) + "var b=2;"),
 ]

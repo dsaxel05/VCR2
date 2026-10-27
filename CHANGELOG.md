@@ -1,5 +1,28 @@
 # Changelog
 
+## v5.0.4: 2026-10-26
+
+A new look on every page, "golden warmth and soft pastels". Look and feel only: scores, run IDs, data flow and element IDs are unchanged (rubric 5.0.0).
+
+### Changed
+- **The page**: ivory with a soft brass glow top right, fine paper grain and three pastel lights (sage, apricot, butter) drifting slowly. On phones the lights stand still and nothing is blurred, so scrolling stays smooth.
+- **Cards, panels, tables, dialogs, toasts and banners** are frosted ivory with 20 px corners, a gold hairline and a soft green shadow; the main ones (the home page example, the report header, dialogs, the Studio sign-in) carry a second gold ring. Cards you read one by one lift a little under the pointer. Figure tiles carry a thin bar on top: gold, emerald when the figure is good, coral when it is a warning.
+- **Buttons are pills**: the primary one deep green with a light sheen every 5 s, the others with a brass edge that turn green under the pointer. Tabs, icon buttons, chips and the current section in the sidebar speak the same language. A chosen chip, a figure taken from the ledger and a received checklist item carry an emerald check.
+- **Fields** are rounded with a soft hover and a brass focus ring; the form groups its fields in frosted cards and the page navigation floats at the bottom as a pill bar.
+- **Colours**: deep green, brass and ivory stay the identity; emerald marks good values and coral marks mismatches, warnings and flags. Every text colour passes WCAG AA in light and night (the night theme was adapted to match).
+- **Motion** (transform and opacity only, none under "reduce motion"): each page fades up in a cascade when it opens, and the headline word shimmers slowly in gold.
+- **Headline figures count up** to their value when they first appear (report tiles, score, gate and finding counts, form progress, section counters, verification and library figures, and the home page example counting from 134% down to 98.8%), once per figure per page view. The true value is in the page text from the start and never changes: the counting digits are drawn over it, so screen readers, copy, print, the memo, exports, the library and every test see the exact figure.
+- **Corners**: round is now the built-in shape; the Studio (Look & feel) still offers softly rounded and square.
+- The print memo stays plain: white paper, no lights, no blur, no motion. The three print stylesheets were merged into one that uses named print colours.
+
+### Fixed
+- In the night theme, "Score withheld" in the report header was drawn in the page colour and could not be seen.
+- An invalid healthy-range row in the Studio was reported in a pale pink that was unreadable on ivory; it now uses the coral text colour.
+
+### Under the hood
+- Every colour and corner in the component stylesheets comes from a token (`tests/browser/motion_test.py` fails on a hard-coded one). 287 declarations that a later identical rule always overrode were removed (screenshots before and after are identical), and the build strips more spaces in code, so the page stays inside its size budget.
+- Tests: `tests/browser/motion_test.py` (20 checks); updated expectations for the new look in `comfort_test.py`, `config.test.mjs` and `jsstrip_test.py`.
+
 ## v5.0.3: 2026-10-26
 
 A security release, from a full audit of the site. No weakness that could expose a visitor's data was found; this release adds walls behind the ones that already held. Scoring is unchanged (rubric 5.0.0, same run IDs).

@@ -101,10 +101,16 @@ def _compact_expr(x):
     return ''.join(out)
 
 
+# Binary operators whose surrounding spaces carry no meaning (longest first). "/" is left out: the regular-expression test reads it.
+_TIGHT_OPS = ['===', '!==', '>>>', '**=', '&&=', '||=', '??=', '=>', '==', '!=', '<=', '>=', '&&', '||', '??', '+=', '-=', '*=', '|=', '&=',
+              '=', '?', ':', '+', '-', '*', '%', '|', '&', '<', '>']
+
+
 def strip_js(s, html=False, tight=False):
     """html=True also removes the indentation inside HTML template literals (see _compact_tpl); the default leaves them byte for byte.
-    tight=True also drops the space after a comma and around "=" and "=>" in code (never inside a string, template, regular
-    expression or comment); the build uses it."""
+    tight=True also drops, in code only (never inside a string, template, regular expression or comment), the space after a comma
+    or an opening bracket, the space before a closing bracket, a comma or a semicolon, and the spaces around a binary operator,
+    except where two "+" or "-" would meet; the build uses it."""
     out = []; i = 0; n = len(s)
     last = ''          # last significant character (for deciding whether '/' starts a regular expression)
     word = ''          # identifier or keyword being read / just read
@@ -154,12 +160,17 @@ def strip_js(s, html=False, tight=False):
                 j += 1
             out.append(s[i:j]); i = j; last = ')'; word = ''; at_line_start = False; continue
         if tight and c == ' ':
-            if last == ',':
+            if last in ',{([;':
                 i += 1; continue
-            if s.startswith(' => ', i):
-                out.append('=>'); last = '>'; word = ''; at_line_start = False; i += 4; continue
-            if s.startswith(' = ', i):
-                out.append('='); last = '='; word = ''; at_line_start = False; i += 3; continue
+            nx = s[i + 1] if i + 1 < n else ''
+            if nx in '})];,':
+                i += 1; continue
+            op = next((o for o in _TIGHT_OPS if s.startswith(' ' + o + ' ', i)), None)
+            if op:
+                after = s[i + len(op) + 2] if i + len(op) + 2 < n else ''
+                # "a + +b", "a - -b", "a + ++b": the space keeps two operators apart
+                if not (op in ('+', '-') and (after in '+-' or (out and out[-1] in '+-'))):
+                    out.append(op); last = op[-1]; word = ''; at_line_start = False; i += len(op) + 2; continue
         # an ordinary character
         if c.isalnum() or c in '_$':
             word = word + c if (word or not c.isdigit()) else ''

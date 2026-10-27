@@ -9,7 +9,7 @@ src = root/'src' if (root/'src'/'shell.html').exists() else root
 shell = (src/'shell.html').read_text(encoding='utf-8')
 css_files = ['style-tokens.css', 'style.css', 'style-v4.css', 'style-studio.css', 'style-identity.css']
 js_files = ['core.js', 'provenance.js', 'util.js', 'ledger.js', 'series.js', 'deal.js', 'sim.js', 'sim-async.js', 'patterns.js', 'checklist.js',
-            'library.js', 'config.js', 'owner.js', 'owner-settings.js', 'owner-diff.js', 'theme.js', 'icons.js', 'charts.js', 'report.js', 'exports.js', 'xlsx.js', 'studio.js', 'studio2.js', 'studio-details.js', 'studio-safety.js', 'demo.js', 'boot.js']
+            'library.js', 'config.js', 'owner.js', 'owner-settings.js', 'owner-diff.js', 'theme.js', 'icons.js', 'charts.js', 'report.js', 'exports.js', 'xlsx.js', 'studio.js', 'studio2.js', 'studio-details.js', 'studio-safety.js', 'demo.js', 'motion.js', 'boot.js']
 css = '\n'.join((src/f).read_text(encoding='utf-8') for f in css_files if (src/f).exists())
 js = '\n'.join((src/f).read_text(encoding='utf-8') for f in js_files if (src/f).exists())
 if not (len(sys.argv) > 1 and sys.argv[1] == '--readable'):

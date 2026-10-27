@@ -12,7 +12,7 @@ results = []
 def check(name, ok, info=''):
     results.append((ok, name, info)); print(('PASS ' if ok else 'FAIL ') + name + ('' if ok else f'  -> {str(info)[:300]}'))
 
-IVORY = 'rgb(246, 241, 230)'
+IVORY = 'rgb(246, 239, 223)'   # --surface-page, golden warmth (#F6EFDF)
 LOAD = "() => { S.name = 'Halcyon Labs'; loadHalcyon(); }"
 FORM = "(i) => { S.section = i; renderSection(i); showPage('section'); }"
 
@@ -45,10 +45,12 @@ async def main():
         ext = []; pg.on('request', lambda r: ext.append(r.url) if not r.url.startswith(('http://127.0.0.1', 'file:', 'data:', 'blob:')) else None)
         await pg.goto(BASE); await pg.wait_for_timeout(400)
         await pg.evaluate("() => { localStorage.clear(); applyLook(); }"); await pg.reload(); await pg.wait_for_timeout(400)
-        a = await pg.evaluate("() => [document.documentElement.getAttribute('data-theme'), document.documentElement.getAttribute('data-text'), getComputedStyle(document.body).backgroundColor, getComputedStyle(document.getElementById('sidebar')).backgroundColor]")
+        a = await pg.evaluate("() => [document.documentElement.getAttribute('data-theme'), document.documentElement.getAttribute('data-text'), getComputedStyle(document.documentElement).backgroundColor, getComputedStyle(document.getElementById('sidebar')).backgroundColor, getComputedStyle(document.body).backgroundColor, getComputedStyle(document.getElementById('sidebar')).backdropFilter]")
         check('the default theme is light even when the device prefers dark', a[0] == 'light', a)
-        check('the page background is the ivory of the template', a[2] == IVORY, a[2])
-        check('the sidebar is the same ivory (no green panel)', a[3] == IVORY, a[3])
+        # Golden warmth (5.0.4): the ivory sits on <html> so the glow and the pastel lights show through a transparent body;
+        # the sidebar is frosted ivory over it, never a green panel.
+        check('the page background is the ivory of the template', a[2] == IVORY and a[4] == 'rgba(0, 0, 0, 0)', [a[2], a[4]])
+        check('the sidebar is frosted ivory (no green panel)', a[3] == 'rgba(255, 250, 240, 0.8)' and 'blur' in (a[5] or ''), [a[3], a[5]])
         check('the default text size is Normal (body 16 px)', a[1] == 'normal', a[1])
 
         # "follow the device" is an owner option
@@ -107,8 +109,9 @@ async def main():
         check('no inner frame on dialogs or the Studio gate', fr['modal'] in ('none', 'normal', 'missing') and fr['gate'] in ('none', 'normal', 'missing'), fr)
         await pg.evaluate(LOAD); await pg.evaluate("() => { runAnalysis(); }")
         await pg.wait_for_function("() => document.getElementById('page-result').classList.contains('active')", timeout=20000); await settle(pg)
-        hero = await pg.evaluate("() => [getComputedStyle(document.querySelector('.res-hero'), '::before').content, !!document.querySelector('.res-hero .rule-d'), document.querySelectorAll('#page-result .rule-d').length]")
-        check('the report header keeps its double frame and one diamond divider', hero[0] not in ('none', 'normal') and hero[1] and hero[2] == 1, hero)
+        hero = await pg.evaluate("() => [getComputedStyle(document.querySelector('.res-hero')).boxShadow, !!document.querySelector('.res-hero .rule-d'), document.querySelectorAll('#page-result .rule-d').length, getComputedStyle(document.querySelector('.res-hero')).borderTopWidth]")
+        # the double frame is now the gold hairline plus a second gold ring outside it (two spread shadows)
+        check('the report header keeps its double frame and one diamond divider', hero[0].count(' 0px 0px 0px ') >= 2 and hero[3] == '1px' and hero[1] and hero[2] == 1, hero)
         h = await pg.inner_text('.res-meta + .res-meta')
         import re
         check('the run ID is 16 hex digits', re.search(r'run [0-9A-F]{16}\b', h) is not None, h)
@@ -138,7 +141,7 @@ async def main():
         mp = await mctx.new_page(); await fontroute.install(mp)
         await mp.goto(BASE); await mp.wait_for_timeout(400)
         await mp.evaluate(LOAD); await mp.evaluate(FORM, 0); await settle(mp)
-        w1 = await mp.evaluate("() => [document.documentElement.scrollWidth, getComputedStyle(document.body).backgroundColor]")
+        w1 = await mp.evaluate("() => [document.documentElement.scrollWidth, getComputedStyle(document.documentElement).backgroundColor]")
         check('the form fits a phone and is ivory', w1[0] <= 392 and w1[1] == IVORY, w1)
         s = await small_text(mp, 13)
         check('nothing on the phone form is smaller than 13 px', not s, s)
@@ -164,11 +167,11 @@ async def main():
         check('Look & feel offers corners, three sizes and the report views', all(w in txt for w in ['Shape and size', 'Corners', 'Titles and headings', 'Figures', 'Questions', 'Report views in sight']), txt[:120])
         await sp.check('#st-preview'); await sp.wait_for_timeout(150)
         base_px = await sp.evaluate("() => [getComputedStyle(document.querySelector('.btn')).borderTopLeftRadius, parseFloat(getComputedStyle(document.querySelector('.block-title')).fontSize)]")
-        await sp.click('label.look-pill:has(input[name="st-corners"][value="round"])'); await sp.wait_for_timeout(200)
+        await sp.click('label.look-pill:has(input[name="st-corners"][value="square"])'); await sp.wait_for_timeout(200)
         await sp.click('label.look-pill:has(input[name="st-sizeTitle"][value="xlarge"])'); await sp.wait_for_timeout(200)
         after = await sp.evaluate("() => [getComputedStyle(document.querySelector('.btn')).borderTopLeftRadius, parseFloat(getComputedStyle(document.querySelector('.block-title')).fontSize), document.documentElement.getAttribute('data-corners'), document.documentElement.getAttribute('data-sz-t')]")
-        check('square corners are the built-in shape', base_px[0] == '0px', base_px)
-        check('round corners apply to buttons', after[2] == 'round' and after[0] not in ('0px', ''), after)
+        check('round (pill) buttons are the built-in shape', base_px[0] == '999px', base_px)
+        check('square corners apply to buttons', after[2] == 'square' and after[0] == '0px', after)
         check('the largest title size multiplies the heading size by 1.3', abs(after[1] / base_px[1] - 1.3) < 0.02, [base_px, after])
         await sp.evaluate("() => { setLookView('revenue', false); setLookView('deal', true); }"); await sp.wait_for_timeout(200)
         v = await sp.evaluate("() => ST.draft.look.views")
@@ -179,7 +182,7 @@ async def main():
         check('the report shows the chosen views in sight', main == ['rt-overview', 'rt-findings', 'rt-questions', 'rt-deal'], main)
         await sp.evaluate("() => { goStudio(); }"); await sp.wait_for_timeout(300)
         await sp.evaluate("() => studioTab('look')"); await sp.wait_for_timeout(200)
-        await sp.click('label.look-pill:has(input[name="st-corners"][value="square"])'); await sp.click('label.look-pill:has(input[name="st-sizeTitle"][value="normal"])'); await sp.wait_for_timeout(200)
+        await sp.click('label.look-pill:has(input[name="st-corners"][value="round"])'); await sp.click('label.look-pill:has(input[name="st-sizeTitle"][value="normal"])'); await sp.wait_for_timeout(200)
         await sp.evaluate("() => setLook('views', '')"); await sp.wait_for_timeout(200)
         gone = await sp.evaluate("() => [JSON.stringify(ST.draft.look || {}), document.documentElement.hasAttribute('data-corners'), document.documentElement.hasAttribute('data-sz-t')]")
         check('choosing the built-in values again removes the settings', gone[0] == '{}' and gone[1] is False and gone[2] is False, gone)

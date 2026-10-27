@@ -1632,6 +1632,7 @@ function showPage(id) {
   updateTopbar(id);
   window.scrollTo({ top:0 });
   toggleSidebar(false);
+  if (typeof motionPage === 'function') motionPage(id);   /* the cascade and the count-up (look only, motion.js) */
 }
 function updateTopbar(id) {
   const c = $id('tb-company'), s = $id('tb-section');

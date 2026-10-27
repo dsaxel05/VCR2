@@ -173,7 +173,7 @@ Every entry is validated when the site loads. A malformed or partly broken file 
 - **Text size**: Normal (built in: body 16 px, labels and table text 14 px), Large or Extra large. Visitors can change it for themselves with the **Aa** button; their choice wins in their own browser.
 - **Page scale**: 75% (built in: compact, with the type floors above), 90% or 100%. The two larger scales zoom the whole page (text, spacing, controls) by 1.2 and 1.33.
 - **Sidebar on start**: open (built in) or hidden. It is the starting state for a visitor who has not chosen; every visitor can show or hide the menu with the "Menu" button or Alt + M, and that choice stays in their own browser only. Reset puts it back to open.
-- **Shape and size**: **corners** (square, softly rounded, round), and the size of **titles and headings**, **figures** (scores and metric values) and **questions** (form labels and the question list): smaller, built in, larger, largest. These sit on top of the text size.
+- **Shape and size**: **corners** (round, built in: pill buttons and 20 px cards; softly rounded; square), and the size of **titles and headings**, **figures** (scores and metric values) and **questions** (form labels and the question list): smaller, built in, larger, largest. These sit on top of the text size.
 - **Report views in sight**: up to six of the twelve report views stay in the row under the report header, in the order you tick them; the others sit behind "More views".
 - **Your colours**: ink and button colour (light and night) and line colour. A colour that would make text hard to read (below 4.5:1 contrast, the WCAG 2.2 AA standard) is kept in your draft but not applied, and the tab says why.
 

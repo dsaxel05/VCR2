@@ -587,7 +587,7 @@ function readStandardRow(st) {
 }
 function sayStandard(key) {
   const dir = RUBRIC.thresholds[key].dir;
-  STAGE_IDS.forEach(st => { const r = readStandardRow(st), el = $id('thr-say-' + st); if (el) { el.textContent = r.ok ? thrSentence(key, dir, r.a) : r.err; el.style.color = r.ok ? '' : '#fca5a5'; } });
+  STAGE_IDS.forEach(st => { const r = readStandardRow(st), el = $id('thr-say-' + st); if (el) { el.textContent = r.ok ? thrSentence(key, dir, r.a) : r.err; el.style.color = r.ok ? '' : 'var(--risk-text)'; } });
 }
 function saveStandard(key) {
   const o = {};
@@ -654,7 +654,7 @@ function paneStLook() {
     <div class="block-title" style="margin-top:16px">Shape and size</div>
     <p class="field-hint" style="margin-bottom:6px">Corners apply to buttons, fields and panels. The three sizes are added on top of the text size above.</p>
     <p class="field-lbl" style="margin-top:9px">Corners</p>
-    ${pill('corners', L.corners || 'square', [['square', 'Square (default)'], ['soft', 'Softly rounded'], ['round', 'Round']])}
+    ${pill('corners', L.corners || 'round', [['round', 'Round (default)'], ['soft', 'Softly rounded'], ['square', 'Square']])}
     <p class="field-lbl" style="margin-top:9px">Titles and headings</p>
     ${pill('sizeTitle', L.sizeTitle || 'normal', SIZE_CHOICES)}
     <p class="field-lbl" style="margin-top:9px">Figures (scores and metric values)</p>
@@ -696,7 +696,7 @@ function setLookView(id, on) {
 }
 function setLook(k, v) {
   ST.draft.look = ST.draft.look || {};
-  const dflt = { theme:'light', accent:'brass', frame:'on', divider:'diamond', text:'normal', page:'75', sidebar:'open', corners:'square', sizeTitle:'normal', sizeFigure:'normal', sizeQuestion:'normal' };
+  const dflt = { theme:'light', accent:'brass', frame:'on', divider:'diamond', text:'normal', page:'75', sidebar:'open', corners:'round', sizeTitle:'normal', sizeFigure:'normal', sizeQuestion:'normal' };
   if (v && v !== dflt[k]) ST.draft.look[k] = v; else delete ST.draft.look[k];
   saveStudioDraft(); renderStudioPane();
 }

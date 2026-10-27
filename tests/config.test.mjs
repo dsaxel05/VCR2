@@ -49,9 +49,12 @@ ok('contrast guard refuses an unreadable brand colour', lookOverrides('dimension
 applyConfig(normalizeConfig({ look:{ brand:'#123A7A' } }));
 ok('contrast guard accepts a readable brand colour', lookOverrides('highlighter', 'light').vars['--brand'] === '#123A7A');
 /* Shape and size (owner point of 2026-10-13): corners, title/figure/question size, report views in sight */
-const shp = normalizeConfig({ look:{ corners:'round', sizeTitle:'large', sizeFigure:'xlarge', sizeQuestion:'small', views:['deal', 'overview', 'nope', 'deal', 'checklist'] } }).look;
-eq('shape and size: valid values kept, invalid and repeated views dropped', shp, { corners:'round', sizeTitle:'large', sizeFigure:'xlarge', sizeQuestion:'small', views:['deal', 'overview', 'checklist'] });
-eq('shape and size: built-in values are not stored', normalizeConfig({ look:{ corners:'square', sizeTitle:'normal', sizeFigure:'huge', views:['overview', 'findings', 'revenue', 'questions'] } }).look, {});
+/* Round corners are built in since 5.0.4 (the golden warmth look); soft and square are the owner's other choices. */
+const shp = normalizeConfig({ look:{ corners:'square', sizeTitle:'large', sizeFigure:'xlarge', sizeQuestion:'small', views:['deal', 'overview', 'nope', 'deal', 'checklist'] } }).look;
+eq('shape and size: valid values kept, invalid and repeated views dropped', shp, { corners:'square', sizeTitle:'large', sizeFigure:'xlarge', sizeQuestion:'small', views:['deal', 'overview', 'checklist'] });
+eq('shape and size: softly rounded corners are kept', normalizeConfig({ look:{ corners:'soft' } }).look, { corners:'soft' });
+eq('shape and size: built-in values are not stored', normalizeConfig({ look:{ corners:'round', sizeTitle:'normal', sizeFigure:'huge', views:['overview', 'findings', 'revenue', 'questions'] } }).look, {});
+eq('shape and size: an unknown corner shape is dropped', normalizeConfig({ look:{ corners:'pill' } }).look, {});
 eq('shape and size: at most six views, an empty list is dropped', [normalizeConfig({ look:{ views:['overview','findings','revenue','questions','deal','bench','scoring','metrics'] } }).look.views.length, normalizeConfig({ look:{ views:[] } }).look.views], [6, undefined]);
 eq('page title: kept, trimmed to 70 characters, plain text only', [normalizeConfig({ branding:{ pageTitle:'  Acme Diligence Radar  ' } }).branding.pageTitle, normalizeConfig({ branding:{ pageTitle:'x'.repeat(200) } }).branding.pageTitle.length], ['Acme Diligence Radar', 70]);
 eq('page title: empty is not stored', 'pageTitle' in normalizeConfig({ branding:{ pageTitle:'   ' } }).branding, false);

@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════
-   DESIGN TOKENS — loaded first. One identity: PRIVATE BANK (ivory page, deep-green ink, brass hairlines, garnet for risk),
+   DESIGN TOKENS — loaded first. One identity: GOLDEN WARMTH (ivory page with a brass glow and soft pastel light, deep-green ink,
+   brass hairlines, frosted ivory cards, emerald for good values, coral for mismatches, warnings and flags),
    with a light and a night theme: <html data-theme="light|dark" data-accent="brass|garnet|emerald" data-frame="on|off"
    data-divider="diamond|plain">. theme.js sets them before the first paint. Components use the semantic tokens below (and the
    legacy names mapped at the end, so older rules follow the theme). Never put raw hex in a component rule: add or reuse a token.
@@ -20,8 +21,8 @@
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --display-weight: 400; --display-tracking: -0.01em;
   /* The accent: brass by default (decorative lines), with a darker brass for text. Presets below change only these two. */
-  --accent-line: #B8934A; --accent-text: #7A5A1F;
-  --surface-page: #F6F1E6; --surface: #F6F1E6; --surface-sunken: #EFE8D8; --surface-hover: #EAE1CD;
+  --accent-line: #B8924A; --accent-text: #7A5A24;
+  --surface-page: #F6EFDF; --surface: #FBF6EA; --surface-sunken: #EFE5CC; --surface-hover: #F1E6C8;
   --text: #0E3B34; --text-2: #2D4B45; --text-3: #4F5E59; --text-4: #54635E;
   --line-4: var(--accent-line);
   --line-3: color-mix(in srgb, var(--accent-line) 58%, transparent);
@@ -32,40 +33,48 @@
   --brand-soft: color-mix(in srgb, var(--accent-line) 14%, transparent); --brand-line: color-mix(in srgb, var(--accent-line) 50%, transparent);
   --hl: var(--accent-line); --hl-ink: #08231E; --hl-soft: color-mix(in srgb, var(--accent-line) 30%, transparent);
   --ok: #1F7A5C; --ok-text: #17634A; --ok-soft: rgba(31,122,92,.10); --ok-line: rgba(31,122,92,.36);
-  --warn: #9A6B12; --warn-text: #7A5A1F; --warn-soft: rgba(184,147,74,.18); --warn-line: rgba(154,107,18,.42);
-  --risk: #8E1F2F; --risk-text: #8E1F2F; --risk-soft: rgba(142,31,47,.08); --risk-line: rgba(142,31,47,.36);
+  --warn: #B2621E; --warn-text: #8F4C14; --warn-soft: rgba(232,150,90,.16); --warn-line: rgba(178,98,30,.42);
+  --risk: #D1553C; --risk-text: #A8402A; --risk-soft: rgba(209,85,60,.11); --risk-line: rgba(209,85,60,.45);
   --owner-text: #4E3F6E; --owner-soft: rgba(90,74,122,.09); --owner-line: rgba(90,74,122,.32);
-  --focus: #8E1F2F;
-  /* The sidebar is the page colour: only ink and buttons are deep green. */
-  --sb-bg: var(--surface-page); --sb-text: var(--text); --sb-muted: var(--text-3); --sb-line: var(--line-3);
+  --focus: #8A6420;
+  /* The sidebar is frosted ivory over the page: only ink and buttons are deep green. */
+  --sb-bg: var(--glass); --sb-text: var(--text); --sb-muted: var(--text-3); --sb-line: var(--line-3);
   --sb-active-bg: var(--surface-sunken); --sb-active-text: var(--text); --sb-hover: var(--surface-sunken);
   /* Chart series 1-5 (the MRR bridge; 5 is churn, in garnet). Worst-case CIEDE2000 between any two under normal vision,
      protanopia, deuteranopia and tritanopia is 9.5; every colour is >= 3:1 on the page, and no chart relies on colour alone. */
-  --chart-1: #2E4A8C; --chart-2: #1F7A5C; --chart-3: #8A6A28; --chart-4: #7A3E65; --chart-5: #8E1F2F; --chart-6: #0E3B34;
-  --chart-grid: rgba(14,59,52,.10); --chart-axis: #4F5E59; --chart-down: #8E1F2F;
+  --chart-1: #2E4A8C; --chart-2: #1F7A5C; --chart-3: #8A6A28; --chart-4: #7A3E65; --chart-5: #B8452B; --chart-6: #0E3B34;
+  --chart-grid: rgba(14,59,52,.10); --chart-axis: #4F5E59; --chart-down: #B8452B;
   --tooltip-bg: #0E3B34; --tooltip-text: #F6F1E6; --scrim: rgba(40,36,28,.45);
-  --radius-control: 0; --radius-card: 0; --radius-sheet: 0;
-  --shadow-2: none;
+  /* Shape: pills for buttons, chips and tabs, soft fields, 20 px cards (Studio > Look & feel > Corners can make them soft or square). */
+  --radius-pill: 999px; --radius-control: 12px; --radius-tile: 16px; --radius-card: 20px; --radius-sheet: 24px;
+  /* Frosted ivory, the gold hairline and ring, the soft green shadow, and the light on the page (brass glow, three pastel blobs). */
+  --glass: rgba(255,250,240,.8); --glass-strong: rgba(255,250,240,.94); --ring: rgba(201,161,90,.55);
+  --shadow-2: 0 30px 56px -36px rgba(23,63,54,.5); --shadow-lift: 0 36px 60px -30px rgba(23,63,54,.58);
+  --shadow-main: var(--shadow-2), 0 0 0 6px rgba(255,250,240,.4), 0 0 0 7px var(--ring);
+  --gold: #D6B062; --gold-text: #946F2C; --butter: #F3D98F; --glow: rgba(214,176,98,.38);
+  --blob-1: #CFE5D6; --blob-2: #F8DCB8; --blob-3: #F4E8B0; --blob-o: .9;
 }
 /* ── PRIVATE BANK, night ── */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --accent-line: #B8934A; --accent-text: #D5B36F;
-  --surface-page: #0B2B26; --surface: #0B2B26; --surface-sunken: #082019; --surface-hover: #123830;
+  --surface-page: #0B2B26; --surface: #10342E; --surface-sunken: #082019; --surface-hover: #16403A;
   --text: #F3ECDD; --text-2: #DCD4C2; --text-3: #A9BDB6; --text-4: #96ABA3;
   --brand: #F3ECDD; --brand-strong: #FFFFFF; --brand-ink: #0B2B26; --brand-text: var(--accent-text);
   --brand-field: #F3ECDD; --brand-field-ink: #0B2B26;
   --hl: var(--accent-text); --hl-ink: #0B2B26;
   --ok: #6FD0A0; --ok-text: #6FD0A0; --ok-soft: rgba(111,208,160,.11); --ok-line: rgba(111,208,160,.36);
-  --warn: #D5B36F; --warn-text: #D5B36F; --warn-soft: rgba(213,179,111,.13); --warn-line: rgba(213,179,111,.40);
-  --risk: #FF9FAB; --risk-text: #FF9FAB; --risk-soft: rgba(255,159,171,.11); --risk-line: rgba(255,159,171,.38);
+  --warn: #F2B27A; --warn-text: #F2B27A; --warn-soft: rgba(242,178,122,.13); --warn-line: rgba(242,178,122,.40);
+  --risk: #FF9F8A; --risk-text: #FF9F8A; --risk-soft: rgba(255,159,138,.12); --risk-line: rgba(255,159,138,.40);
   --owner-text: #C9B8F0; --owner-soft: rgba(201,184,240,.11); --owner-line: rgba(201,184,240,.34);
   --focus: #D5B36F;
-  --sb-bg: var(--surface-page); --sb-text: var(--text); --sb-muted: var(--text-3); --sb-line: var(--line-3);
-  --sb-active-bg: var(--surface-sunken); --sb-active-text: var(--text); --sb-hover: var(--surface-sunken);
-  --chart-1: #7FB2E5; --chart-2: #6FD0A0; --chart-3: #D5B36F; --chart-4: #C9B8F0; --chart-5: #FF9FAB; --chart-6: #F3ECDD;
-  --chart-grid: rgba(243,236,221,.10); --chart-axis: #A9BDB6; --chart-down: #FF9FAB;
+  --chart-1: #7FB2E5; --chart-2: #6FD0A0; --chart-3: #D5B36F; --chart-4: #C9B8F0; --chart-5: #FF9F8A; --chart-6: #F3ECDD;
+  --chart-grid: rgba(243,236,221,.10); --chart-axis: #A9BDB6; --chart-down: #FF9F8A;
   --tooltip-bg: #F3ECDD; --tooltip-text: #0B2B26; --scrim: rgba(4,16,13,.68);
+  --glass: rgba(16,52,46,.8); --glass-strong: rgba(16,52,46,.95); --ring: rgba(213,179,111,.45);
+  --shadow-2: 0 30px 56px -34px rgba(0,0,0,.7); --shadow-lift: 0 36px 60px -28px rgba(0,0,0,.8);
+  --shadow-main: var(--shadow-2), 0 0 0 6px rgba(16,52,46,.4), 0 0 0 7px var(--ring);
+  --gold-text: #F3D98F; --glow: rgba(213,179,111,.16); --blob-1: #2F6B55; --blob-2: #6B4A2E; --blob-3: #5E5A2C; --blob-o: .35;
 }
 /* ── Accent presets (Studio: Look & feel > Accent) ── */
 :root[data-accent="garnet"] { --accent-line: #8E1F2F; --accent-text: #8E1F2F; }
@@ -98,12 +107,19 @@
 :root[data-text="xlarge"] { --ts: 1.25; }
 :root[data-page="90"] { zoom: 1.2; }
 :root[data-page="100"] { zoom: 1.3333; }
-@media print { :root { zoom: 1 !important; } }
+/* Print: plain paper and ink, the same in both themes (used by the memo; the screen palette is mapped onto it). */
+@media print {
+  :root, :root[data-theme="dark"] { zoom: 1 !important; color-scheme: light;
+    --p-paper: #FFFFFF; --p-ink: #1B1B1B; --p-ink-2: #444444; --p-line: #8A7650; --p-line-2: #D9CFB8; --p-accent: #5B4318; --p-risk: #7A1A28; --p-ok: #17634A;
+    --accent-line: var(--p-line); --accent-text: var(--p-accent); --risk: var(--p-risk); --risk-text: var(--p-risk); --text: var(--p-ink); --text-2: #333333; --text-3: var(--p-ink-2); }
+  #print-root { --t0: #111111; --t1: #333333; --t2: #666666; --t3: #999999; --bg: #FFFFFF; --bg1: #FFFFFF; --bg2: #F5F5F4; --border0: #E5E5E5; --border1: #DDDDDD; --border2: #CCCCCC; --border3: #BBBBBB; --grid: #EEEEEE;
+    --c-new: #2A78D6; --c-exp: #1BAF7A; --c-react: #4A3AA7; --c-con: #EDA100; --c-churn: #D1553C; --c2: #EB6834; }
+}
 /* Size of titles, of figures and of questions, each on top of the text size (Studio > Look & feel). */
 :root { --sz-t: 1; --sz-f: 1; --sz-q: 1; }
 :root[data-sz-t="small"] { --sz-t: .9; } :root[data-sz-t="large"] { --sz-t: 1.15; } :root[data-sz-t="xlarge"] { --sz-t: 1.3; }
 :root[data-sz-f="small"] { --sz-f: .9; } :root[data-sz-f="large"] { --sz-f: 1.15; } :root[data-sz-f="xlarge"] { --sz-f: 1.3; }
 :root[data-sz-q="small"] { --sz-q: .9; } :root[data-sz-q="large"] { --sz-q: 1.15; } :root[data-sz-q="xlarge"] { --sz-q: 1.3; }
-/* Corners: square (built in), softly rounded or round. */
-:root[data-corners="soft"] { --radius-control: 4px; --radius-card: 6px; --radius-sheet: 10px; }
-:root[data-corners="round"] { --radius-control: 10px; --radius-card: 14px; --radius-sheet: 20px; }
+/* Corners: round (built in), softly rounded or square. */
+:root[data-corners="soft"] { --radius-pill: 8px; --radius-control: 4px; --radius-tile: 6px; --radius-card: 6px; --radius-sheet: 10px; }
+:root[data-corners="square"] { --radius-pill: 0; --radius-control: 0; --radius-tile: 0; --radius-card: 0; --radius-sheet: 0; }
