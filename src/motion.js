@@ -93,8 +93,9 @@ function motionPage(id) {
   while (box.children.length === 1 && box.firstElementChild.children.length) box = box.firstElementChild;
   Array.from(box.children).slice(0, 14).forEach((el, i) => {
     el.style.setProperty('--fu', i); el.classList.add('fu');
-    const done = e => { if (e && e.target !== el) return; el.classList.remove('fu'); el.removeEventListener('animationend', done); };
-    el.addEventListener('animationend', done); setTimeout(done, 2000 + i * 70);
+    /* Removed when its own fade ends, or is cancelled (the page was left before it finished), or at the latest by the timer. */
+    const done = e => { if (e && e.target !== el) return; el.classList.remove('fu'); el.removeEventListener('animationend', done); el.removeEventListener('animationcancel', done); };
+    el.addEventListener('animationend', done); el.addEventListener('animationcancel', done); setTimeout(done, 2000 + i * 70);
   });
 }
 /* Everything rendered later (a report, a section, the library, a sidebar update) is looked at once per frame. */

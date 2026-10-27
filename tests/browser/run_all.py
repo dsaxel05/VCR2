@@ -10,7 +10,7 @@ have N == M; smoke suites must print "no console errors". Exit code 1 if anythin
 Needs: pip install playwright pillow; python -m playwright install chromium.
 The GitHub API is mocked inside the suites with a fake token. No real token is ever used.
 """
-import http.server, os, pathlib, re, socket, subprocess, sys, threading, functools, time
+import http.server, os, pathlib, re, socket, subprocess, sys, tempfile, threading, functools, time
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -33,6 +33,33 @@ def serve():
     return httpd, port
 
 
+SUITE_LIMIT = int(os.environ.get('VCR2_SUITE_LIMIT', '300'))   # seconds; the slowest suite takes about 60
+LOG = pathlib.Path(tempfile.gettempdir()) / 'vcr2-run_all.log'
+
+
+def run_suite(name, env):
+    """Run one suite with its output in a file, not a pipe: a browser process left behind by a stuck suite could otherwise hold
+    a pipe open and keep this runner waiting for ever. A suite over the limit is killed with every process it started and
+    reported as a failure. Returns (exit code or None when it timed out, output)."""
+    with open(LOG, 'a', encoding='utf-8') as lg: lg.write(f'{time.strftime("%H:%M:%S")} start {name}\n')
+    with tempfile.TemporaryFile(mode='w+', encoding='utf-8', errors='replace') as f:
+        kw = {'creationflags': subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == 'nt' else {'start_new_session': True}
+        pr = subprocess.Popen([sys.executable, str(HERE / name)], cwd=str(HERE), env=env, stdout=f, stderr=subprocess.STDOUT, **kw)
+        try:
+            code = pr.wait(timeout=SUITE_LIMIT)
+        except subprocess.TimeoutExpired:
+            if os.name == 'nt':
+                subprocess.run(['taskkill', '/F', '/T', '/PID', str(pr.pid)], capture_output=True)
+            else:
+                import signal
+                try: os.killpg(pr.pid, signal.SIGKILL)
+                except Exception: pr.kill()
+            pr.wait(); code = None
+        f.seek(0); out = f.read()
+    with open(LOG, 'a', encoding='utf-8') as lg: lg.write(f'{time.strftime("%H:%M:%S")} end   {name} code={code}\n')
+    return code, out
+
+
 def main():
     wanted = [a if a.endswith('.py') else a + '.py' for a in sys.argv[1:]] or SUITES
     httpd, port = serve()
@@ -40,16 +67,17 @@ def main():
     failed, total_pass, total = [], 0, 0
     for name in wanted:
         t0 = time.time()
-        r = subprocess.run([sys.executable, str(HERE / name)], cwd=str(HERE), env=env, capture_output=True, text=True,
-                           encoding='utf-8', errors='replace', timeout=900)
-        out = (r.stdout or '') + (r.stderr or '')
+        code, out = run_suite(name, env)
         m = re.findall(r'^(\d+)/(\d+) passed\s*$', out, re.M)
-        if m:
+        if code is None:
+            ok, summary = False, f'TIMED OUT after {SUITE_LIMIT} s'
+            out += f'\nFAIL {name} was stopped after {SUITE_LIMIT} s (it and its browsers were killed)'
+        elif m:
             p, n = map(int, m[-1]); total_pass += p; total += n
-            ok = r.returncode == 0 and p == n
+            ok = code == 0 and p == n
             summary = f'{p}/{n} passed'
         else:
-            ok = r.returncode == 0 and 'no console errors' in out
+            ok = code == 0 and 'no console errors' in out
             summary = 'smoke ' + ('clean' if ok else 'FAILED')
         print(f"{'PASS' if ok else 'FAIL'}  {name:<16} {summary:<16} {time.time() - t0:5.1f}s")
         if not ok:

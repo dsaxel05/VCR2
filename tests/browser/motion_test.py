@@ -64,7 +64,8 @@ async def main():
             seen_overlay = seen_overlay or any(x[1] for x in f)
             await pg.wait_for_timeout(150)
         check('report tiles: an overlay counts while the page text stays the exact value at every sample', seen_overlay and text_stable, frames[:4])
-        await pg.wait_for_timeout(600)
+        try: await pg.wait_for_function("() => !document.querySelector('.cu-run, [data-cu]')", timeout=10000)
+        except Exception: pass
         end = await pg.evaluate("() => [document.querySelectorAll('.cu-run').length, document.querySelectorAll('[data-cu]').length]")
         check('after about 1.5 s every count has ended and its overlay is gone', end == [0, 0], end)
         same = await pg.evaluate("() => Array.from(document.querySelectorAll('#rp-overview .kpi-v')).map(k => k.textContent)")
@@ -72,15 +73,21 @@ async def main():
         await pg.evaluate("() => renderResult(S.result)"); await pg.wait_for_timeout(250)
         again = await pg.evaluate("() => document.querySelectorAll('#rp-overview .cu-run').length")
         check('a re-render of the same page view does not count again', again == 0, again)
-        await pg.evaluate("() => { showPage('intro'); showPage('result'); }"); await pg.wait_for_timeout(300)
+        await pg.evaluate("() => { showPage('intro'); showPage('result'); }")
+        casc = await pg.evaluate("() => document.querySelectorAll('#page-result .fu').length")
+        try: await pg.wait_for_function("() => document.querySelectorAll('#rp-overview .cu-run').length >= 4", timeout=10000)
+        except Exception: pass
         reopen = await pg.evaluate("() => document.querySelectorAll('#rp-overview .cu-run').length")
         check('opening the page again is a new page view: the figures count again', reopen >= 4, reopen)
-        casc = await pg.evaluate("() => document.querySelectorAll('#page-result .fu').length")
         check('the page fades up in a cascade when it opens', casc >= 3, casc)
-        await pg.wait_for_timeout(2600)
+        # wait for the class to go (a slow runner can take longer than the 0.6 s fade plus its 70 ms steps), up to 10 s
+        try: await pg.wait_for_function("() => !document.querySelector('.fu')", timeout=10000)
+        except Exception: pass
         casc2 = await pg.evaluate("() => document.querySelectorAll('.fu').length")
         check('and the cascade class is removed once it has played', casc2 == 0, casc2)
-        await pg.evaluate("() => { showPage('intro'); showPage('result'); }"); await pg.wait_for_timeout(250)
+        await pg.evaluate("() => { showPage('intro'); showPage('result'); }")
+        try: await pg.wait_for_function("() => document.querySelector('.cu-run')", timeout=10000)
+        except Exception: pass
         await pg.emulate_media(media='print')
         pr = await pg.evaluate("() => { const r = document.querySelector('.cu-run'); return r ? [getComputedStyle(r, '::after').display, getComputedStyle(r).color] : null; }")
         check('in print the overlay is hidden and the real figure shows', pr and pr[0] == 'none' and pr[1] != 'rgba(0, 0, 0, 0)', pr)

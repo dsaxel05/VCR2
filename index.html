@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem 'sha256-0oKSZmBhfi2HhtwNLqsM75zJlfgnM9Ulw6zMq/56QDY=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-xdETlWHXE6tKMQ9CzPPWZ5iu+t1xYbMW+F4wGMrbjck='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem 'sha256-0oKSZmBhfi2HhtwNLqsM75zJlfgnM9Ulw6zMq/56QDY=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-iPInuB2PmBCvVZqn4bdbiBEvDxXiPyUHX92NglOlZ8I='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
@@ -10429,8 +10429,8 @@ let box=pg;
 while (box.children.length===1&&box.firstElementChild.children.length) box=box.firstElementChild;
 Array.from(box.children).slice(0,14).forEach((el,i)=>{
 el.style.setProperty('--fu',i);el.classList.add('fu');
-const done=e=>{if (e&&e.target!==el) return;el.classList.remove('fu');el.removeEventListener('animationend',done);};
-el.addEventListener('animationend',done);setTimeout(done,2000+i*70);
+const done=e=>{if (e&&e.target!==el) return;el.classList.remove('fu');el.removeEventListener('animationend',done);el.removeEventListener('animationcancel',done);};
+el.addEventListener('animationend',done);el.addEventListener('animationcancel',done);setTimeout(done,2000+i*70);
 });
 }
 (function () {
