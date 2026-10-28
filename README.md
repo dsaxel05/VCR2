@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://vcr2.app/"><strong>Open the live app</strong></a>
   &nbsp;·&nbsp;
-  <a href="docs/media/demo.mp4">Watch the one-minute video</a>
+  <a href="docs/media/vcr2-presentation.mp4">Watch the 3-minute presentation</a>
   &nbsp;·&nbsp;
   <a href="#what-it-does">What it does</a>
   &nbsp;·&nbsp;
@@ -30,8 +30,8 @@
 </p>
 
 <p align="center">
-  <a href="docs/media/demo.mp4">
-    <img src="docs/media/demo.gif" alt="VCR2 demo: opening the Northwind Data example, finding that the deck's 134% net revenue retention is 98.8% in the ledger, and generating the report" width="780">
+  <a href="docs/media/vcr2-presentation.mp4">
+    <img src="docs/media/vcr2-presentation-poster.jpg" alt="VCR2 presentation video, 3 minutes with sound: from the Northwind Data example to the finished diligence report. Click to play." width="780">
   </a>
 </p>
 
