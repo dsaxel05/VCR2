@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://vcr2.app/"><strong>Open the live app</strong></a>
   &nbsp;·&nbsp;
-  <a href="docs/media/vcr2-presentation.mp4">Watch the 3-minute presentation</a>
+  <a href="https://github.com/user-attachments/assets/084a7484-d414-4c2e-90f3-e409392f25f2">Watch the 3-minute presentation</a>
   &nbsp;·&nbsp;
   <a href="#what-it-does">What it does</a>
   &nbsp;·&nbsp;
@@ -30,9 +30,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/media/vcr2-presentation.mp4">
-    <img src="docs/media/vcr2-presentation-poster.jpg" alt="VCR2 presentation video, 3 minutes with sound: from the Northwind Data example to the finished diligence report. Click to play." width="780">
-  </a>
+  <video src="https://github.com/user-attachments/assets/084a7484-d414-4c2e-90f3-e409392f25f2" controls preload="metadata" width="780"></video>
 </p>
 
 ---
