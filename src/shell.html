@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <!-- The security policy comes first so that it covers everything after it. Script blocks run only if they are this build's own
      (build.py fills in their SHA-256); click handlers stay inline (script-src-attr). Browsers without script-src-elem fall back to script-src. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem @@SCRIPT_HASHES@@; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem @@SCRIPT_HASHES@@; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
@@ -151,6 +151,7 @@
             <div class="intro-cta">
               <button class="btn btn-primary btn-lg" onclick="goSetup()">Start an assessment</button>
               <button class="btn btn-ghost btn-lg" onclick="loadDemo('northwind')">Open the Series A example</button>
+              <button class="btn btn-ghost btn-lg" onclick="watchDemo()"><span class="ico-play" aria-hidden="true">ICON:play</span>Watch the demo</button>
             </div>
             <ul class="trust-list">
               <li><span class="trust-ico" aria-hidden="true">ICON:shield</span>Nothing you enter leaves this browser</li>
@@ -164,6 +165,25 @@
             <div class="spec-row"><span class="spec-l">Rebuilt from the customer ledger</span><b class="spec-v proven"><span class="ev-mark" data-cu-from="134">98.8%</span></b></div>
             <div class="spec-gap"><span class="spec-gap-ico" aria-hidden="true">ICON:warn</span><span><b>35.2 points apart</b>, in the company’s favour. Nine more headline figures in this deck disagree with the arithmetic.</span></div>
             <p class="spec-ask"><span>Question for the founders</span>Which cohort and which period does the deck’s NRR cover, and does it include customers who left?</p>
+          </figure>
+        </section>
+
+        <section class="demo" id="demo" aria-labelledby="demo-h">
+          <div class="demo-head">
+            <p class="hero-kicker">See it work</p>
+            <h2 class="demo-title" id="demo-h">VCR2 in under three minutes</h2>
+            <p class="demo-sub">A guided tour of the Series A example, from the raw files to the questions you put to the founders. Nothing loads until you press play.</p>
+          </div>
+          <figure class="demo-frame">
+            <div class="demo-stage">
+            <video id="demo-video" controls preload="none" playsinline poster="assets/video/vcr2-demo-poster.jpg" width="1920" height="1080" aria-label="VCR2 demo video, 2 minutes 43 seconds">
+              <source src="assets/video/vcr2-demo-en.mp4" type="video/mp4" />
+              <track kind="captions" src="assets/video/vcr2-demo-en.vtt" srclang="en" label="English" />
+              Your browser cannot play this video. <a href="assets/video/vcr2-demo-en.mp4">Download the MP4</a>.
+            </video>
+            <button type="button" class="demo-play" id="demo-play" aria-label="Play the demo video, 2 minutes 43 seconds"><span aria-hidden="true">ICON:play</span></button>
+            </div>
+            <figcaption class="demo-note">2 min 43 s, English, with captions (use the CC button in the player). <a href="assets/video/vcr2-demo-en.mp4" download>Download the video</a>, 24 MB.</figcaption>
           </figure>
         </section>
 

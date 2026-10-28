@@ -1,5 +1,20 @@
 # Changelog
 
+## v5.0.5: 2026-10-28
+
+The home page now shows a demo video. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Added
+- **A demo video on the home page**, between the first screen and the figures row: "VCR2 in under three minutes", a 2 minute 43 second guided tour of the Series A example, from the raw files to the questions you put to the founders. A round play button sits on a poster of the report; a new "Watch the demo" button next to the two start buttons scrolls to the video and plays it. Captions are included (CC button in the player), and the video can be downloaded under the player.
+- **Nothing is loaded until play is pressed.** The video is not fetched on page load (only a small poster is), it never starts by itself, and it is served from the site itself like everything else. If it cannot be loaded, the page says so in plain words and the play button comes back.
+- The browser security policy gained `media-src 'self'`: video and captions only from the site itself. A test plants a video and an audio file from another host and checks the browser refuses them.
+- The live site check (every six hours) also compares the video, its captions and its poster with the repository.
+- A size budget for the video folder (30 MB), so a large file cannot be added by accident.
+
+### Under the hood
+- The build strips a few more pointless spaces in code (before `{`, after `)` or `}` before a word, after a colon, and between `if`, `for`, `return` and the `(`), never inside a string, template or regular expression; `tests/jsstrip_test.py` covers each rule. Four unused style rules and six unused tokens were removed. Together they kept the page inside its size budget with the new section.
+- Tests: `tests/browser/demo_video_test.py` (29 checks: the files, streaming layout, no download before play, both play buttons, keyboard, failure message, phone layout, and in a browser that can decode H.264 real playback and caption timing).
+
 ## v5.0.4: 2026-10-26
 
 A new look on every page, "golden warmth and soft pastels". Look and feel only: scores, run IDs, data flow and element IDs are unchanged (rubric 5.0.0).

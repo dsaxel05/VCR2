@@ -1,6 +1,7 @@
 {
-  "about": "Size budgets for the shipped page. Baseline v4.3.1: 674 KB raw, 195 KB gzip, no fonts. Raise on purpose only. 2026-10-12: raised from 820 / 240 KB because the owner-control layer and its Studio panes (text replacement, scoring constants, built-in details, safety tools) and the security fixes were added; the page is 823.6 KB / 239.7 KB. Axel can veto.",
+  "about": "Size budgets for the shipped page. Baseline v4.3.1: 674 KB raw, 195 KB gzip, no fonts. Raise on purpose only. 2026-10-12: raised from 820 / 240 KB because the owner-control layer and its Studio panes (text replacement, scoring constants, built-in details, safety tools) and the security fixes were added; the page is 823.6 KB / 239.7 KB. Axel can veto. 2026-10-28: video_kb added for the home page demo video (24 MB), so a large file cannot be added by accident.",
   "index_raw_kb": 840,
   "index_gzip_kb": 248,
-  "fonts_kb": 220
+  "fonts_kb": 220,
+  "video_kb": 30720
 }

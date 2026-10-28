@@ -13,7 +13,7 @@ def check(name, ok, info=''):
 def copy_site(dst):
     for f in ['index.html', 'site.json', 'radar-config.json']:
         if (ROOT / f).exists(): shutil.copyfile(ROOT / f, dst / f)
-    for d in ['assets/logo/svg', 'assets/logo/png', 'assets/fonts']:
+    for d in ['assets/logo/svg', 'assets/logo/png', 'assets/fonts', 'assets/video']:
         shutil.copytree(ROOT / d, dst / d)
     shutil.copyfile(ROOT / 'assets' / 'social-preview.png', dst / 'assets' / 'social-preview.png')
 

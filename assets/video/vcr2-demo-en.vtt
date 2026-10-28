@@ -1,0 +1,111 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:06.570
+Every startup deck tells a story. VCR2 checks
+whether the numbers behind it really reconcile.
+
+00:00:08.700 --> 00:00:14.790
+Founders send a deck, a model and an update, with
+every headline number computed by the company itself.
+
+00:00:16.500 --> 00:00:21.540
+VCR2 rebuilds those numbers from the company's
+own data, in minutes instead of days.
+
+00:00:23.100 --> 00:00:24.430
+Take this sample company.
+
+00:00:25.500 --> 00:00:28.960
+Its deck claims 134% net revenue retention.
+
+00:00:30.800 --> 00:00:34.470
+Rebuilt from its customer ledger, it's 98.8%.
+
+00:00:35.600 --> 00:00:39.240
+35 points in the company's favour,
+and a question for the founders.
+
+00:00:40.800 --> 00:00:44.590
+Built for investors, it's free, and
+nothing you enter leaves your browser.
+
+00:00:46.300 --> 00:00:50.550
+It rebuilds revenue, tests the billing,
+and models the runway and the deal.
+
+00:00:51.900 --> 00:00:53.560
+Let's open the Series A example.
+
+00:00:57.000 --> 00:01:01.090
+Its customer ledger and monthly financials
+come straight from Excel or CSV,
+
+00:01:01.800 --> 00:01:04.130
+parsed locally, with no AI required.
+
+00:01:05.300 --> 00:01:09.650
+Then you work through ten short evidence
+sections, with live figures updating as you type.
+
+00:01:11.700 --> 00:01:15.010
+Every value is tagged with its
+source, so you know what's verified.
+
+00:01:16.800 --> 00:01:22.480
+Before any score, VCR2 reconciles everything:
+here, nine material contradictions.
+
+00:01:22.800 --> 00:01:27.870
+Revenue, retention and growth are all overstated,
+and ten of twelve gaps favour the company.
+
+00:01:29.300 --> 00:01:31.870
+Every metric is recomputed from raw figures.
+
+00:01:32.200 --> 00:01:34.600
+The score is withheld until the gaps are resolved.
+
+00:01:35.800 --> 00:01:39.340
+No false confidence: every number
+on the report is explained.
+
+00:01:42.000 --> 00:01:49.230
+Forensic tests scan the billing data: a final-month spike,
+one-off customers counted as recurring, possible duplicates.
+
+00:01:50.400 --> 00:01:52.580
+Each one shows its method and its limits.
+
+00:01:53.400 --> 00:01:59.090
+Four thousand simulated paths give the odds of reaching
+the next round before cash runs out: just two percent.
+
+00:02:02.000 --> 00:02:07.740
+The deal maths is done for you: post-money,
+dilution, and the exit it takes to return the fund.
+
+00:02:08.900 --> 00:02:10.980
+Down to the full liquidation waterfall.
+
+00:02:11.600 --> 00:02:16.330
+Every gap becomes a question for the founders,
+ranked by what would change the decision.
+
+00:02:17.700 --> 00:02:19.200
+Ready to send as an email.
+
+00:02:20.400 --> 00:02:22.850
+One click prints the investment committee memo.
+
+00:02:23.500 --> 00:02:26.860
+Your library benchmarks each
+deal against your own portfolio,
+
+00:02:27.600 --> 00:02:31.310
+and the owner Studio tunes the engine, with no code.
+
+00:02:31.900 --> 00:02:37.290
+VCR2. Evidence first. Fully explained. Completely private.
+
+00:02:37.400 --> 00:02:40.060
+Try it free at vcr2.app.

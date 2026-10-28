@@ -102,15 +102,17 @@ def _compact_expr(x):
 
 
 # Binary operators whose surrounding spaces carry no meaning (longest first). "/" is left out: the regular-expression test reads it.
+_TIGHT_KW = {'if', 'for', 'while', 'switch', 'catch', 'function', 'return', 'typeof', 'await', 'void', 'delete', 'in', 'new', 'case', 'throw', 'yield'}
 _TIGHT_OPS = ['===', '!==', '>>>', '**=', '&&=', '||=', '??=', '=>', '==', '!=', '<=', '>=', '&&', '||', '??', '+=', '-=', '*=', '|=', '&=',
               '=', '?', ':', '+', '-', '*', '%', '|', '&', '<', '>']
 
 
 def strip_js(s, html=False, tight=False):
     """html=True also removes the indentation inside HTML template literals (see _compact_tpl); the default leaves them byte for byte.
-    tight=True also drops, in code only (never inside a string, template, regular expression or comment), the space after a comma
-    or an opening bracket, the space before a closing bracket, a comma or a semicolon, and the spaces around a binary operator,
-    except where two "+" or "-" would meet; the build uses it."""
+    tight=True also drops, in code only (never inside a string, template, regular expression or comment), the space after a comma,
+    a colon or an opening bracket, the space before a closing bracket, a comma, a semicolon or "{", the space between ")" or "}" and a
+    word, the space between a keyword such as if, for or return and its "(", and the spaces around a binary operator, except
+    where two "+" or "-" would meet; the build uses it."""
     out = []; i = 0; n = len(s)
     last = ''          # last significant character (for deciding whether '/' starts a regular expression)
     word = ''          # identifier or keyword being read / just read
@@ -158,12 +160,16 @@ def strip_js(s, html=False, tight=False):
             j += 1
             while j < n and s[j].isalpha():
                 j += 1
-            out.append(s[i:j]); i = j; last = ')'; word = ''; at_line_start = False; continue
+            out.append(s[i:j]); i = j; last = 'R'; word = ''; at_line_start = False; continue     # 'R': a regular expression has just ended (division may follow; its flags must not meet the next word)
         if tight and c == ' ':
-            if last in ',{([;':
+            if last in ',{([;:':                                # also after ":" (object keys, labels, case)
                 i += 1; continue
             nx = s[i + 1] if i + 1 < n else ''
-            if nx in '})];,':
+            if nx in '})];,{':                                  # "{" never needs a space before it: ") {", "else {", "class A {"
+                i += 1; continue
+            if last in ')}' and (nx.isalnum() or nx in '_$'):   # ") return x", "} else {": the bracket already ends the token
+                i += 1; continue
+            if nx == '(' and word in _TIGHT_KW:                 # "if (", "for (", "function (", "return ("
                 i += 1; continue
             op = next((o for o in _TIGHT_OPS if s.startswith(' ' + o + ' ', i)), None)
             if op:

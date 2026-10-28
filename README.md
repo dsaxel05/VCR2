@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.4" src="https://img.shields.io/badge/version-5.0.4-0e3b34?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.0.5" src="https://img.shields.io/badge/version-5.0.5-0e3b34?style=flat-square"></a>
   <a href="https://vcr2.app/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
@@ -180,7 +180,7 @@ python build.py --readable             # the same, without the size reductions, 
 node tools/dev_server.mjs --port 8765  # then open http://127.0.0.1:8765
 ```
 
-`index.html` is one self-contained file and works when opened straight from disk. The fonts in `assets/` must stay next to it.
+`index.html` is one self-contained file and works when opened straight from disk. The fonts in `assets/` (and the demo video in `assets/video`, if you want it to play) must stay next to it.
 
 ## Configuration
 
@@ -232,7 +232,7 @@ src/                  the source files, concatenated in the order listed in buil
 tests/                engine, archetype, property, configuration, importer, forensic, deal and browser tests
 docs/                 METHODOLOGY.md, STUDIO.md, EDITING.md, and the media used in this README
 examples/             sample customer ledgers, monthly financials and a comparables template
-assets/               self-hosted fonts and the social preview image
+assets/               self-hosted fonts, the logo files, the home page demo video with its captions and poster (assets/video) and the social preview image
 tools/                dev server, size and performance budgets, layout and accessibility scans, key scan
 ```
 

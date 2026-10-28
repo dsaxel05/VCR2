@@ -19,7 +19,7 @@
   color-scheme: light;
   --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --display-weight: 400; --display-tracking: -0.01em;
+  --display-tracking: -0.01em;
   /* The accent: brass by default (decorative lines), with a darker brass for text. Presets below change only these two. */
   --accent-line: #B8924A; --accent-text: #7A5A24;
   --surface-page: #F6EFDF; --surface: #FBF6EA; --surface-sunken: #EFE5CC; --surface-hover: #F1E6C8;
@@ -39,7 +39,7 @@
   --focus: #8A6420;
   /* The sidebar is frosted ivory over the page: only ink and buttons are deep green. */
   --sb-bg: var(--glass); --sb-text: var(--text); --sb-muted: var(--text-3); --sb-line: var(--line-3);
-  --sb-active-bg: var(--surface-sunken); --sb-active-text: var(--text); --sb-hover: var(--surface-sunken);
+  --sb-active-text: var(--text); --sb-hover: var(--surface-sunken);
   /* Chart series 1-5 (the MRR bridge; 5 is churn, in garnet). Worst-case CIEDE2000 between any two under normal vision,
      protanopia, deuteranopia and tritanopia is 9.5; every colour is >= 3:1 on the page, and no chart relies on colour alone. */
   --chart-1: #2E4A8C; --chart-2: #1F7A5C; --chart-3: #8A6A28; --chart-4: #7A3E65; --chart-5: #B8452B; --chart-6: #0E3B34;
@@ -91,7 +91,6 @@
   --green: var(--ok); --green-d: var(--ok-soft); --green-b: var(--ok-line); --green-t: var(--ok-text);
   --amber: var(--warn); --amber-d: var(--warn-soft); --amber-b: var(--warn-line); --amber-t: var(--warn-text);
   --red: var(--risk); --red-d: var(--risk-soft); --red-b: var(--risk-line); --red-t: var(--risk-text);
-  --purple: var(--owner-text); --purple-d: var(--owner-soft); --purple-b: var(--owner-line);
   --sans: var(--font-ui); --mono: var(--font-ui); --serif: var(--font-display);
   --r: var(--radius-control); --r2: var(--radius-card);
   --c-new: var(--chart-1); --c-exp: var(--chart-2); --c-react: var(--chart-3); --c-con: var(--chart-4); --c-churn: var(--chart-5);

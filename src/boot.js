@@ -280,6 +280,34 @@ function introStats() {
   route();
 })();
 
+/* ── The demo video on the home page ──
+   Nothing is fetched until play is pressed (preload="none"). A big play button sits on the poster until then; the player's own
+   controls (and keyboard) take over once it runs. A video that cannot be loaded is said so in plain words, never left silent. */
+function demoPlay() {
+  const v = $id('demo-video'); if (!v) return;
+  const p = v.play();
+  if (p && p.catch) p.catch(() => demoFail());
+  v.focus({ preventScroll:true });
+}
+function demoFail() {
+  const f = document.querySelector('.demo-frame'); if (f) f.classList.remove('is-started');
+  toast('The demo video could not be loaded. Check your connection and try again, or download it with the link under the video.', 'err', 7000);
+}
+function watchDemo() {
+  const v = $id('demo-video'); if (!v) return;
+  let still = false; try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  v.scrollIntoView({ block:'center', behavior:still ? 'auto' : 'smooth' });
+  demoPlay();
+}
+(function () {
+  const v = $id('demo-video'), b = $id('demo-play'), f = v && v.closest && v.closest('.demo-frame');   /* the headless tests stand in simple objects for page elements */
+  if (!v || !b || !f) return;
+  b.addEventListener('click', demoPlay);
+  v.addEventListener('play', () => f.classList.add('is-started'));
+  v.addEventListener('ended', () => f.classList.remove('is-started'));
+  const s = v.querySelector('source'); if (s) s.addEventListener('error', demoFail);
+})();
+
 /* ═══════════════════════════════════════════════════════════════
    PUBLIC SURFACE
    The engines are exposed so they can be driven by tests or a script

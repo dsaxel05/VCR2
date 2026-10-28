@@ -668,3 +668,32 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
 /* The seal mark in the sidebar: the picture carries its own gold edge, so no frame or fill around it. */
 .sb-logo-icon { width: 34px; height: 34px; border: 0; background: transparent; border-radius: 0; }
 .sb-logo-icon img { display: block; width: 100%; height: 100%; }
+
+/* ── The demo video: a framed stage with the gold ring; a round play button sits on the poster until play is pressed ── */
+.demo { max-width: 62rem; margin: var(--sp-5) auto 0; }
+.demo-head { text-align: center; margin-bottom: var(--sp-3); }
+.demo-title { font-family: var(--font-display); font-weight: 400; font-size: calc(clamp(1.5rem, 2.56vw, 2.062rem) * var(--sz-t)); line-height: 1.15; letter-spacing: var(--display-tracking); margin: 0 0 var(--sp-1); }
+.demo-sub { color: var(--text-2); max-width: 46rem; margin: 0 auto; }
+.demo-frame { margin: 0; }
+.demo-stage { position: relative; overflow: hidden; border: 1px solid var(--accent-line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-main); background: var(--surface-sunken); }
+.demo-stage video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--surface-sunken); }
+.demo-play { position: absolute; inset: 0 0 3.25rem; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--brand-ink); cursor: pointer; }
+.demo-play span { position: relative; display: grid; place-items: center; width: 5.25rem; height: 5.25rem; border-radius: 50%; background: var(--brand); box-shadow: var(--shadow-lift), 0 0 0 8px var(--glass), 0 0 0 9px var(--ring); transition: transform .25s; }
+.demo-play .ico { width: 2.25rem; height: 2.25rem; margin-left: .3rem; }
+.demo-play:hover span { transform: scale(1.06); }
+.demo-play:focus-visible { outline: none; }
+.demo-play:focus-visible span { outline: 3px solid var(--focus); outline-offset: 6px; }
+.demo-frame.is-started .demo-play { display: none; }
+.demo-note { margin: var(--sp-2) 0 0; text-align: center; font-size: .875rem; color: var(--text-3); }
+.ico-play { display: inline-flex; }
+.ico-play .ico { width: 1em; height: 1em; }
+@keyframes demo-pulse { from { transform: scale(1); opacity: .7; } to { transform: scale(1.55); opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .demo-play span::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent-line); pointer-events: none; animation: demo-pulse 2.4s ease-out infinite; }
+}
+@media (max-width: 600px) {
+  .demo-play { inset: 0 0 2.75rem; }
+  .demo-play span { width: 3.75rem; height: 3.75rem; }
+  .demo-play .ico { width: 1.75rem; height: 1.75rem; }
+}
+

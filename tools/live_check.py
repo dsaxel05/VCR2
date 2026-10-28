@@ -4,8 +4,8 @@ Run by .github/workflows/live-check.yml every six hours (and by hand: python too
 It catches what tests of the code cannot: a hijacked domain or DNS record, a page changed outside the repository, an
 expired or wrong certificate, or a deploy that did not land. When it fails, GitHub emails the owner.
 
-Checked byte for byte: the page, the published configuration, the logo and favicon files, the link-preview picture and
-every self-hosted font. Right after a push the hosting needs a few minutes, so a difference while the latest commit is
+Checked byte for byte: the page, the published configuration, the logo and favicon files, the link-preview picture,
+every self-hosted font and the home page demo video with its captions and poster. Right after a push the hosting needs a few minutes, so a difference while the latest commit is
 younger than 30 minutes is reported as "deploy in progress", not as a failure. A first difference is checked again
 twice before the run fails. Only GitHub's own servers and the site itself are contacted; nothing is sent.
 """
@@ -15,8 +15,8 @@ ROOT = pathlib.Path(sys.argv[sys.argv.index('--root') + 1]).resolve() if '--root
 def files():
     out = ['index.html']
     if (ROOT / 'radar-config.json').exists(): out.append('radar-config.json')
-    for d in ['assets/logo/svg', 'assets/logo/png', 'assets/fonts']:
-        out += sorted(str(p.relative_to(ROOT)).replace('\\', '/') for p in (ROOT / d).glob('*') if p.is_file() and p.suffix.lower() in ('.svg', '.png', '.ico', '.woff2', '.woff', '.ttf'))
+    for d in ['assets/logo/svg', 'assets/logo/png', 'assets/fonts', 'assets/video']:
+        out += sorted(str(p.relative_to(ROOT)).replace('\\', '/') for p in (ROOT / d).glob('*') if p.is_file() and p.suffix.lower() in ('.svg', '.png', '.ico', '.woff2', '.woff', '.ttf', '.mp4', '.vtt', '.jpg'))
     if (ROOT / 'assets' / 'social-preview.png').exists(): out.append('assets/social-preview.png')
     return out
 

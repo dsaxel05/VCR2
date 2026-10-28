@@ -291,10 +291,6 @@ body { min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidde
 .dim-bar { margin-bottom: 5px; }
 
 /* FLAGS */
-.fi-red   { background: var(--red-d);   border: 1px solid var(--red-b);   color: var(--red-t); }
-.fi-green { background: var(--green-d); border: 1px solid var(--green-b); color: var(--green-t); }
-.fi-db    { background: var(--red-d);   border: 1px solid var(--red-b); color: var(--red-t); font-weight: 600; }
-.fi-icon  { font-size: 0.875rem; flex-shrink: 0; margin-top: 1px; }
 
 /* ANALYSIS BLOCK */
 .analysis-blk {
