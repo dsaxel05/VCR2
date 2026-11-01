@@ -21,7 +21,7 @@ function dealInputs() {
   const I = dealInputsRaw(n);
   /* One-keystroke typos must not produce impossible results: every input is kept inside what a deal can be, and the report says what was changed. */
   const fixes = [];
-  const lim = (k, lo, hi, what) => { const v = I[k]; if (v == null || !isFinite(v)) return; const c = clamp(v, lo, hi); if (c !== v) { fixes.push(`${what} was ${v}, outside ${lo} to ${hi}; ${c} was used.`); I[k] = c; } };
+  const lim = (k, lo, hi, what) => { const v = I[k]; if (v == null || !isFinite(v)) return; const c = clamp(v, lo, hi); if (c !== v) { fixes.push(`${what} was ${v}, ${hi === Infinity ? 'below ' + lo : `outside ${lo} to ${hi}`}; ${c} was used.`); I[k] = c; } };
   lim('newPref', 0, 10, 'The new round’s liquidation preference multiple'); lim('priorPref', 0, 10, 'The prior investors’ preference multiple');
   lim('newPartCap', 0, 20, 'The participation cap'); lim('debt', 0, Infinity, 'Debt outstanding'); lim('safe', 0, Infinity, 'SAFEs outstanding');
   lim('notes', 0, Infinity, 'Convertible notes'); lim('raised', 0, Infinity, 'Total raised');

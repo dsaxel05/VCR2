@@ -112,12 +112,12 @@ function parseNum(raw, loc) {
     else s = s.replace(/,/g, '');
   } else if (hasComma) {
     /* European files (loc === 'eu') use the comma as the decimal mark, so "1,200" is 1.2. */
-    s = loc === 'eu' ? s.replace(',', '.') : (/^\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g, '') : s.replace(',', '.'));
-  } else if (hasDot && loc === 'eu' && /^\d{1,3}(\.\d{3})+$/.test(s)) {
+    s = loc === 'eu' ? s.replace(',', '.') : (/^[1-9]\d{0,2}(,\d{3})+$/.test(s) ? s.replace(/,/g, '') : s.replace(',', '.'));
+  } else if (hasDot && loc === 'eu' && /^[1-9]\d{0,2}(\.\d{3})+$/.test(s)) {
     s = s.replace(/\./g, '');            /* "1.200" in a European file is 1,200 */
   } else if (hasDot && loc !== 'us') {
-    if (/^\d{1,3}(\.\d{3}){2,}$/.test(s)) s = s.replace(/\./g, '');                              /* "1.200.000": several groups can only be thousands */
-    else if (hadCurrency && mult === 1 && /^\d{1,3}\.\d{3}$/.test(s)) s = s.replace('.', '');     /* "€1.200": a money amount */
+    if (/^[1-9]\d{0,2}(\.\d{3}){2,}$/.test(s)) s = s.replace(/\./g, '');                              /* "1.200.000": several groups can only be thousands */
+    else if (hadCurrency && mult === 1 && /^[1-9]\d{0,2}\.\d{3}$/.test(s)) s = s.replace('.', '');     /* "€1.200": a money amount */
   }
   if (!/^\d*\.?\d+(e[+-]?\d+)?$/i.test(s)) return null;
   const v = parseFloat(s) * mult;
@@ -131,7 +131,7 @@ function numberAmbiguity(raw, loc) {
   let s = String(raw).trim();
   if (/[$€£¥]|usd|eur|gbp/i.test(s)) return false;
   s = s.replace(/^\((.*)\)$/, '$1').replace(/\s/g, '');
-  return /^-?\d{1,3}[.,]\d{3}$/.test(s);
+  return /^-?[1-9]\d{0,2}[.,]\d{3}$/.test(s);  /* "0,125" can only be a decimal */
 }
 
 /* ── CSV / TSV parser with quote handling and delimiter detection ── */

@@ -1,5 +1,26 @@
 # Changelog
 
+## v5.0.6: 2026-11-01
+
+Fixes from a full verification of the site. Scoring is unchanged (rubric 5.0.0, same run IDs for both examples).
+
+### Fixed
+- **A typed figure is now read the same way in every browser and language.** The number fields were browser number fields, and each browser cleaned the text before VCR2 saw it: Chrome and Edge read "98,8" as 988, Firefox dropped "98,8", "1 200 000" and "12%" (and in French even "98.8"), Safari in French read "4,200,000" as 4.2. The fields now pass what was typed through VCR2's own number reader, the one the file importers use: 98,8 and 98.8, 1 200 000, 12%, 1.2M, 250k and (5) all work. Text that is not a number, or that reads two ways ("1,200" could be 1200 or 1.2), is not used, and the field says so in red under it.
+- **"0,125" is a decimal.** The shared number reader took a leading "0," or "0." group for thousands, so "0,125" became 125 (also "€0.125" and "0.125" in a European file). A thousands group never starts with 0.
+- **Amounts in two currencies are no longer added silently.** A ledger with both $ and € amounts still loads, with a warning that the amounts were added as written, without conversion.
+- A deal input below zero now says "was -5, below 0; 0 was used" instead of "outside 0 to Infinity".
+
+### Security
+- **Plain http moves to https.** The live site answered on http://vcr2.app without moving to https. The page now moves itself to https as a backup (local test servers are left alone); the hosting setting "Enforce HTTPS" should also be on.
+
+### Added
+- `robots.txt`, `sitemap.xml` and a canonical address in the page, for search engines.
+
+### Under the hood
+- The Browser tests workflow already had a 30-minute job limit and a 5-minute limit per suite; each step now has its own limit too (install 8, suites 15, screenshot tour 8 minutes). The runs that looked stuck had finished green in about 7.5 minutes (5 minutes of suites, then a 2-minute screenshot tour).
+- The page size budget is 250 KB compressed (was 248): the fixes above need about half a kilobyte. The page is 248.4 KB.
+- Tests: `tests/verify-2026-10.test.mjs` (27 checks) and `tests/browser/verify_2026_10_test.py` (typing in English and French browsers, the field messages, the redirect, the canonical address, robots and sitemap; `VCR2_ENGINES=chromium,firefox,webkit` runs the typing checks in all three engines).
+
 ## v5.0.5: 2026-10-28
 
 The home page now shows a demo video. Scoring is unchanged (rubric 5.0.0, same run IDs).

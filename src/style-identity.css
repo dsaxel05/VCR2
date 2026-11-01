@@ -298,6 +298,8 @@ input[type="range"] { accent-color: var(--brand); } input[type="checkbox"], inpu
 .field-card .field-lbl { display: block; margin-bottom: 3px; }
 .field-unit { font-weight: 400; color: var(--text-3); }
 .field-hint { font-family: var(--font-ui); font-size: .8125rem; line-height: 1.5; color: var(--text-3); margin: 0 0 var(--sp-1); }
+.field-err { font-size: .8125rem; line-height: 1.5; color: var(--risk-text); margin-top: var(--sp-1); }
+.field-err:empty { display: none; }
 .req-tag { font-size: .8125rem; letter-spacing: 0; text-transform: none; font-weight: 400; margin-left: var(--sp-1); }
 .field-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-2); margin-top: var(--sp-1); font-size: .8125rem; color: var(--text-3); }
 .field-card:not(.filled):not(:focus-within) .field-meta { display: none; }

@@ -21,17 +21,21 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install Playwright (test tool only; the app itself has no dependencies)
+        timeout-minutes: 8
         run: |
           pip install -r requirements.txt   # exact versions, so a new release of a test tool cannot change what runs here
           python -m playwright install --with-deps chromium
       - name: Build
         run: python build.py
       - name: Browser suites (Studio with a mocked GitHub API, importers, smoke)
+        # about 5 minutes; each suite is also stopped after 5 minutes by run_all.py
+        timeout-minutes: 15
         run: python tests/browser/run_all.py
         env:
           PYTHONUTF8: '1'
       - name: Screenshot tour (no JavaScript errors, no third-party requests)
         # No third-party host is allowed: the fonts are self-hosted. Never widen this.
+        timeout-minutes: 8   # about 2 minutes
         run: python tools/shots.py --out shots --widths 1440,390 --schemes light,dark
         env:
           PYTHONUTF8: '1'

@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem 'sha256-0oKSZmBhfi2HhtwNLqsM75zJlfgnM9Ulw6zMq/56QDY=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-lSJgg6mLXptHl9di91rqcmIsT+79Vj/iD1YRdnBujR0='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem 'sha256-n29Q1vFnE6WbRlMeOxGV9fg7LpGFcMmABBgz34A+tJQ=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-bxTUA7Mqau+/8r8zbV0goZvFyogt9fAU2oDkRYwOEms='; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
 <meta name="description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
 <meta name="author" content="Axel De Sousa" />
+<link rel="canonical" href="https://vcr2.app/" />
 <meta name="theme-color" content="#0E3B34" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="VCR2" />
@@ -27,7 +28,9 @@
 <link rel="apple-touch-icon" href="assets/logo/png/favicon-180.png" />
 <meta name="color-scheme" content="light dark" />
 <script>
-(function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; } })();</script>
+(function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; }
+/* Plain http is moved to https (a backup: the host should redirect first). Local test servers are left alone. */
+if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1|\[::1\])$|\.(localhost|test)$/.test(location.hostname)) location.replace('https:' + location.href.slice(5)); })();</script>
 <script>
 (function () { try {
 var d = document.documentElement, ls = window.localStorage, s = {};
@@ -814,6 +817,8 @@ input[type="checkbox"],input[type="radio"]{accent-color:var(--ok)}
 .field-card .field-lbl{display:block;margin-bottom:3px}
 .field-unit{font-weight:400;color:var(--text-3)}
 .field-hint{font-family:var(--font-ui);font-size:.8125rem;line-height:1.5;color:var(--text-3);margin:0 0 var(--sp-1)}
+.field-err{font-size:.8125rem;line-height:1.5;color:var(--risk-text);margin-top:var(--sp-1)}
+.field-err:empty{display:none}
 .req-tag{font-size:.8125rem;letter-spacing:0;text-transform:none;font-weight:400;margin-left:var(--sp-1)}
 .field-meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);margin-top:var(--sp-1);font-size:.8125rem;color:var(--text-3)}
 .field-card:not(.filled):not(:focus-within) .field-meta{display:none}
@@ -2983,10 +2988,19 @@ let i=S.section+1;while(i<SECTIONS.length&&sectionHidden(SECTIONS[i]))i++;
 if(i<SECTIONS.length){S.section=i;renderSection(i);showPage('section');}
 else goVerify();
 }
+function numField(el){
+const raw=el.value.trim(),id=el.dataset.fid,amb=numberAmbiguity(raw);
+const n=raw&&!amb?parseNum(raw):null;
+const msg=!raw||n!=null?'':amb?`“${raw}” reads two ways: write ${raw.replace(/[.,]/, '')} or ${parseFloat(raw.replace(',', '.'))}.`:`“${raw}” is not a number, so it is not used.`;
+const e=$id('fe-'+id);if(e)e.textContent=msg;
+el.setAttribute('aria-invalid',!!msg);
+if(n==null)delete S.vals[id];else S.vals[id]=String(n);
+}
 function saveSec(){
 document.querySelectorAll('[data-fid]').forEach(inp=>{
 const id=inp.dataset.fid,v=inp.value.trim();
 if(inp.dataset.kind==='select'){if(v)S.sel[id]=v;else delete S.sel[id];}
+else if (inp.dataset.kind==='num')numField(inp);
 else if (v==='')delete S.vals[id];
 else S.vals[id]=v;
 });
@@ -3046,10 +3060,10 @@ ${hint}
 ${f.multiline
       ? `<textarea class="field-inp field-area" id="fi-${f.id}" data-fid="${f.id}" rows="4" placeholder="${esc(f.example || fieldExample(f))}"
            oninput="S.vals['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive();saveDraft()">${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}</textarea>`
-      : `<input class="field-inp" id="fi-${f.id}" data-fid="${f.id}" type="${f.t === 'num' ? 'number' : 'text'}" step="any"
+      : `<input class="field-inp" id="fi-${f.id}" data-fid="${f.id}" type="text"${f.t === 'num' ? ` data-kind="num" autocomplete="off" aria-describedby="fe-${f.id}"` : ''}
 value="${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}"
 placeholder="${esc(fieldExample(f))}"
-oninput="S.vals['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive();saveDraft()" />`}
+oninput="${f.t === 'num' ? 'numField(this)' : `S.vals['${f.id}']=this.value`};updateFieldCardState('${f.id}');liveDerive();saveDraft()" />${f.t === 'num' ? `<div class="field-err" id="fe-${f.id}" aria-live="polite"></div>` : ''}`}
 ${chips}
 ${meta ? `<div class="field-meta">${meta}</div>` : ''}
 </div>`;
@@ -3844,12 +3858,12 @@ if(hasDot&&hasComma){
 if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
 else s=s.replace(/,/g,'');
 }else if (hasComma){
-s=loc==='eu'?s.replace(',','.'):(/^\d{1,3}(,\d{3})+$/.test(s)?s.replace(/,/g,''):s.replace(',','.'));
-}else if (hasDot&&loc==='eu'&&/^\d{1,3}(\.\d{3})+$/.test(s)){
+s=loc==='eu'?s.replace(',','.'):(/^[1-9]\d{0,2}(,\d{3})+$/.test(s)?s.replace(/,/g,''):s.replace(',','.'));
+}else if (hasDot&&loc==='eu'&&/^[1-9]\d{0,2}(\.\d{3})+$/.test(s)){
 s=s.replace(/\./g,'');
 }else if (hasDot&&loc!=='us'){
-if(/^\d{1,3}(\.\d{3}){2,}$/.test(s))s=s.replace(/\./g,'');
-else if (hadCurrency&&mult===1&&/^\d{1,3}\.\d{3}$/.test(s))s=s.replace('.','');
+if(/^[1-9]\d{0,2}(\.\d{3}){2,}$/.test(s))s=s.replace(/\./g,'');
+else if (hadCurrency&&mult===1&&/^[1-9]\d{0,2}\.\d{3}$/.test(s))s=s.replace('.','');
 }
 if(!/^\d*\.?\d+(e[+-]?\d+)?$/i.test(s))return null;
 const v=parseFloat(s)*mult;
@@ -3860,7 +3874,7 @@ if(loc==='eu'||loc==='us'||raw==null)return false;
 let s=String(raw).trim();
 if(/[$€£¥]|usd|eur|gbp/i.test(s))return false;
 s=s.replace(/^\((.*)\)$/,'$1').replace(/\s/g,'');
-return /^-?\d{1,3}[.,]\d{3}$/.test(s);
+return /^-?[1-9]\d{0,2}[.,]\d{3}$/.test(s);
 }
 function parseCSV(text){
 const src=String(text||'').replace(/^﻿/,'').replace(/\r\n?/g,'\n');
@@ -4078,6 +4092,9 @@ const monthCols=head.map((h,i)=>({i,m:parseMonth(h,hdrOrder.order)})).filter(x=>
 const warnings=[];
 if(loc==='eu')warnings.push('Numbers were read in European format (a dot groups thousands, a comma is the decimal mark)'+(rows.localeWhy?' because every figure with a dot is written like 1.200 or 15.000. If they are decimals, export with a comma-free format.':'.'));
 if(hdrOrder.mixed)warnings.push('The column dates mix day-first and month-first forms; each was read on its own and may be wrong. Use YYYY-MM headers.');
+const cur=new Set();
+rows.slice(1).forEach(r=>r.forEach(x=>{const m=String(x==null?'':x).match(/[$€£¥]|usd|eur|gbp/i);if(m&&parseNum(x,loc)!=null)cur.add(m[0].toUpperCase().replace('USD','$').replace('EUR','€').replace('GBP','£'));}));
+if(cur.size>1)warnings.push(`The amounts are in more than one currency (${[...cur].join(' ')}) and were added as written, without conversion. Convert them to one currency first.`);
 if(hdrOrder.inferred)warnings.push(`The column dates could be day-first or month-first; they were read ${hdrOrder.order === 'dmy' ? 'day-first' : 'month-first'}. Use YYYY-MM headers to be explicit.`);
 const TOTAL_ROW=/^(total|sum|grand total|totals|subtotal|total mrr|total arr|total revenue|all customers)$/i;
 const TOTAL_LIKE=/^(total|totaux|sum|somme|gesamt|subtotal|sous-total|grand total|all customers|ensemble|tous|[Σ∑])(\b|\s|$)/i;
@@ -4710,7 +4727,7 @@ function dealInputs(){
 const n=id=>gv(id);
 const I=dealInputsRaw(n);
 const fixes=[];
-const lim=(k,lo,hi,what)=>{const v=I[k];if(v==null||!isFinite(v))return;const c=clamp(v,lo,hi);if(c!==v){fixes.push(`${what} was ${v}, outside ${lo} to ${hi}; ${c} was used.`);I[k]=c;}};
+const lim=(k,lo,hi,what)=>{const v=I[k];if(v==null||!isFinite(v))return;const c=clamp(v,lo,hi);if(c!==v){fixes.push(`${what} was ${v}, ${hi === Infinity ? 'below ' + lo : `outside ${lo} to ${hi}`}; ${c} was used.`);I[k]=c;}};
 lim('newPref',0,10,'The new round’s liquidation preference multiple');lim('priorPref',0,10,'The prior investors’ preference multiple');
 lim('newPartCap',0,20,'The participation cap');lim('debt',0,Infinity,'Debt outstanding');lim('safe',0,Infinity,'SAFEs outstanding');
 lim('notes',0,Infinity,'Convertible notes');lim('raised',0,Infinity,'Total raised');

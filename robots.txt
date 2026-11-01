@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://vcr2.app/sitemap.xml

@@ -23,6 +23,10 @@ function parseLedger(text, unitHint) {
   const warnings = [];
   if (loc === 'eu') warnings.push('Numbers were read in European format (a dot groups thousands, a comma is the decimal mark)' + (rows.localeWhy ? ' because every figure with a dot is written like 1.200 or 15.000. If they are decimals, export with a comma-free format.' : '.'));
   if (hdrOrder.mixed) warnings.push('The column dates mix day-first and month-first forms; each was read on its own and may be wrong. Use YYYY-MM headers.');
+  /* Amounts written in two currencies are added as written: say so rather than sum dollars and euros silently. */
+  const cur = new Set();
+  rows.slice(1).forEach(r => r.forEach(x => { const m = String(x == null ? '' : x).match(/[$€£¥]|usd|eur|gbp/i); if (m && parseNum(x, loc) != null) cur.add(m[0].toUpperCase().replace('USD', '$').replace('EUR', '€').replace('GBP', '£')); }));
+  if (cur.size > 1) warnings.push(`The amounts are in more than one currency (${[...cur].join(' ')}) and were added as written, without conversion. Convert them to one currency first.`);
   if (hdrOrder.inferred) warnings.push(`The column dates could be day-first or month-first; they were read ${hdrOrder.order === 'dmy' ? 'day-first' : 'month-first'}. Use YYYY-MM headers to be explicit.`);
   const TOTAL_ROW = /^(total|sum|grand total|totals|subtotal|total mrr|total arr|total revenue|all customers)$/i;
   /* Other wordings ("Total général", "TOTAL USD", "Somme", "Σ") are dropped only when the row is the column sum of the others. */

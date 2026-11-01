@@ -10,6 +10,7 @@
 <title>VCR2: evidence-first diligence engine</title>
 <meta name="description" content="Rebuilds a startup's revenue from its own customer ledger, reconciles every headline metric, runs forensic tests, simulates runway, prices the deal and learns from your own deal data. Runs entirely in the browser." />
 <meta name="author" content="Axel De Sousa" />
+<link rel="canonical" href="@@SITE_URL@@" />
 <meta name="theme-color" content="#0E3B34" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="VCR2" />
@@ -28,7 +29,9 @@
 <link rel="apple-touch-icon" href="assets/logo/png/favicon-180.png" />
 <meta name="color-scheme" content="light dark" />
 <script>
-(function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; } })();</script>
+(function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; }
+  /* Plain http is moved to https (a backup: the host should redirect first). Local test servers are left alone. */
+  if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1|\[::1\])$|\.(localhost|test)$/.test(location.hostname)) location.replace('https:' + location.href.slice(5)); })();</script>
 <script>
 (function () { try {
   var d = document.documentElement, ls = window.localStorage, s = {};

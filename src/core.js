@@ -1740,10 +1740,21 @@ function nextSec() {
   if (i < SECTIONS.length) { S.section = i; renderSection(i); showPage('section'); }
   else goVerify();
 }
+/* A typed figure is read with the shared rules (98,8 or 98.8, 1 200 000, 12%, 1.2M), never by the browser, which drops or moves a
+   decimal comma depending on its language. Text that cannot be read, or reads two ways ("1,200"), is not used, and the field says so. */
+function numField(el) {
+  const raw = el.value.trim(), id = el.dataset.fid, amb = numberAmbiguity(raw);
+  const n = raw && !amb ? parseNum(raw) : null;
+  const msg = !raw || n != null ? '' : amb ? `“${raw}” reads two ways: write ${raw.replace(/[.,]/, '')} or ${parseFloat(raw.replace(',', '.'))}.` : `“${raw}” is not a number, so it is not used.`;
+  const e = $id('fe-' + id); if (e) e.textContent = msg;
+  el.setAttribute('aria-invalid', !!msg);
+  if (n == null) delete S.vals[id]; else S.vals[id] = String(n);
+}
 function saveSec() {
   document.querySelectorAll('[data-fid]').forEach(inp => {
     const id = inp.dataset.fid, v = inp.value.trim();
     if (inp.dataset.kind === 'select') { if (v) S.sel[id] = v; else delete S.sel[id]; }
+    else if (inp.dataset.kind === 'num') numField(inp);
     else if (v === '') delete S.vals[id];
     else S.vals[id] = v;
   });
@@ -1807,10 +1818,10 @@ function renderField(f) {
     ${f.multiline
       ? `<textarea class="field-inp field-area" id="fi-${f.id}" data-fid="${f.id}" rows="4" placeholder="${esc(f.example || fieldExample(f))}"
            oninput="S.vals['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive();saveDraft()">${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}</textarea>`
-      : `<input class="field-inp" id="fi-${f.id}" data-fid="${f.id}" type="${f.t === 'num' ? 'number' : 'text'}" step="any"
+      : `<input class="field-inp" id="fi-${f.id}" data-fid="${f.id}" type="text"${f.t === 'num' ? ` data-kind="num" autocomplete="off" aria-describedby="fe-${f.id}"` : ''}
            value="${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}"
            placeholder="${esc(fieldExample(f))}"
-           oninput="S.vals['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive();saveDraft()" />`}
+           oninput="${f.t === 'num' ? 'numField(this)' : `S.vals['${f.id}']=this.value`};updateFieldCardState('${f.id}');liveDerive();saveDraft()" />${f.t === 'num' ? `<div class="field-err" id="fe-${f.id}" aria-live="polite"></div>` : ''}`}
     ${chips}
     ${meta ? `<div class="field-meta">${meta}</div>` : ''}
   </div>`;
