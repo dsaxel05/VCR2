@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.9" src="https://img.shields.io/badge/version-5.0.9-0e3b34?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.0.10" src="https://img.shields.io/badge/version-5.0.10-0e3b34?style=flat-square"></a>
   <a href="https://vcr2.app/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
@@ -45,15 +45,15 @@ VCR2 rebuilds them from the raw figures in about a second, shows its working, ne
 
 **Start.** Open the built-in fictional example or begin with your own files.
 
-<p align="center"><img src="docs/media/01-landing.png" alt="VCR2 landing page: 'Check whether the numbers reconcile', with the Northwind Data example showing 134% in the deck against 98.8% from the ledger" width="900"></p>
+<p align="center"><img src="docs/media/01-landing.jpg" alt="VCR2 landing page: 'Check whether the numbers reconcile', with the Northwind Data example showing 134% in the deck against 98.8% from the ledger" width="900"></p>
 
 **Verify.** Every stated figure against the arithmetic behind it, each with the question to ask the founder.
 
-<p align="center"><img src="docs/media/02-verification.png" alt="Verification step listing material discrepancies, such as net revenue retention overstated by 35.2 points" width="900"></p>
+<p align="center"><img src="docs/media/02-verification.jpg" alt="Verification step listing material discrepancies, such as net revenue retention overstated by 35.2 points" width="900"></p>
 
-**Report.** Metrics, risks, runway odds and deal maths in one place. Here the score is withheld until the contradictions are resolved.
+**Report.** Metrics, risks, runway odds and deal maths in one place. Here the score is withheld until the contradictions are resolved. Under All metrics, display-only figures add sales efficiency, churn mix and the ARR the next round needs next to the ARR projected at six months of runway.
 
-<p align="center"><img src="docs/media/03-report.png" alt="Northwind Data report with the score withheld and the key metrics: ARR, growth, net revenue retention, burn multiple, runway, odds and entry multiple" width="900"></p>
+<p align="center"><img src="docs/media/03-report.jpg" alt="Northwind Data report with the score withheld and the key metrics: ARR, growth, net revenue retention, burn multiple, runway, odds and entry multiple" width="900"></p>
 
 ## Try it in 30 seconds
 

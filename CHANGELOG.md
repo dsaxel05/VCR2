@@ -1,5 +1,22 @@
 # Changelog
 
+## v5.0.10: 2026-11-02
+
+A final pass on the live site. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Added
+- **The AI notice says exactly what is sent.** Next to "Extract figures with AI": only the text in the boxes above (and any files added there) goes to the AI provider you chose, with your key; nothing else from the form; the key stays in the tab unless you tick "Remember this key on this computer" and is never saved in a deal, a draft or an export.
+- **A 404 page** in the same look (3 KB, no script, nothing from another site) with a link back to VCR2.
+- **A daily uptime check** (`.github/workflows/uptime.yml`): https://vcr2.app/ answers 200, the certificate has more than 14 days left, the About page text is there, and plain http still moves to https. Plain curl and openssl, no third-party action, no permissions, a 5-minute limit; a failure is a red run and an email.
+
+### Changed
+- **Link previews** use a 1200 by 630 picture (95 KB, was 1280 by 640 and 268 KB), the size LinkedIn, X and email clients expect.
+- **README screenshots** retaken from the live site in the current look, as JPEG (155 to 180 KB each).
+- A target return or First Chicago rate above 200% a year is treated as a typo: 200% is used and the deal notes say so, instead of an exit value of "n/a".
+
+### Under the hood
+- Tests: `tests/site-extras.test.mjs` (the 404 page and the uptime check), the AI notice in `tests/browser/verify_2026_10_test.py`, the return cap in `tests/verify-2026-10.test.mjs`, the new preview size in `tests/browser/logo_test.py`.
+
 ## v5.0.9: 2026-11-02
 
 HTTPS everywhere. Scoring is unchanged (rubric 5.0.0, same run IDs).

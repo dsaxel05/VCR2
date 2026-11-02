@@ -343,8 +343,10 @@ function projectArr(arr, g0, years, keep, floor) {
 function exitScenarios(D, X) {
   const I = X.I, n = id => gv(id);
   const years = n('years_to_exit') > 0 ? n('years_to_exit') : EXIT_DEFAULTS.years[stageKey()];
-  const r = n('target_irr') > 0 ? n('target_irr') : EXIT_DEFAULTS.irr[stageKey()];
-  const fc = n('fc_rate') > 0 ? n('fc_rate') : EXIT_DEFAULTS.fcRate;
+  /* A return above 200% a year is a typo, not a target: it is limited and the deal notes say so (it would otherwise give "n/a"). */
+  const cap = (v, what) => { if (v > 200) { X.notes.push(`${what} was ${v}%, above 200%; 200% was used.`); return 200; } return v; };
+  const r = cap(n('target_irr') > 0 ? n('target_irr') : EXIT_DEFAULTS.irr[stageKey()], 'The target annual return');
+  const fc = cap(n('fc_rate') > 0 ? n('fc_rate') : EXIT_DEFAULTS.fcRate, 'The First Chicago discount rate');
   const arr = n('arr_now');
   const g = D.growth_yoy != null ? D.growth_yoy : D.cmgr12 != null ? (Math.pow(1 + D.cmgr12 / 100, 12) - 1) * 100 : null;
   const est = [];

@@ -8,6 +8,7 @@ the CNAME file are not). No request leaves the site.
 import os as _os, sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 import _paths
+import re
 import asyncio, sys, re, json, pathlib, struct
 from playwright.async_api import async_playwright
 import fontroute
@@ -36,7 +37,11 @@ async def main():
     check('the SVG files have no script, embedded image or outside address', not bad, bad)
 
     sp = ROOT / 'assets' / 'social-preview.png'
-    check('assets/social-preview.png is the 1280 x 640 picture from the pack', png_size(sp) == (1280, 640) and sp.read_bytes() == (L / 'png' / 'social-preview-1280x640.png').read_bytes(), png_size(sp))
+    built = (ROOT / 'index.html').read_text(encoding='utf-8')
+    tags = (re.search(r'og:image:width" content="(\d+)"', built), re.search(r'og:image:height" content="(\d+)"', built))
+    check('assets/social-preview.png is the 1200 x 630 link preview, under 100 KB, and the page says so',
+          png_size(sp) == (1200, 630) and sp.stat().st_size < 100 * 1024 and all(tags) and (int(tags[0].group(1)), int(tags[1].group(1))) == (1200, 630),
+          [png_size(sp), sp.stat().st_size])
 
     site = json.loads((ROOT / 'site.json').read_text(encoding='utf-8'))
     check('site.json says https://vcr2.app/', site.get('url') == 'https://vcr2.app/', site.get('url'))

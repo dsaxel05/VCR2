@@ -19,7 +19,7 @@ const hits = [];
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name), rel = path.relative(ROOT, p).split(path.sep).join('/');
     if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name) && !SKIP_PATHS.some(s => rel === s || rel.startsWith(s + '/'))) walk(p); continue; }
-    if (!TEXT.test(e.name) || rel === 'CHANGELOG.md') continue;
+    if (!TEXT.test(e.name) || rel === 'CHANGELOG.md' || rel === '.github/workflows/uptime.yml') continue;   // the daily check tests that http moves to https
     fs.readFileSync(p, 'utf8').split('\n').forEach((line, i) => { if (BAD.some(r => r.test(line))) hits.push(`${rel}:${i + 1}`); });
   }
 })(ROOT);

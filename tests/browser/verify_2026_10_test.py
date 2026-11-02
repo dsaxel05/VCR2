@@ -71,6 +71,11 @@ async def main():
         check('plain http on a real host is moved to https, keeping the path, query and hash', pg.url == 'https://vcr2.example/?x=1#studio', [pg.url, hits])
         await pg.goto(BASE); await pg.wait_for_timeout(300)
         check('a local test server on http is left alone', pg.url.startswith('http://127.0.0.1'), pg.url)
+        note = await pg.evaluate("""() => { showPage('intake'); const n = document.querySelector('#page-intake .ai-sent'), b = document.getElementById('extract-btn');
+            return n ? { text: n.innerText, shown: n.getClientRects().length > 0, before: !!(n.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) } : null; }""")
+        check('next to "Extract figures with AI", a plain notice says what is sent, to whom, and how the key is kept',
+              note and note['shown'] and note['before'] and all(k in note['text'] for k in ['sends only the text', 'AI provider you chose', 'forgotten when you close it', 'never saved']), note)
+        await pg.evaluate("showPage('intro')")
         canon = await pg.evaluate("(document.querySelector('link[rel=canonical]') || {}).href")
         check('the page names its canonical address (site.json)', canon == 'https://vcr2.app/', canon)
         await b.close()

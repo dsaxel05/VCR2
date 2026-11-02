@@ -1,0 +1,31 @@
+name: Daily uptime check
+
+# Once a day: https://vcr2.app/ answers 200, its certificate has more than 14 days left, the About page text is there,
+# and plain http still moves to https. Plain curl and openssl only, no third-party action, no permissions.
+# A failure shows as a red run in the Actions tab and GitHub emails the owner.
+on:
+  schedule:
+    - cron: '41 7 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  uptime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Site, certificate, About page and https redirect
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o page.html -w '%{http_code}' --max-time 30 https://vcr2.app/)
+          echo "https://vcr2.app/ answered $code"
+          test "$code" = 200 || { echo "::error::https://vcr2.app/ did not answer 200"; exit 1; }
+          grep -q 'Founder of VCR2' page.html || { echo "::error::The About page text is missing"; exit 1; }
+          end=$(echo | openssl s_client -connect vcr2.app:443 -servername vcr2.app 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+          left=$(( ( $(date -d "$end" +%s) - $(date +%s) ) / 86400 ))
+          echo "Certificate ends $end ($left days left)"
+          test "$left" -gt 14 || { echo "::error::The certificate has $left days left"; exit 1; }
+          hop=$(curl -sS -o /dev/null -w '%{redirect_url}' --max-time 30 http://vcr2.app/)
+          echo "http://vcr2.app/ moves to $hop"
+          test "$hop" = "https://vcr2.app/" || { echo "::error::Plain http is not moved to https"; exit 1; }

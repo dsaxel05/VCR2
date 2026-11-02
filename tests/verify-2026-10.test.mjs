@@ -31,6 +31,14 @@ const named = parseLedger(hdr + [row('Cash $ Co', '100'), row('B', '200'), row('
 ok('a currency sign in a customer name is not mistaken for an amount', named.ok && !named.warnings.some(w => /currency/.test(w)), named.warnings);
 const xl = parseLedger('customer,' + Array.from({ length:13 }, (_, k) => 45658 + k * 31).join(',') + '\n' + [row('A', 100), row('B', 200), row('C', 300)].join('\n'), 'mrr');
 ok('Excel serial dates as month headers are read', xl.ok && xl.ledger.months.length >= 12, xl.error || xl.ledger.months);
+/* An absurd target return is limited to 200% a year with a note, instead of an exit value of "n/a". */
+S = blankState(); S.example = true; loadNorthwind(); S.vals.target_irr = '1e13'; S.vals.fc_rate = '5000';
+let X = dealMath(derive().D);
+ok('a target return of 1e13% is limited to 200% and said so', X.returns.r === 200 && X.notes.some(x => /target annual return was .*above 200%; 200% was used/.test(x)), [X.returns.r, X.notes]);
+ok('so is the First Chicago rate', X.returns.fc === 200 && X.notes.some(x => /First Chicago discount rate was 5000%/.test(x)), X.returns.fc);
+ok('the exit needed for the target is a number again', Number.isFinite(X.returns.exitForTarget), X.returns.exitForTarget);
+S.vals.target_irr = '35'; delete S.vals.fc_rate; X = dealMath(derive().D);
+ok('a normal target return is untouched and adds no note', X.returns.r === 35 && !X.notes.some(x => /above 200%/.test(x)), [X.returns.r, X.notes]);
 ['abc', '12..5', '--3', '1,2,3,4'].forEach(t => eq('not a number: ' + t, parseNum(t), null));
 }
 `;

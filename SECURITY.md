@@ -20,7 +20,7 @@
 
 ## The live site is watched
 
-`.github/workflows/live-check.yml` runs `tools/live_check.py` every six hours: https://vcr2.app/ must serve, byte for byte and over a valid certificate, the page, the configuration, the logos and the fonts that this repository holds. Code tests cannot see a hijacked domain, a changed DNS record or a page altered outside the repository; this check can, and GitHub emails the owner when it fails.
+`.github/workflows/live-check.yml` runs `tools/live_check.py` every six hours: https://vcr2.app/ must serve, byte for byte and over a valid certificate, the page, the configuration, the logos and the fonts that this repository holds. Code tests cannot see a hijacked domain, a changed DNS record or a page altered outside the repository; this check can, and GitHub emails the owner when it fails. `.github/workflows/uptime.yml` also checks once a day that the site answers, that its certificate has more than 14 days left, that the About page is there and that plain http still moves to https.
 
 ### If the live site check fails
 
