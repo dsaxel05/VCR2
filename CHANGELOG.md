@@ -1,5 +1,13 @@
 # Changelog
 
+## v5.0.9: 2026-11-02
+
+HTTPS everywhere. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Security
+- **The site is https only.** With "Enforce HTTPS" on, http://vcr2.app, http://www.vcr2.app and the old GitHub Pages address each go to https://vcr2.app/ in one permanent redirect (certificate valid for vcr2.app and www.vcr2.app until 21 January 2027). GitHub Pages cannot send an HSTS header, so the redirect (and, as a backup, the page's own move to https) is what keeps a visit on https.
+- A new test, `tests/own-site-https.test.mjs`, fails if any published file names the site over plain http or at the old GitHub Pages address, and checks that the canonical address, the link-preview image, robots.txt and sitemap.xml all use https://vcr2.app/.
+
 ## v5.0.8: 2026-11-02
 
 Three display-only metrics. Scoring is unchanged (rubric 5.0.0, same run IDs for both examples, whatever the new settings say).
