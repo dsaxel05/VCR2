@@ -1637,11 +1637,12 @@ function showPage(id) {
 function updateTopbar(id) {
   const c = $id('tb-company'), s = $id('tb-section');
   c.textContent = S.name || 'New assessment';
-  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report', library:'Library', studio:'Owner Studio' };
+  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report', library:'Library', studio:'Owner Studio', about:'About' };
   s.textContent = id === 'section' ? (SECTIONS[S.section] ? SECTIONS[S.section].label : 'Evidence') : (map[id] || '');
   /* The page's one h1 (the home page has its own, visible one). */
   const h1 = $id('app-h1');
-  if (h1) { h1.textContent = id === 'intro' ? '' : (c.textContent + ' · ' + s.textContent); h1.hidden = id === 'intro'; }
+  const own = id === 'intro' || id === 'about';   /* these two pages carry their own visible h1 */
+  if (h1) { h1.textContent = own ? '' : (c.textContent + ' · ' + s.textContent); h1.hidden = own; }
   const right = $id('tb-right');
   right.innerHTML = '';
   if (id === 'section') {

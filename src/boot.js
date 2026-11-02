@@ -275,7 +275,7 @@ function introStats() {
   /* Owner configuration: the published radar-config.json applies to everyone. */
   updateStudioLink(); renderPreviewBanner();
   CFG_READY = loadPublishedConfig().then(ok => { if (ok) refreshAfterConfig(); introStats(); return ok; }).catch(() => false);
-  const route = () => { if (typeof location !== 'undefined' && /^#studio\b/i.test(location.hash || '')) openStudio(); };
+  const route = () => { if (typeof location === 'undefined') return; if (/^#studio\b/i.test(location.hash || '')) openStudio(); else if (/^#about\b/i.test(location.hash || '')) showPage('about'); };
   if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('hashchange', route);
   route();
 })();
@@ -292,6 +292,11 @@ function demoPlay() {
 function demoFail() {
   const f = document.querySelector('.demo-frame'); if (f) f.classList.remove('is-started');
   toast('The demo video could not be loaded. Check your connection and try again, or download it with the link under the video.', 'err', 7000);
+}
+/* About: the address is on the button; copying it needs no network. */
+function copyEmail() {
+  const a = 'ds.axel05@gmail.com', no = () => toast('Copying is blocked in this browser: select the address on the Email button and copy it.', 'err');
+  try { navigator.clipboard.writeText(a).then(() => toast('Address copied: ' + a), no); } catch (e) { no(); }
 }
 function watchDemo() {
   const v = $id('demo-video'); if (!v) return;

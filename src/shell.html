@@ -91,6 +91,7 @@
 
     <div class="sb-footer">
       <button type="button" class="nav-item lib-link" onclick="goLibrary()"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
+      <button type="button" class="nav-item lib-link" onclick="showPage('about')"><span class="nav-dot"></span><span class="nav-label">About</span></button>
       <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" onclick="goStudio()"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
       <p class="api-hint">Alt + M shows or hides this menu.</p>
       <details class="sb-more sb-ai">
@@ -352,6 +353,28 @@
     <!-- ── LIBRARY ── -->
     <div class="page" id="page-library">
       <div class="result-wrap" id="library-content"></div>
+    </div>
+
+    <!-- ── ABOUT (main menu, or the #about address). Only #print-root prints, so it never reaches the memo. ── -->
+    <div class="page" id="page-about">
+      <div class="result-wrap about">
+        <div class="pg-eyebrow">About</div>
+        <h1 class="pg-title">Axel De Sousa</h1>
+        <p class="about-role">Founder of VCR2</p>
+        <p class="about-lead">Numbers settled, so the conversation can be about the founder.</p>
+        <div class="about-body">
+          <p>Hi, I’m Axel. I’m French, and I always knew I wanted to work in finance, without really knowing which corner of it was mine. I came to Menlo College, where I study Finance and AI Analysis, for one reason: I wanted to be in Silicon Valley.</p>
+          <p>That’s where I discovered venture capital, at events like the Startup World Cup hosted by Pegasus Tech Ventures. Talking with VCs there and since, I found what I love most: listening to founders’ different ideas, and being the one who judges whether to back them or not.</p>
+          <p>To stay fully focused on the human side of a founder (their story, their drive, their idea), I want the numbers to line up and drop out of the equation. That’s what VCR2 is for. It rebuilds a startup’s figures from its own raw data, flags the mistakes, and gives a clear review, so the numbers stop being a worry and the attention goes to the person.</p>
+          <p>I’m heading toward venture capital with a France-US perspective, and I’m treasurer of the Menlo College Investment Club. If you’re a founder, an investor, or simply curious, I’d love to hear from you.</p>
+        </div>
+        <div class="lib-actions about-contact" role="group" aria-label="Contact Axel">
+          <a class="btn btn-primary" href="mailto:ds.axel05@gmail.com">Email ds.axel05@gmail.com</a>
+          <button type="button" class="btn btn-ghost" onclick="copyEmail()">Copy the address</button>
+          <a class="btn btn-ghost" href="https://github.com/dsaxel05" target="_blank" rel="noopener noreferrer">GitHub<span class="sr-only"> (opens in a new tab)</span></a>
+          <a class="btn btn-ghost" href="https://www.linkedin.com/in/axeldesousa/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+        </div>
+      </div>
     </div>
 
     <!-- ── OWNER STUDIO (reached through #studio) ── -->

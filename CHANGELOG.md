@@ -1,5 +1,13 @@
 # Changelog
 
+## v5.0.7: 2026-11-02
+
+Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Added
+- **An About page**, from the main menu (under "Library & benchmarks") or the address vcr2.app/#about: who built VCR2 and why, in the owner's words, set as a short editorial page (a larger lead line, a comfortable reading width), with buttons to email him (the address is shown on the button, and "Copy the address" copies it), and links to his GitHub and LinkedIn (they open in a new tab and send no referrer). Same look as the rest of the site, no photo, nothing loaded from another site, and it never appears in the printed memo.
+- Tests: `tests/browser/about_test.py` (menu and address, one heading, the text, the links, copy, keyboard and focus, phone width, no outside requests, no console errors, absent from print).
+
 ## v5.0.6: 2026-11-01
 
 Fixes from a full verification of the site. Scoring is unchanged (rubric 5.0.0, same run IDs for both examples).
