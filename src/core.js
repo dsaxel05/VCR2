@@ -691,6 +691,20 @@ function derive() {
   if (gv('loss_rate') != null) put('loss_rate', gv('loss_rate'), 'entered directly');
   if (gv('p1_incidents') != null) put('p1_incidents', gv('p1_incidents'), 'entered directly');
 
+  /* — Display only, never scored. The thresholds and the multiple are the owner's assumptions (Studio, Scoring constants). — */
+  const smY = gv('sm_spend_l12');
+  if (has(D.net_new_arr, smY) && smY > 0) { const v = D.net_new_arr / smY, lo = sx('salesEffFlag');
+    put('sales_eff', v, `net new ARR ÷ S&M spend, last 12 months${v < lo ? `; flagged: below your ${lo}` : ''}`); }
+  if (has(D.logo_churn, D.grr) && D.grr < 100) { const v = D.logo_churn / (100 - D.grr), lo = sx('churnMixFlag');
+    put('churn_mix', v, `logo churn ÷ revenue churn (100 − GRR)${v < lo ? `; flagged: below your ${lo}, the larger customers are leaving` : ''}`); }
+  const post = has(gv('round_pre_money'), gv('round_size')) ? gv('round_pre_money') + gv('round_size') : null, mult = sx('nextRoundMultiple');
+  if (post > 0) put('round_arr_need', post / mult, `today’s post-money ÷ ${mult}x ARR (your next-round multiple)`);
+  const gM = D.cmgr12 != null ? D.cmgr12 : D.growth_yoy != null ? (Math.pow(1 + D.growth_yoy / 100, 1 / 12) - 1) * 100 : null;
+  if (D.round_arr_need != null && has(arr, gM, D.runway) && !D._notBurning) {
+    const t = Math.max(0, D.runway - 6), v = arr * Math.pow(1 + gM / 100, t), low = v < D.round_arr_need;
+    put('round_arr_at6', v, `ARR grown ${numv(gM, 1)}% a month for ${numv(t, 1)} months, until 6 months of runway are left: ${low ? 'below what the next round needs, down-round risk' : 'covers what the next round needs'}`);
+  }
+
   /* — Cash-out date, for the report — */
   if (D.runway != null && !D._notBurning && S.asof && /^\d{4}-\d{2}$/.test(S.asof)) D._cashOut = monthAdd(S.asof, Math.floor(D.runway));
 
@@ -732,7 +746,7 @@ const DLABEL = {
   services_pct:'Non-recurring revenue share', domain_years:'Founder domain years', option_pool:'Option pool',
   liq_pref:'Liquidation preference', uptime:'Uptime', win_vs_primary:'Win rate vs primary competitor',
   penetration_target:'Reachable share of market',
-  nrr_flow:'NRR from the waterfall (all customers)', cmgr3:'Monthly growth, last 3 months', cmgr12:'Monthly growth, last 12 months',
+  nrr_flow:'NRR from the waterfall (all customers)', sales_eff:'Sales efficiency (net new ARR ÷ S&M)', churn_mix:'Churn mix (logo ÷ revenue churn)', round_arr_need:'ARR the next round needs', round_arr_at6:'Projected ARR at 6 months of runway', cmgr3:'Monthly growth, last 3 months', cmgr12:'Monthly growth, last 12 months',
   gm_trend:'Gross margin trend', inference_pct:'Inference cost share of revenue', seat_util:'Seat utilisation',
   gmv_growth:'GMV growth', take_rate:'Realised take rate', volume_growth:'Volume growth', repeat_pct:'Repeat-buyer GMV share',
   contrib_margin:'Contribution margin', incentives_pct:'Incentives share of GMV', supplier_conc:'Top-10 supplier concentration',
@@ -748,7 +762,7 @@ const DUNIT = {
   gm_implied:'%', burn_implied:'$', ar_share:'%', gross_margin:'%', top5_conc:'%', win_rate:'%',
   quota_att:'%', pipeline_cov:'x', pct_paid:'%', sales_cycle:'d', services_pct:'%', domain_years:'y',
   option_pool:'%', liq_pref:'x', uptime:'%', win_vs_primary:'%', penetration_target:'%',
-  nrr_flow:'%', cmgr3:'%', cmgr12:'%', gm_trend:'pts', inference_pct:'%', seat_util:'%', gmv_growth:'%', take_rate:'%',
+  nrr_flow:'%', sales_eff:'x', churn_mix:'x', round_arr_need:'$', round_arr_at6:'$', cmgr3:'%', cmgr12:'%', gm_trend:'pts', inference_pct:'%', seat_util:'%', gmv_growth:'%', take_rate:'%',
   volume_growth:'%', repeat_pct:'%', contrib_margin:'%', incentives_pct:'%', supplier_conc:'%', loss_rate:'%', p1_incidents:'n',
   notes_accrued:'$', runway_gross:'mo', burn_from_gross:'$', pmf_score:'%', nps:'n', team_tenure:'y', gross_margin_ai:'%', acv_new:'$',
 };
@@ -763,7 +777,7 @@ const INPUTS_OF = {
   domain_years:['founder_domain_years'], eng_turnover:['eng_departures_l12','headcount_eng'], founder_conc:['founder_max_equity'],
   headcount_eff:['headcount_now','headcount_12mo','arr_now','arr_12mo'], tam_bottomup:['target_accounts','arr_now','customers_now'],
   penetration:['target_accounts','arr_now'], win_vs_primary:['win_rate_vs_primary'], safe_overhang:['safes_outstanding','notes_principal','pre_money'],
-  pmf_score:['pmf_very_disappointed'], nps:['nps'], team_tenure:['founders_years_together'], runway_gross:['cash_on_hand','gross_burn'],
+  pmf_score:['pmf_very_disappointed'], nps:['nps'], team_tenure:['founders_years_together'], runway_gross:['cash_on_hand','gross_burn'], sales_eff:['new_arr_l12','expansion_arr_l12','churned_arr_l12','contraction_arr_l12','sm_spend_l12'], churn_mix:['customers_12mo','logos_lost_l12','arr_12mo','churned_arr_l12','contraction_arr_l12'], round_arr_need:['round_pre_money','round_size'], round_arr_at6:['arr_now','cash_on_hand','net_burn','round_pre_money','round_size'],
   uptime:['uptime_90d'], gm_trend:['gross_margin','gm_12mo'], gmv_growth:['gmv_now','gmv_12mo'], volume_growth:['volume_now','volume_12mo'],
   repeat_pct:['repeat_gmv_pct'], supplier_conc:['top_supplier_pct'], gross_margin_ai:['gross_margin'], acv_new:['new_arr_l12','new_customers_l12'],
 };

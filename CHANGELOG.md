@@ -1,5 +1,19 @@
 # Changelog
 
+## v5.0.8: 2026-11-02
+
+Three display-only metrics. Scoring is unchanged (rubric 5.0.0, same run IDs for both examples, whatever the new settings say).
+
+### Added
+- **Sales efficiency**: net new ARR ÷ sales and marketing spend, last twelve months. Northwind 0.47 (flagged), Halcyon 1.33.
+- **Churn mix**: logo churn ÷ revenue churn. Below the threshold, revenue leaves faster than customers do, so the larger customers are going. Northwind 1.04, Halcyon 0.79 (flagged).
+- **Down-round risk**: the ARR the next round needs to match today's post-money (post-money ÷ your next-round multiple), next to the ARR projected for the month runway falls to six months. Northwind needs $7.50M and projects $6.82M (down-round risk); Halcyon needs $4.00M and projects $10.77M.
+- All four figures are in the report under All metrics, with their formulas and flags. The two thresholds (0.5 and 0.8) and the next-round multiple (10x) are your assumptions, not market statistics, and can be changed in the Studio under Scoring constants. They change no score and no run ID.
+
+### Under the hood
+- The build also joins the lines that cannot be read differently once joined (after `{ , ; ( [` and before `} ) ]`), never inside a string, template or regular expression; every other line break stays. The page is 248.5 KB compressed with the new metrics (budget 250).
+- Tests: `tests/display-metrics.test.mjs` (32 checks: both examples recomputed, flags, the owner's settings, missing inputs, no score or run ID change), `tests/browser/display_metrics_test.py` (the report rows), and six new cases in `tests/jsstrip_test.py`.
+
 ## v5.0.7: 2026-11-02
 
 Scoring is unchanged (rubric 5.0.0, same run IDs).

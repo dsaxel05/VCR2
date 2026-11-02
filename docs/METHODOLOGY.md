@@ -253,3 +253,9 @@ All are computed in `derive()` (`src/core.js`) from primitives; the formula stri
 | Engineering turnover | engineering departures ÷ engineering headcount |
 | Bottom-up TAM | accounts that match the ideal customer × realised ACV; SAM = TAM × reachable share; penetration = ARR ÷ TAM |
 | SAFE and note overhang | unconverted SAFEs and notes (with accrued interest) ÷ last pre-money |
+| Sales efficiency (display only) | net new ARR ÷ sales and marketing spend, both over the last twelve months; flagged below the owner's threshold (built-in 0.5) |
+| Churn mix (display only) | logo churn ÷ revenue churn, where revenue churn = 100 − GRR; below the owner's threshold (built-in 0.8) revenue is leaving faster than customers, so the larger customers are going; left out when no revenue was lost |
+| ARR the next round needs (display only) | today's post-money (pre-money offered + round size) ÷ the owner's next-round multiple of ARR (built-in 10x) |
+| Projected ARR at 6 months of runway (display only) | ARR today grown at the last twelve months' compound monthly rate (from the ledger, else from year-on-year growth) for (runway − 6) months; below the ARR the next round needs, the report says "down-round risk". Growth is held constant, which flatters a long runway. Not shown for a company that is not burning |
+
+The four display-only figures never enter a score, a gate or the run ID. Their thresholds and the next-round multiple are the owner's assumptions, not market statistics, and are set in the Studio under Scoring constants, "Display-only metrics".

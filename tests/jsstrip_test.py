@@ -60,7 +60,12 @@ TIGHT = [
     ('optional chaining and words are left alone', "var r = typeof a?.b === 'x' && c instanceof D;", "var r=typeof a?.b==='x'&&c instanceof D;"),
     ('comparisons with < and > lose their spaces', "var s = a < b && c > d;", "var s=a<b&&c>d;"),
     ('a division after an assignment is not a regex', "var q = a / 2, w = b / 3;", "var q=a / 2,w=b / 3;"),
-    ('a comment is still removed', "var a = 1; // x, y = z" + chr(10) + "var b = 2;", "var a=1;" + chr(10) + "var b=2;"),
+    ('a comment is still removed, and the line after a semicolon joins', "var a = 1; // x, y = z" + chr(10) + "var b = 2;", "var a=1;var b=2;"),
+    ('lines after { , ( [ and before } ) ] join', "f({" + chr(10) + "  a: 1," + chr(10) + "  b: [" + chr(10) + "    2" + chr(10) + "  ]" + chr(10) + "});", "f({a:1,b:[2]});"),
+    ('a line that may end a statement is kept: no semicolon', "var a = 1" + chr(10) + "var b = 2", "var a=1" + chr(10) + "var b=2"),
+    ('return on its own line is kept apart from its value', "function f() {" + chr(10) + "  return" + chr(10) + "  x;" + chr(10) + "}", "function f(){return" + chr(10) + "x;}"),
+    ('x++ then a new line is kept', "a++" + chr(10) + "b++", "a++" + chr(10) + "b++"),
+    ('a line break inside a string or a template is never touched', "var s = 'a,' + `x," + chr(10) + "y`;", "var s='a,'+`x," + chr(10) + "y`;"),
 ]
 for name, src, exp in TIGHT:
     got = strip_js(src, tight=True)

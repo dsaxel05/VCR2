@@ -1,6 +1,6 @@
 """Light size reduction for the generated index.html: comments and indentation only.
 
-No renaming and no joining of lines, so behaviour and stack traces are unchanged. Strings, template literals and regular
+No renaming, so behaviour is unchanged; tight mode joins only the lines that cannot be read differently once joined. Strings, template literals and regular
 expressions are copied byte for byte. src/ keeps the commented, readable code; index.html is generated from it.
 """
 import re
@@ -112,7 +112,8 @@ def strip_js(s, html=False, tight=False):
     tight=True also drops, in code only (never inside a string, template, regular expression or comment), the space after a comma,
     a colon or an opening bracket, the space before a closing bracket, a comma, a semicolon or "{", the space between ")" or "}" and a
     word, the space between a keyword such as if, for or return and its "(", and the spaces around a binary operator, except
-    where two "+" or "-" would meet; the build uses it."""
+    where two "+" or "-" would meet, and a line break after { , ; ( [ or before } ) ] (other line breaks stay, since they may
+    end a statement); the build uses it."""
     out = []; i = 0; n = len(s)
     last = ''          # last significant character (for deciding whether '/' starts a regular expression)
     word = ''          # identifier or keyword being read / just read
@@ -161,6 +162,14 @@ def strip_js(s, html=False, tight=False):
             while j < n and s[j].isalpha():
                 j += 1
             out.append(s[i:j]); i = j; last = 'R'; word = ''; at_line_start = False; continue     # 'R': a regular expression has just ended (division may follow; its flags must not meet the next word)
+        if tight and c == '\n':
+            k = i + 1
+            while k < n and s[k] in ' \t\r\n':
+                k += 1
+            # a line that ends with { , ; ( [ or a next line that starts with } ) ] cannot be read differently once joined;
+            # every other line break is kept, because there it may end a statement (return, x++, a value with no semicolon)
+            if last in '{,;([' or (k < n and s[k] in '})]'):
+                at_line_start = True; i += 1; continue
         if tight and c == ' ':
             if last in ',{([;:':                                # also after ":" (object keys, labels, case)
                 i += 1; continue

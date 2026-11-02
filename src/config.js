@@ -726,7 +726,7 @@ function configuredThresholds() {
 function configSignature() {
   const tNoNotes = {}; Object.entries(CFG.thresholds).forEach(([k, o]) => { const c = Object.assign({}, o); delete c.note; tNoNotes[k] = c; });
   const stSig = Object.assign({}, CFG.settings); delete stSig.aiModels;   /* a model name changes no score */
-  ['displayStrong', 'displayMixed', 'earlyReadBelow', 'currency'].forEach(k => delete stSig[k]);   /* how a figure is worded or shown changes no score and must not reseed the simulation */
+  ['displayStrong', 'displayMixed', 'earlyReadBelow', 'currency', 'salesEffFlag', 'churnMixFlag', 'nextRoundMultiple'].forEach(k => delete stSig[k]);   /* how a figure is worded or shown changes no score and must not reseed the simulation */
   const s = { fo:CFG.formulas, sx:stSig, un:CFG.labels.units,
     dm:CFG.dimensions.map(d => d.id), mf:CFG.models.map(m => [m.id, m.from || '']), sg:CFG.stages.map(x => [x.id, x.like, x.lo, x.hi]),
     mb:CFG.meta.booleans, ma:CFG.meta.answers, mg:Object.entries(CFG.meta.gates).filter(([, o]) => typeof o.when === 'boolean').map(([k, o]) => [k, o.when]), h:CFG.hidden, t:tNoNotes, w:CFG.metricWeights, g:CFG.gates.map(g => [g.id, g.when]), ct:CFG.checkTol, cat:CFG.categorical, b:CFG.booleans,
