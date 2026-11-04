@@ -65,6 +65,20 @@ async def publish_now(pg, wait=600):
     except Exception:
         pass
     await pg.wait_for_timeout(wait)
+    # A successful publish signs the owner out (token leaves memory): record it, then sign in again to carry on.
+    if await pg.is_visible('#gh-token'):
+        PUB['gate'] = await pg.evaluate("() => [ST.token, !!document.getElementById('gh-token')]")
+        PUB['signed_out'] += 1
+        toast_txt = await pg.inner_text('#toast')
+        await resign(pg)
+        PUB['toast'] = toast_txt
+
+PUB = { 'gate':None, 'signed_out':0, 'toast':'' }
+
+async def resign(pg, tok=TOKEN):
+    """The token lives in memory only: after a reload/goto or a publish, sign in again."""
+    await pg.wait_for_selector('#gh-token')
+    await pg.fill('#gh-token', tok); await pg.click('#gh-signin'); await pg.wait_for_timeout(500)
 
 async def main():
     async with async_playwright() as p:
@@ -91,7 +105,14 @@ async def main():
         GH['push'] = True; t = await sign_in()
         check('owner signs in', 'Shape the engine' in t, t[:300])
         check('studio link now visible', await pg.evaluate("() => getComputedStyle(document.getElementById('studio-link')).display") != 'none')
-        check('token kept in session storage only', await pg.evaluate("() => [!!sessionStorage.getItem('vcr2-gh-token'), !!localStorage.getItem('vcr2-gh-token')]") == [True, False])
+        check('token kept in memory only', await pg.evaluate("() => [!!sessionStorage.getItem('vcr2-gh-token'), !!localStorage.getItem('vcr2-gh-token'), !!ST.token]") == [False, False, True])
+        check('no sign-in checkbox offered', await pg.evaluate("() => !document.getElementById('gh-remember')"))
+        # reload signs out: the gate shows and nothing is in storage
+        await pg.reload(); await pg.wait_for_selector('#gh-token')
+        st_after = await pg.evaluate("() => [!!sessionStorage.getItem('vcr2-gh-token'), !!localStorage.getItem('vcr2-gh-token'), !ST.token]")
+        check('after reload the gate shows and no token is stored', st_after == [False, False, True], st_after)
+        await resign(pg)
+        check('signing in again after reload works', 'Shape the engine' in await pg.inner_text('#studio-content'))
         check('status: live matches draft', 'live' in await pg.inner_text('#studio-status'))
 
         # ── Load an example so formulas preview real values ──
@@ -232,7 +253,8 @@ async def main():
         t = await pg.inner_text('#toast'); check('publish error explained', 'Contents: Read and write' in t, t)
         GH['put_status'] = 201
         await publish_now(pg, 600)
-        t = await pg.inner_text('#toast'); check('published', t.startswith('Published'), t)
+        t = PUB['toast'] or await pg.inner_text('#toast'); check('published', t.startswith('Published'), t)
+        check('after a successful publish the gate shows and ST.token is null', PUB['signed_out'] == 1 and PUB['gate'] == [None, True], PUB)
         put = GH['puts'][-1]; cfg = json.loads(GH['published'])
         check('commit has a message and branch, no sha for a new file', put['message'].startswith('Studio:') and put['branch'] == 'main' and 'sha' not in put, put.get('message'))
         check('published config content', len(cfg['fields']) == 4 and len(cfg['metrics']) == 2 and len(cfg['checks']) == 1 and len(cfg['questions']) == 3
@@ -341,10 +363,34 @@ async def main():
         GH['published'] = GH_saved
 
         # sign out
-        await pg.goto(BASE + '#studio'); await pg.wait_for_timeout(500)
+        await pg.goto(BASE + '#studio'); await pg.reload(); await resign(pg)   # same-document goto does not reload; reload signs out
         await pg.click('text=Sign out'); await pg.wait_for_timeout(200)
         so = await pg.evaluate("() => [sessionStorage.getItem('vcr2-gh-token'), getComputedStyle(document.getElementById('studio-link')).display, location.hash]")
         check('sign out clears the token and hides the link', so[0] is None and so[1] == 'none' and so[2] == '', so)
+        check('sign out leaves ST.token null and nothing in storage', await pg.evaluate("() => ST.token === null && !sessionStorage.getItem('vcr2-gh-token') && !localStorage.getItem('vcr2-gh-token')"))
+
+        # a token left in storage by an older version is removed on load and does not sign in
+        octx, op = await new_page(b, errs, 'oldtoken')
+        await op.add_init_script("() => { try { localStorage.setItem('vcr2-gh-token', '" + TOKEN + "'); sessionStorage.setItem('vcr2-gh-token', '" + TOKEN + "'); } catch (e) {} }")
+        await op.goto(BASE + '#studio'); await op.wait_for_selector('#gh-token'); await op.wait_for_timeout(300)
+        old = await op.evaluate("() => [sessionStorage.getItem('vcr2-gh-token'), localStorage.getItem('vcr2-gh-token'), ST.token, getComputedStyle(document.getElementById('studio-link')).display]")
+        check('old saved token is removed on load and does not sign in', old == [None, None, None, 'none'], old)
+        await octx.close()
+
+        # idle timeout: 15 minutes without activity signs out (fake clock)
+        ictx, ip = await new_page(b, errs, 'idle')
+        await ip.clock.install()
+        await ip.goto(BASE + '#studio'); await resign(ip)
+        check('idle: signed in with a timer armed', await ip.evaluate("() => !!ST.token && _ghIdle !== 0"))
+        await ip.clock.run_for(14 * 60000)
+        check('idle: still signed in after 14 minutes', await ip.evaluate("() => !!ST.token"))
+        await ip.mouse.click(5, 5); await ip.keyboard.press('Shift')   # activity restarts the 15 minutes
+        await ip.clock.run_for(14 * 60000)
+        check('idle: activity resets the timer', await ip.evaluate("() => !!ST.token"))
+        await ip.clock.run_for(2 * 60000)
+        idle = await ip.evaluate("() => [ST.token, ST.user, !!document.getElementById('gh-token')]")
+        check('idle: 15 minutes without activity signs out and shows the gate', idle == [None, None, True], idle)
+        await ictx.close()
 
         # mobile layout of the Studio
         mctx = await b.new_context(viewport={ 'width':390, 'height':844 }, device_scale_factor=2)

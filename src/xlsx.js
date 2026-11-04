@@ -52,7 +52,11 @@ async function zipRead(z, name) {
   const out = new Uint8Array(total); let o = 0; chunks.forEach(c => { out.set(c, o); o += c.length; });
   return new TextDecoder().decode(out);
 }
-const xmlDoc = s => new DOMParser().parseFromString(s, 'application/xml');
+/* A spreadsheet never needs a DOCTYPE or entities, and an internal entity can expand a small part into gigabytes: refuse both. */
+const xmlDoc = s => {
+  if (/<!(?:DOCTYPE|ENTITY)/i.test(s)) throw new Error('This workbook has a DOCTYPE declaration. Save the sheet as CSV instead.');
+  return new DOMParser().parseFromString(s, 'application/xml');
+};
 const xTags = (node, tag) => Array.from(node.getElementsByTagNameNS('*', tag));
 const xAttr = (el, name) => el.getAttribute(name) != null ? el.getAttribute(name)
   : (Array.from(el.attributes).find(a => a.localName === name) || {}).value || null;
@@ -77,11 +81,12 @@ const csvCell = v => /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
 
 /* Returns [{ name, rows:[[...]] }] for every sheet. */
 /* Limits on what one workbook may hold, so a small crafted file cannot freeze the tab (checked as it is read). */
-const XL_MAX_STRINGS = 200000, XL_MAX_ROWS = 300000, XL_MAX_CELLS = 2000000, XL_MAX_AREA = 6000000;
-const XL = { rows:0, cells:0 };
+const XL_MAX_STRINGS = 200000, XL_MAX_ROWS = 300000, XL_MAX_CELLS = 200000, XL_MAX_AREA = 6000000;
+/* Excel's own cell limit, the most text one workbook may turn into CSV, and the time allowed for reading it. */
+const XL = { rows:0, cells:0, chars:0, t0:0 };
 const xlTooBig = () => new Error('This workbook holds far more cells than a spreadsheet of this size should, so it was not opened. Save the sheet as CSV instead.');
 async function readWorkbook(buf) {
-  XL.rows = 0; XL.cells = 0;
+  XL.rows = 0; XL.cells = 0; XL.chars = 0; XL.t0 = performance.now();
   const z = zipEntries(buf);
   let wbPath = 'xl/workbook.xml';
   const rootRels = await zipRead(z, '_rels/.rels');
@@ -124,10 +129,13 @@ async function readWorkbook(buf) {
     const state = xAttr(sh, 'state');
     const xml = rel ? await zipRead(z, rel.target) : null;
     if (!xml) continue;
+    /* Count cells before building the document tree: a sheet over the cap is refused without being parsed. */
+    { const rx = /<(?:\w+:)?c[\s>]/g; let n = XL.cells; while (rx.test(xml)) if (++n > XL_MAX_CELLS) throw xlTooBig(); }
     const doc = xmlDoc(xml), rows = [];
     let rAuto = 0;
     xTags(doc, 'row').forEach(row => {
       if (++XL.rows > XL_MAX_ROWS) throw xlTooBig();
+      if (!(XL.rows & 1023) && performance.now() - XL.t0 > 1e4) throw new Error('This workbook took too long to read. Save the sheet as CSV instead.');
       const rn = xAttr(row, 'r'); const ri = rn ? +rn - 1 : rAuto; rAuto = ri + 1;
       if (ri > 100000) return;
       const cells = []; let cAuto = 0;
@@ -151,6 +159,8 @@ async function readWorkbook(buf) {
               : xfPct[s] && isFinite(n) ? String(Math.round(n * 100 * 1e9) / 1e9) + '%'
               : String(isFinite(n) ? n : v);
         }
+        if (out.length > 32767) out = out.slice(0, 32767);
+        if ((XL.chars += out.length) > 12e6) throw new Error('This workbook holds over 12 MB of text. Save it as CSV instead.');
         cells[ci] = out;
       });
       rows[ri] = cells;

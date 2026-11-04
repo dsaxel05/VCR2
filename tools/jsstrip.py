@@ -167,8 +167,13 @@ def strip_js(s, html=False, tight=False):
             while k < n and s[k] in ' \t\r\n':
                 k += 1
             # a line that ends with { , ; ( [ or a next line that starts with } ) ] cannot be read differently once joined;
-            # every other line break is kept, because there it may end a statement (return, x++, a value with no semicolon)
-            if last in '{,;([' or (k < n and s[k] in '})]'):
+            # nor can a line that ends with an operator, or a next line that starts with one (. ? : & | + - * = , ( [):
+            # the line break there never ends a statement. It is kept after return, throw, break, continue, yield and let
+            # (where it does end one), around ++ and --, and before a comment.
+            nx2 = s[k:k + 2]
+            held = (last == 'a' and word in ('return', 'throw', 'break', 'continue', 'yield', 'let')) or ''.join(out[-2:]) in ('++', '--')
+            if last in '{,;([' or (k < n and s[k] in '})]') or (not held and (last in '=+-*%&|^<>?:!'
+                    or (k < n and s[k] in '.?:&|+-*=,([' and nx2 not in ('++', '--', '//', '/*')))):
                 at_line_start = True; i += 1; continue
         if tight and c == ' ':
             if last in ',{([;:':                                # also after ":" (object keys, labels, case)

@@ -30,7 +30,7 @@ jobs:
           git diff --exit-code -- index.html || { echo "::error::index.html is out of date: run python build.py and commit it"; exit 1; }
       - name: Engine, archetype, property and configuration tests
         run: |
-          for f in tests/*.test.mjs; do echo "== $f"; node "$f" || exit 1; done
+          for f in tests/*.test.mjs tests/security/*.test.mjs; do echo "== $f"; node "$f" || exit 1; done
       - name: Build step keeps code intact (comments and indentation only)
         run: python tests/jsstrip_test.py
       - name: Page size budget

@@ -1,0 +1,2 @@
+# GitHub Pages runs Jekyll, which skips folders that start with a dot. This serves /.well-known/security.txt.
+include: [".well-known"]

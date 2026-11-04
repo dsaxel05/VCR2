@@ -1324,7 +1324,7 @@ function scoreAll(D, checks, opts) {
     const w = CFG.metricWeights && CFG.metricWeights['cat_' + key] > 0 ? +CFG.metricWeights['cat_' + key] : w0;
     const dim = cfg.dim; if (cfgHidden('metrics', 'cat_' + key) || !dims[dim] || !modelOk(cfg)) return;
     dims[dim].possible += w;
-    if (!val || cfg.map[val] == null) return;
+    if (!val || !Object.hasOwn(cfg.map, val) || cfg.map[val] == null) return;   /* own answers only: a value such as "constructor" is not an answer */
     const raw = opts.overrides && opts.overrides[key] != null ? opts.overrides[key] : cfg.map[val];
     const ev = metricEvidence(key), sc = evidenceAdjust(raw, ev);
     dims[dim].wsum += w; dims[dim].psum += w * sc;
@@ -1339,7 +1339,7 @@ function scoreAll(D, checks, opts) {
     const w = f.weight > 0 ? f.weight : 1;
     dims[f.dim].possible += w;
     const val = gs(f.id);
-    if (!val || f.scores[val] == null) return;
+    if (!val || !Object.hasOwn(f.scores, val) || f.scores[val] == null) return;
     const raw = f.scores[val], ev = evWeight(f.id), sc = evidenceAdjust(raw, ev);
     dims[f.dim].wsum += w; dims[f.dim].psum += w * sc;
     evNum += w * ev; evDen += w;
@@ -2110,11 +2110,12 @@ function restorePayload(d) {
     stage:STAGES.some(s => s.id === d.stage) ? d.stage : 'seed',
     wantStage:!STAGES.some(s => s.id === d.stage) && /^[a-z][a-z0-9_]{1,23}$/.test(String(d.stage)) ? d.stage : undefined,
     /* A model added in the Studio may not be loaded yet when a draft is restored, so any well-formed id is kept. */
-    model:MODELS.some(m => m.id === d.model) || (typeof d.model === 'string' && /^[a-z][a-z0-9_]{1,39}$/.test(d.model)) ? d.model : 'saas',
+    model:MODELS.some(m => m.id === d.model) || (typeof d.model === 'string' && /^[a-z][a-z0-9_]{1,39}$/.test(d.model) && !RESERVED_ID.test(d.model)) ? d.model : 'saas',
     asof:typeof d.asof === 'string' && /^\d{4}-\d{2}$/.test(d.asof) ? d.asof : '',
     section:Number.isInteger(d.section) && d.section >= 0 ? d.section : 0,
     vals:cleanMap(d.vals, okStr), bools:cleanMap(d.bools, v => typeof v === 'boolean'), sel:cleanMap(d.sel, v => typeof v === 'string'),
-    prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' || v.src === 'extracted')),
+    /* "from the ledger" is kept only when the file carries a ledger: a shared file cannot claim ledger-grade evidence it does not have */
+    prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' ? !!(d.ledger && d.ledger.csv) : v.src === 'extracted')),
     evid:cleanMap(d.evid, v => EVIDENCE.some(e => e.id === v)),
     assume:cleanMap(d.assume, v => typeof v === 'number' && isFinite(v)), notes:typeof d.notes === 'string' ? d.notes : '',
     checklist:cleanMap(d.checklist, v => ['todo','requested','received','reviewed','issue','na'].includes(v)),
@@ -2194,6 +2195,7 @@ function leaveExample() {
 function resetApp() {
   if (!confirm('Reset all inputs?\n\nThis deletes, in this browser: all inputs, the uploaded ledger and financials, notes, assumptions, the report in progress and the saved draft.\n\nIt does not touch your library, Studio settings, theme, text size or AI key.\n\nThis cannot be undone.')) return;
   _epoch++; simAbort();
+  const pr = $id('print-root'); if (pr) pr.textContent = '';   /* the last printed memo goes too */
   try { ['vcr3-draft', 'vcr3-draft-meta', 'vcr4-memo'].forEach(k => localStorage.removeItem(k)); } catch (e) {}
   S = blankState(); _draftWarned = false;
   document.querySelectorAll('#page-setup input, #page-setup textarea, #page-intake input, #page-intake textarea').forEach(el => {
@@ -2232,29 +2234,30 @@ function modelName(providerId) {
   const own = CFG.settings && CFG.settings.aiModels && CFG.settings.aiModels[providerId];
   return (o && o.trim()) || (typeof own === 'string' && own.trim()) || PROVIDERS[providerId].model;
 }
+/* The key goes only in the provider's own header, to the provider's own address: no cookies, no cache, no referrer, no redirect
+   to another host, and a time limit. An error from the provider is shown as plain text, without the key or anything shaped like a key. */
+const keyFree = (t, key) => String(t || '').split(key).join('[your key]').replace(/\b(sk-[\w-]{8,}|AIza[\w-]{8,}|gsk_\w{8,}|gh[pousr]_\w{8,}|github_pat_\w{8,})/g, '[a key]').replace(/\s+/g, ' ').slice(0, 180);
 async function callModel(providerId, key, system, prompt, maxTokens) {
   const p = PROVIDERS[providerId], model = modelName(providerId);
-  const mt = maxTokens || 4000;
-  let res;
-  if (providerId === 'anthropic') {
-    res = await fetch(p.url, { method:'POST',
-      headers:{ 'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
-      body:JSON.stringify({ model, max_tokens:mt, system, messages:[{ role:'user', content:prompt }] }) });
-  } else if (providerId === 'gemini') {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    res = await fetch(url, { method:'POST',
-      headers:{ 'content-type':'application/json', 'x-goog-api-key':key },
-      body:JSON.stringify({ systemInstruction:{ parts:[{ text:system }] }, contents:[{ role:'user', parts:[{ text:prompt }] }], generationConfig:{ maxOutputTokens:mt } }) });
-  } else {
-    res = await fetch(p.url, { method:'POST',
-      headers:{ 'content-type':'application/json', authorization:'Bearer ' + key },
-      body:JSON.stringify({ model, max_tokens:mt, messages:[{ role:'system', content:system }, { role:'user', content:prompt }] }) });
-  }
-  if (!res.ok) throw new Error(`${p.name} returned ${res.status}. ${(await res.text()).slice(0, 180)}`);
-  const j = await res.json();
-  if (providerId === 'anthropic') return (j.content || []).map(c => c.text || '').join('\n');
-  if (providerId === 'gemini') return ((j.candidates || [])[0]?.content?.parts || []).map(x => x.text || '').join('\n');
-  return j.choices?.[0]?.message?.content || '';
+  const mt = maxTokens || 4000, ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 90000);
+  const post = (url, headers, body) => fetch(url, { method:'POST', headers:Object.assign({ 'content-type':'application/json' }, headers), body:JSON.stringify(body),
+    credentials:'omit', cache:'no-store', referrerPolicy:'no-referrer', redirect:'error', signal:ctl.signal });
+  try {
+    let res;
+    if (providerId === 'anthropic') res = await post(p.url, { 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      { model, max_tokens:mt, system, messages:[{ role:'user', content:prompt }] });
+    else if (providerId === 'gemini') res = await post(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { 'x-goog-api-key':key },
+      { systemInstruction:{ parts:[{ text:system }] }, contents:[{ role:'user', parts:[{ text:prompt }] }], generationConfig:{ maxOutputTokens:mt } });
+    else res = await post(p.url, { authorization:'Bearer ' + key }, { model, max_tokens:mt, messages:[{ role:'system', content:system }, { role:'user', content:prompt }] });
+    if (!res.ok) throw new Error(`${p.name} returned ${res.status}. ${keyFree(await res.text(), key)}`);
+    const j = await res.json();
+    if (providerId === 'anthropic') return (j.content || []).map(c => c.text || '').join('\n');
+    if (providerId === 'gemini') return ((j.candidates || [])[0]?.content?.parts || []).map(x => x.text || '').join('\n');
+    return j.choices?.[0]?.message?.content || '';
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw new Error(`${p.name} did not answer within 90 seconds.`);
+    throw new Error(keyFree(e && e.message, key));
+  } finally { clearTimeout(timer); }
 }
 function parseJSON(text) {
   const clean = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -2280,7 +2283,7 @@ function extractableFields() {
 async function runExtraction() {
   const ai = aiReady();
   if (!ai.ok) { toast(ai.why + ' Or continue and enter figures by hand: structured files never need a key.', 'err'); return; }
-  const { provider, key } = ai;
+  const { provider, key } = ai, ep = _epoch;   /* a reset while the provider answers must stay a reset */
   const deck = $id('intake-deck').value.trim();
   const fin  = $id('intake-fin').value.trim();
   const files = S.files.map(f => `--- ${f.name} ---\n${f.text}`).join('\n\n');
@@ -2315,6 +2318,7 @@ ${src.slice(0, 28000)}`;
 
   try {
     const raw = await callModel(provider, key, SYSTEM, PROMPT);
+    if (ep !== _epoch) return;
     const obj = parseJSON(raw);
     if (!obj) throw new Error('The response was not valid JSON.');
     const { accepted: n, refused } = acceptExtracted(obj);

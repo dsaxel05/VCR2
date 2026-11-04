@@ -15,6 +15,7 @@ const GATE_ASK = {
 function printMemo() {
   const R = S.result; if (!R) return;
   $id('print-root').innerHTML = memoHTML(R);
+  window.addEventListener('afterprint', () => { $id('print-root').textContent = ''; }, { once:true });   /* the memo leaves the page once printed */
   setTimeout(() => window.print(), 60);
 }
 function memoHTML(R) {
@@ -138,12 +139,12 @@ function exportAssessment() {
 function importAssessment() {
   pickFile('.json', text => {
     try {
-      const j = JSON.parse(text);
+      const j = parseJSONLimited(text);
       const p = j.payload || j;
       if (!p || (!p.vals && !p.name)) throw new Error('not an assessment');
       restorePayload(p); saveDraft(); buildStages(); buildTypes(); renderIntakeStatus(); updateProgress();
       goVerify(); toast(`Opened ${S.name || 'assessment'}.`);
-    } catch (e) { toast('That file is not a VCR2 assessment export.', 'err'); }
+    } catch (e) { toast(e.limit ? e.message : 'That file is not a VCR2 assessment export.', 'err'); }
   });
 }
 

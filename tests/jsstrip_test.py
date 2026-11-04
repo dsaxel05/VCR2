@@ -66,6 +66,10 @@ TIGHT = [
     ('return on its own line is kept apart from its value', "function f() {" + chr(10) + "  return" + chr(10) + "  x;" + chr(10) + "}", "function f(){return" + chr(10) + "x;}"),
     ('x++ then a new line is kept', "a++" + chr(10) + "b++", "a++" + chr(10) + "b++"),
     ('a line break inside a string or a template is never touched', "var s = 'a,' + `x," + chr(10) + "y`;", "var s='a,'+`x," + chr(10) + "y`;"),
+    ('a line that ends with an operator joins the next', "var t = a &&" + chr(10) + "  b ?" + chr(10) + "  c :" + chr(10) + "  d", "var t=a &&b ?c :d"),
+    ('a next line that starts with . or ( joins', "p" + chr(10) + "  .then(f)" + chr(10) + "  .catch(g)", "p.then(f).catch(g)"),
+    ('return or throw then a new line stays apart (the line break ends the statement)', "return" + chr(10) + "(x)", "return" + chr(10) + "(x)"),
+    ('a line before ++ or -- stays apart', "a" + chr(10) + "++b", "a" + chr(10) + "++b"),
 ]
 for name, src, exp in TIGHT:
     got = strip_js(src, tight=True)

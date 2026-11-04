@@ -31,7 +31,7 @@
 ## Owner Studio
 
 - The published configuration (`radar-config.json`) can only be changed by committing to the repository. The Studio does this through the GitHub API with a fine-grained token that the owner creates, limited to this repository and to “Contents: Read and write”.
-- The Studio unlocks only after GitHub confirms that the token belongs to the repository owner and has write access. The token is kept in session storage (or local storage if “Keep me signed in” is ticked) and is sent only to `api.github.com`, and only for this repository: owner and repository names are plain names (never a path or a `..` step), whatever a configuration file says.
+- The Studio unlocks only after GitHub confirms that the token belongs to the repository owner and has write access. The token is kept only in the tab's memory, never in any browser storage (a token an earlier version saved is deleted when the page loads), and is forgotten when the tab closes or reloads, after 15 minutes without activity and after each publish. It is sent only to `api.github.com`, and only for this repository: owner and repository names are plain names (never a path or a `..` step), whatever a configuration file says.
 - Every entry in the configuration is validated on load: names must be plain identifiers, text is escaped, unknown keys are dropped, and a malformed file falls back to the built-in engine.
 - Formulas are parsed and evaluated by a small interpreter with no access to anything but the assessment's numbers and text. Nothing is passed to `eval` or `Function`.
 - Publishing never overwrites a newer version silently: the Studio sends the file's current revision and stops if it changed.
@@ -42,7 +42,22 @@
 - Do not paste confidential or regulated material into a provider you have not cleared for it.
 - Leave the AI provider on "Deterministic only" when you only need the analysis, nothing leaves the browser.
 - Export the library as a JSON backup; browser storage can be cleared.
-- Owner: give the Studio token an expiry, limit it to this one repository, and don't tick “Keep me signed in” on a shared computer. Revoke it at github.com/settings/personal-access-tokens if it is ever exposed.
+- Owner: give the Studio token a 7-day expiry and limit it to this one repository with "Contents: Read and write" only. Revoke it at github.com/settings/personal-access-tokens if it is ever exposed.
+
+## Threat model (audit of 2026-11-03)
+
+Assume every input is hostile. The company being evaluated controls the files and text an investor loads (ledgers, financials, comparables, decks, term sheets, shared deal files) and may try to run code, steal a key, hide bad numbers or freeze the page. Other attackers: a site that frames or links to VCR2, a network attacker, hostile AI output (prompt injection hidden in a deck), a supply-chain attacker (the GitHub account, Actions, the build), a person using the same computer later, browser features that send text to the cloud (enhanced spell check, translation), and phishing copies of vcr2.app. The assets are the visitor's AI key, the owner's Studio token, deal data, and the integrity of the code served at vcr2.app.
+
+What is tested on every push: no attacker-controlled text reaches the page as markup (`tests/browser/xss_sweep_test.py`), the security policy as the browser enforces it (`tests/browser/csp_test.py`), the source never adds inline handlers, `eval`, unrouted HTML sinks, new hosts or new storage keys (`tests/security/source-guards.test.mjs`), keys and tokens go only where they should (`tests/browser/ai_rule_test.py`, `privacy_test.py`, `studio_test.py`), hostile files are refused or parsed within a time limit (`tests/security/`), and the site is named only over https (`tests/own-site-https.test.mjs`).
+
+## Residual risks no code can remove
+
+- **A compromised GitHub account** can publish code that every visitor runs. Protect it with two-factor authentication (a passkey is best) and a ruleset on `main`.
+- **Malicious browser extensions or malware** on a visitor's computer can read anything the page shows, including a pasted key.
+- **Phishing copies** of the site can ask for a key. The real site is only https://vcr2.app/; it never asks for a password and never needs a key to compute a report.
+- **AI providers** receive the text you choose to send, under their own terms, and can be breached themselves. Use a dedicated key with a low spending limit and revoke it after use.
+- **A user who ignores warnings** (ticks "Remember this key" on a shared computer, pastes confidential material into a provider they have not cleared) is outside what the page can prevent.
+- **No HSTS:** GitHub Pages cannot send security headers, so the first visit typed as plain http relies on the redirect.
 
 ## Reporting a vulnerability
 

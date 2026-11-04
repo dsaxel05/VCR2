@@ -28,8 +28,10 @@
 <link rel="icon" href="assets/logo/png/favicon.ico" sizes="any" />
 <link rel="apple-touch-icon" href="assets/logo/png/favicon-180.png" />
 <meta name="color-scheme" content="light dark" />
+<style>html{display:none}</style>
 <script>
-(function () { try { if (window.top !== window.self) document.documentElement.style.display = 'none'; } catch (e) { document.documentElement.style.display = 'none'; }
+/* The page starts hidden and is shown only when it is not inside a frame: a frame that blocks scripts (sandbox) therefore shows nothing. */
+(function () { try { if (window.top === window.self) document.documentElement.style.display = 'block'; } catch (e) {}
   /* Plain http is moved to https (a backup: the host should redirect first). Local test servers are left alone. */
   if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1|\[::1\])$|\.(localhost|test)$/.test(location.hostname)) location.replace('https:' + location.href.slice(5)); })();</script>
 <script>
@@ -54,7 +56,7 @@
 /*@@CSS@@*/
 </style>
 </head>
-<body>
+<body spellcheck="false">
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
 <div class="shell">
@@ -105,7 +107,7 @@
         <option value="openrouter">OpenRouter</option>
       </select>
       <div class="api-row">
-        <input class="api-inp" id="api-key" type="password" placeholder="No key needed" autocomplete="off" spellcheck="false" aria-label="API key" />
+        <input class="api-inp" id="api-key" type="password" placeholder="No key needed" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-bwignore aria-label="API key" />
         <button class="api-eye" id="api-eye" type="button" title="Show or hide the key" aria-label="Show or hide the key">ICON:eye</button>
       </div>
       <label class="api-check"><input type="checkbox" id="api-remember" /> Remember this key on this computer</label>

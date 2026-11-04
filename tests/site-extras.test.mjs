@@ -22,6 +22,14 @@ ok('it has no permissions and a time limit', /^permissions: \{\}$/m.test(w) && /
 ok('it uses no action at all, only curl and openssl', !/^\s*-?\s*uses:/m.test(w) && /curl/.test(w) && /openssl/.test(w));
 ok('it checks 200, the certificate (more than 14 days), the About text and the https redirect',
   /test "\$code" = 200/.test(w) && /-gt 14/.test(w) && /Founder of VCR2/.test(w) && /= "https:\/\/vcr2\.app\/"/.test(w));
+const st = fs.readFileSync(path.join(ROOT, '.well-known', 'security.txt'), 'utf8');
+const exp = Date.parse((st.match(/^Expires: (.+)$/m) || [])[1]);
+ok('security.txt has a contact, a policy, its canonical address and an Expires date in the future but under 13 months away',
+  /^Contact: mailto:/m.test(st) && /^Policy: https:\/\/github\.com\/dsaxel05\/VCR2\/blob\/main\/SECURITY\.md$/m.test(st) && /^Canonical: https:\/\/vcr2\.app\/\.well-known\/security\.txt$/m.test(st)
+  && exp > Date.now() && exp < Date.now() + 400 * 864e5, st);
+ok('Jekyll is told to serve the .well-known folder', /include: \[".well-known"\]/.test(fs.readFileSync(path.join(ROOT, '_config.yml'), 'utf8')));
+const dep = fs.readFileSync(path.join(ROOT, '.github', 'dependabot.yml'), 'utf8');
+ok('Dependabot watches the GitHub Actions weekly', /package-ecosystem: github-actions/.test(dep) && /interval: weekly/.test(dep));
 const pub = path.join(ROOT, 'tools', 'public_files.txt');   // the publish list exists in the dev folder only
 if (fs.existsSync(pub)) ok('404.html is on the publish list', fs.readFileSync(pub, 'utf8').split(/\r?\n/).includes('404.html'));
 

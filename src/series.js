@@ -14,6 +14,8 @@ const SERIES_COLS = {
 function parseSeries(text) {
   const rows = parseCSV(text);
   if (rows.length < 2) return { ok:false, error:'Needs a header row and at least three months.' };
+  if (rows.length > 50001) return { ok:false, error:`The file has ${rows.length - 1} rows; at most 50,000 are read.` };
+  if (rows.length > 50001) return { ok:false, error:`The file has ${(rows.length - 1).toLocaleString('en-US')} rows; at most 50,000 are read. Monthly financials need one row per month.` };
   const head = rows[0].map(h => h.replace(/\(.*?\)|\$|usd/gi, '').trim());
   const warnings = [];
   const loc = numberLocale(rows);
@@ -54,7 +56,8 @@ function parseSeries(text) {
   const first = recs[0].month, last = recs[recs.length - 1].month;
   const T = monthDiff(first, last) + 1;
   const months = Array.from({ length:T }, (_, k) => monthAdd(first, k));
-  const col = k => months.map(m => { const r = recs.find(x => x.month === m); return r && r[k] != null ? r[k] : null; });
+  const byM = new Map(); recs.forEach(x => { if (!byM.has(x.month)) byM.set(x.month, x); });
+  const col = k => months.map(m => { const r = byM.get(m); return r && r[k] != null ? r[k] : null; });
   const out = { months, revenue:col('revenue'), cash:col('cash'), burn:col('burn'), expenses:col('expenses'), headcount:col('headcount') };
   const cashflow = col('cashflow');
   if (/\barr\b/i.test(rows[0].join(' '))) { out.revenue = out.revenue.map(v => v == null ? null : v / 12); warnings.push('Revenue column looked like ARR and was divided by 12.'); }

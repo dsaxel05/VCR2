@@ -134,6 +134,21 @@ function numberAmbiguity(raw, loc) {
   return /^-?[1-9]\d{0,2}[.,]\d{3}$/.test(s);  /* "0,125" can only be a decimal */
 }
 
+/* JSON from an imported file: refuse a huge or absurdly nested payload before it is parsed (the error carries .limit). */
+function parseJSONLimited(text) {
+  const refuse = m => Object.assign(new Error(m), { limit:true });
+  if (text.length > 31457280) throw refuse('That file is over 30 MB, so it was not opened.');
+  let d = 0, str = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (str) { if (c === 92) i++; else if (c === 34) str = false; }
+    else if (c === 34) str = true;
+    else if (c === 91 || c === 123) { if (++d > 64) throw refuse('That file is nested over 64 levels deep.'); }
+    else if (c === 93 || c === 125) d--;
+  }
+  return JSON.parse(text);
+}
+
 /* ── CSV / TSV parser with quote handling and delimiter detection ── */
 function parseCSV(text) {
   const src = String(text || '').replace(/^﻿/, '').replace(/\r\n?/g, '\n');

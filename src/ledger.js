@@ -13,9 +13,12 @@ const LEDGER_MONTH_RX = /(month|date|period|invoice|billing)/i;
 const LEDGER_AMT_RX = /(mrr|arr|revenue|amount|value|billing|billed|sales|usd|eur|total)/i;
 
 /* Accepts wide (customer, Jan 24, Feb 24, …) or long (customer, month, amount) layouts. */
+/* Limits so a crafted file cannot freeze the tab: data rows, customers, and customers x months. */
+const LEDGER_MAX_ROWS = 50000;
 function parseLedger(text, unitHint) {
   const rows = parseCSV(text);
   if (rows.length < 2) return { ok:false, error:'The file needs a header row and at least one customer row.' };
+  if (rows.length > LEDGER_MAX_ROWS + 1) return { ok:false, error:`The file has ${rows.length - 1} data rows; at most 50,000 are read.` };
   const head = rows[0];
   const loc = numberLocale(rows);
   const hdrOrder = detectDateOrder(head);
@@ -51,12 +54,14 @@ function parseLedger(text, unitHint) {
     if (quarterly) warnings.push('The columns are quarters, not months. Each quarter’s amount was spread evenly over its three months' + (headMrr || unit === 'arr' ? '.' : ' (divided by 3, as revenue billed in the quarter). If the figures are monthly recurring revenue at quarter end, put MRR in the column headers.'));
     {
       const body = rows.slice(1).map(r => ({ name:(r[nameIdx] || '').trim(), vals:monthCols.map(c => parseNum(r[c.i], loc)) })).filter(x => x.name && !TOTAL_ROW.test(x.name));
-      body.filter(x => TOTAL_LIKE.test(x.name)).forEach(t => {
-        const others = body.filter(x => x !== t && !TOTAL_LIKE.test(x.name));
+      /* The column sums do not depend on which total row is tested: compute them once, and test at most 50 candidates. */
+      const sums = monthCols.map(() => 0);
+      body.forEach(x => { if (!TOTAL_LIKE.test(x.name)) x.vals.forEach((v, j) => { sums[j] += v || 0; }); });
+      body.filter(x => TOTAL_LIKE.test(x.name)).slice(0, 50).forEach(t => {
         let cmp = 0, same = 0;
         monthCols.forEach((_, j) => {
           if (t.vals[j] == null) return;
-          const sum = others.reduce((a, x) => a + (x.vals[j] || 0), 0);
+          const sum = sums[j];
           if (sum <= 0 && t.vals[j] <= 0) return;
           cmp++; if (Math.abs(sum - t.vals[j]) <= 0.01 * Math.max(sum, t.vals[j])) same++;
         });
@@ -135,6 +140,8 @@ function parseLedger(text, unitHint) {
   /* The period the file covers must be three months or more. Invoices on two annual dates (every customer renews on 1 January) cover thirteen. */
   if (T < 3) return { ok:false, error:'At least three months of data are needed.' };
   if (T > 120) return { ok:false, error:'More than ten years of months detected. Check the month column.' };
+  if (map.size > 20000) return { ok:false, error:`The file has ${map.size} customers; at most 20,000 are read.` };
+  if (map.size * T > 2e6) return { ok:false, error:`${map.size} customers over ${T} months is more than 2,000,000 figures. Send fewer months or customers.` };
   const months = Array.from({ length:T }, (_, k) => monthAdd(first, k));
   const gapMonths = T - monthsSorted.length;
   /* A list of invoices is not MRR: most customers billed once a year, twelve months apart. Spread each invoice over the

@@ -399,14 +399,14 @@ function libExport() {
 function libImportJSON() {
   pickFile('.json', text => {
     try {
-      const j = JSON.parse(text);
+      const j = parseJSONLimited(text);
       const entries = Array.isArray(j) ? j : j.entries;
       if (!Array.isArray(entries)) throw new Error('not a library file');
       const list = libLoad(), ids = new Set(list.map(x => x.id));
       let n = 0, dropped = 0;
       entries.slice(0, LIB_MAX).forEach(raw => { const e = libClean(raw); if (!e) { dropped++; return; } if (!ids.has(e.id) && list.length < LIB_MAX) { ids.add(e.id); list.push(e); n++; } });
       if (libSave(list)) { toast(`${n} entries restored${dropped ? `; ${dropped} could not be read and were skipped` : ''}.`); renderLibrary(); }
-    } catch (e) { toast('That file is not a VCR2 library backup.', 'err'); }
+    } catch (e) { toast(e.limit ? e.message : 'That file is not a VCR2 library backup.', 'err'); }
   });
 }
 function libImportCSV() {

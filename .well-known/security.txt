@@ -1,0 +1,6 @@
+Contact: mailto:ds.axel05@gmail.com
+Contact: https://github.com/dsaxel05/VCR2/security/advisories/new
+Expires: 2027-10-31T00:00:00.000Z
+Preferred-Languages: en, fr
+Canonical: https://vcr2.app/.well-known/security.txt
+Policy: https://github.com/dsaxel05/VCR2/blob/main/SECURITY.md

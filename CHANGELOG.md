@@ -1,5 +1,23 @@
 # Changelog
 
+## v5.0.11: 2026-11-03
+
+Security hardening after a full red-team audit (five independent reviews: hostile files and text, secret exfiltration, parser denial of service, supply chain, hosting and framing). No way was found for a company's files or text to run code in the page or to steal a key or token; the fixes below close the weaker paths that were found. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Security
+- **The Studio token lives in memory only.** It is never written to browser storage, so it is gone when the tab closes or reloads, after 15 minutes without activity and after each publish. "Keep me signed in" is removed, and a token an earlier version saved is deleted when the page loads. A failed sign-in also forgets the token.
+- **AI calls are locked down.** The key goes only in the provider's own header; no cookies, no cache, no referrer, no redirect to another host, and a 90-second limit. An error from the provider is shown without the key or anything shaped like a key.
+- **No cloud spell check on any field**, so enhanced spell checkers do not send deal text or keys to Google or Microsoft; password managers are told to ignore the key and token fields.
+- **Framing:** the page starts hidden and shows itself only when it is not inside a frame, so a frame that blocks scripts shows nothing.
+- **Privacy on a shared computer:** the printed memo is removed from the page after printing and on "Reset all inputs"; a reset while an AI extraction is running stays a reset; "Forget the key" also clears "Remember this key" and hides the key again.
+- **Shared deal files cannot game the score:** a choice answer must be one of the field's own answers (a value such as "constructor" made the score NaN), reserved names are refused as a business model, and "from the ledger" evidence is kept only when the file carries a ledger.
+- **Hostile files cannot freeze the page.** Ledgers and monthly financials: at most 50,000 rows, 20,000 customers and 2,000,000 customer-months, with total-row detection and month lookups that no longer slow down quadratically. Excel workbooks: no DOCTYPE or entities (an entity could expand a small file into gigabytes), at most 200,000 cells, 32,767 characters a cell, 12 MB of text and 10 seconds of reading. Deal and library files: at most 30 MB and 64 levels deep. Each limit gives a plain message.
+- `/.well-known/security.txt` gives the contact for security reports; Dependabot watches the GitHub Actions used by CI.
+
+### Under the hood
+- The build also joins lines around operators where a line break cannot end a statement (`tests/jsstrip_test.py`, 38 checks).
+- Tests: `tests/security/parsers.test.mjs` and `tests/browser/parser_limits_test.py` (each hostile file is generated in the test), memory-only token checks in `tests/browser/studio_test.py` and `owner_test.py`, and `tests/site-extras.test.mjs` for security.txt, Dependabot and the Jekyll setting. SECURITY.md now states the threat model, what is tested and the residual risks.
+
 ## v5.0.10: 2026-11-02
 
 A final pass on the live site. Scoring is unchanged (rubric 5.0.0, same run IDs).

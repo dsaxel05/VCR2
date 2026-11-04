@@ -219,8 +219,8 @@ function introStats() {
     toast(e.target.checked ? 'The key is remembered on this computer.' : 'The key is no longer saved on this computer.');
   });
   $id('api-forget').addEventListener('click', () => {
-    $id('api-key').value = '';
-    try { sessionStorage.removeItem('vcr3-key'); localStorage.removeItem('vcr3-key'); } catch (err) {}
+    $id('api-key').value = ''; $id('api-key').type = 'password'; $id('api-remember').checked = false;
+    try { sessionStorage.removeItem('vcr3-key'); localStorage.removeItem('vcr3-key'); localStorage.removeItem('vcr3-remember'); } catch (err) {}
     updateKeyStatus('');
     toast('The key was forgotten.');
   });

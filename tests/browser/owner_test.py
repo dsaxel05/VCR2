@@ -75,6 +75,11 @@ async def publish_now(pg, wait=600):
         pass
     await pg.wait_for_timeout(wait)
 
+async def resign(pg):
+    """The token lives in memory only; a publish signs the owner out, so sign in again to carry on."""
+    await pg.wait_for_selector('#gh-token')
+    await pg.fill('#gh-token', TOKEN); await pg.click('#gh-signin'); await pg.wait_for_timeout(500)
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
@@ -108,6 +113,8 @@ async def main():
         await pg.goto(BASE + '#studio'); await pg.wait_for_selector('#studio-pane'); await pg.wait_for_timeout(300)
         GH['put_status'] = 201
         await publish_now(pg, 700)
+        check('a publish signs the owner out', await pg.evaluate("() => ST.token === null && !!document.getElementById('gh-token')"))
+        await resign(pg)
         cfg = json.loads(GH['published'])
         check('published config carries the replacement', cfg.get('texts') == [{'from':'Check whether the numbers', 'to':'Prove that the numbers'}], cfg.get('texts'))
         vctx, v = await new_page(b, errs, 'visitor')
@@ -157,6 +164,7 @@ async def main():
         check('the review lists the changes and the impact on both examples', 'Northwind' in rv and 'Halcyon' in rv and 'change' in rv, rv[:400])
         await pg.click('#rv-publish'); await pg.wait_for_timeout(700)
         tt = await pg.inner_text('#toast')
+        await resign(pg)
         cfg2 = json.loads(GH['published'])
         check('published with the new settings', cfg2['settings'].get('boolCap') == 8 and cfg2['labels']['metrics'].get('nrr') == 'Net dollar retention', [tt, cfg2['settings']])
         # a reader of a report is told the site differs from built-in

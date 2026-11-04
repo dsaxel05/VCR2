@@ -33,11 +33,19 @@ function repoTarget() {
   repo = repo || (ok(CFG_PUBLISHED.repo) ? CFG_PUBLISHED.repo : 'VCR2');
   return { owner, repo, branch:ST.branch || 'main', path:CONFIG_FILE };
 }
+/* The Studio token lives in this tab's memory only (ST.token): never in any browser storage, so it is gone when the tab closes,
+   after 15 minutes without activity, and after a publish. A token an earlier version saved is removed when the page loads. */
 const tokenStore = {
-  get() { try { return sessionStorage.getItem('vcr2-gh-token') || localStorage.getItem('vcr2-gh-token'); } catch (e) { return null; } },
-  set(t, remember) { try { sessionStorage.setItem('vcr2-gh-token', t); if (remember) localStorage.setItem('vcr2-gh-token', t); } catch (e) {} },
-  clear() { try { sessionStorage.removeItem('vcr2-gh-token'); localStorage.removeItem('vcr2-gh-token'); localStorage.removeItem('vcr2-owner'); } catch (e) {} },
+  purge() { try { sessionStorage.removeItem('vcr2-gh-token'); localStorage.removeItem('vcr2-gh-token'); } catch (e) {} },
+  clear() { this.purge(); try { localStorage.removeItem('vcr2-owner'); } catch (e) {} },
 };
+tokenStore.purge();
+let _ghIdle = 0;
+function ghTouch() { clearTimeout(_ghIdle); if (ST.token) _ghIdle = setTimeout(() => { if (ST.token) { ST.token = null; ST.user = null; updateStudioLink(); toast('Signed out of the Studio after 15 minutes without activity.'); if (location.hash === '#studio') renderStudioGate(); } }, 15 * 60000); }
+if (typeof window !== 'undefined' && window.addEventListener) {
+  ['pointerdown', 'keydown'].forEach(t => window.addEventListener(t, ghTouch, { passive:true }));
+  window.addEventListener('pagehide', () => { ST.token = null; });
+}
 async function gh(path, opts) {
   let res;
   try { res = await fetch(GH_API + path, Object.assign({ cache:'no-store', headers:{ Accept:'application/vnd.github+json', Authorization:'Bearer ' + ST.token, 'X-GitHub-Api-Version':'2022-11-28' } }, opts || {})); }
@@ -68,7 +76,7 @@ function loadDraftForEditing() {
   }
 }
 /* The Studio opens only for the repository owner with write access. */
-async function studioSignIn(token, remember) {
+async function studioSignIn(token) {
   ST.token = token.trim();
   const t = repoTarget();
   const fail = (msg, keep) => { const e = new Error(msg); e.keep = !!keep; return e; };
@@ -87,7 +95,7 @@ async function studioSignIn(token, remember) {
   if (repo.body.permissions && repo.body.permissions.push === false) throw fail('This token cannot write to the repository. Set “Contents” to “Read and write” when creating it.');
   ST.user = me.body.login;
   ST.branch = (repo.body && typeof repo.body.default_branch === 'string' && repo.body.default_branch) || 'main';
-  tokenStore.set(ST.token, remember);
+  ghTouch();
   try { localStorage.setItem('vcr2-owner', ST.user); } catch (e) {}
   updateStudioLink();
   if (await syncRemote()) refreshAfterConfig();
@@ -159,12 +167,7 @@ async function openStudio() {
   showPage('studio');
   if (!ST.user) renderStudioGate('Loading…');
   await CFG_READY;
-  const saved = tokenStore.get();
-  if (saved && !ST.user) {
-    renderStudioGate('Checking your GitHub sign-in…');
-    try { await studioSignIn(saved, !!localStorage.getItem('vcr2-gh-token')); }
-    catch (e) { if (!e.keep) { tokenStore.clear(); ST.token = null; } renderStudioGate(null, e.message); return; }
-  } else if (ST.user) { try { if (await syncRemote()) refreshAfterConfig(); } catch (e) {} }
+  if (ST.user) { try { if (await syncRemote()) refreshAfterConfig(); } catch (e) {} }
   if (!ST.user) { renderStudioGate(); return; }
   loadDraftForEditing();
   renderStudio();
@@ -179,8 +182,7 @@ function renderStudioGate(busy, err) {
       ${busy ? `<div class="suppressed">${esc(busy)}</div>` : `
       ${err ? `<div class="warnstrip"><span>⚠</span><div>${esc(err)}</div></div>` : ''}
       <label class="form-lbl" for="gh-token">GitHub token</label>
-      <input class="form-inp" id="gh-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
-      <label class="api-check" style="font-size:0.875rem;margin-bottom:10px"><input type="checkbox" id="gh-remember"> Keep me signed in on this computer</label>
+      <input class="form-inp" id="gh-token" type="password" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-bwignore placeholder="github_pat_…">
       <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary" id="gh-signin">Sign in</button><button class="btn btn-ghost" onclick="leaveStudio()">Back to the app</button></div>
       <details class="paste" style="margin-top:14px" open><summary>How to create the token (one minute)</summary>
         <ol class="howto">
@@ -190,7 +192,7 @@ function renderStudioGate(busy, err) {
           <li>Under <b>Permissions → Repository permissions</b>, set <b>Contents</b> to <b>Read and write</b>. Nothing else: leave every other permission at <b>No access</b>.</li>
           <li>Click <b>Generate token</b>, copy it, and paste it above.</li>
         </ol>
-        <p class="field-hint">The token stays in this browser and is sent only to api.github.com. Anyone can see the site; only this token can change it. <b>Treat it like a password to the whole site.</b> Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only, and leave “Keep me signed in” unticked on a shared computer.</p>
+        <p class="field-hint">The token is kept only in this tab’s memory, never saved, and is sent only to api.github.com. You are signed out when the tab closes, after 15 minutes without activity and after each publish. Anyone can see the site; only this token can change it. <b>Treat it like a password to the whole site.</b> Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only.</p>
       </details>`}
     </div>`;
   const b = $id('gh-signin');
@@ -198,8 +200,8 @@ function renderStudioGate(busy, err) {
     const v = $id('gh-token').value;
     if (v.trim().length < 20) { toast('Paste the full token.', 'err'); return; }
     b.disabled = true; b.textContent = 'Checking…';
-    try { await studioSignIn(v, $id('gh-remember').checked); loadDraftForEditing(); renderStudio(); toast(`Signed in as @${ST.user}.`); }
-    catch (e) { renderStudioGate(null, e.message); }
+    try { await studioSignIn(v); loadDraftForEditing(); renderStudio(); toast(`Signed in as @${ST.user}.`); }
+    catch (e) { ST.token = null; renderStudioGate(null, e.message); }
   };
 }
 
@@ -1047,8 +1049,9 @@ async function publishDraft() {
     CFG_PUBLISHED = normalizeConfig(out); ST.draft = normalizeConfig(JSON.parse(JSON.stringify(out)));
     draftBase.set(ST.sha);
     try { localStorage.setItem('vcr2-studio-draft', JSON.stringify(ST.draft)); } catch (e) {}
-    refreshAfterConfig(); renderStudio();
-    toast('Published. Visitors get it within about a minute.');
+    refreshAfterConfig();
+    ST.token = null; ST.user = null; clearTimeout(_ghIdle); updateStudioLink(); renderStudioGate();   /* a publish ends the session: the token leaves memory */
+    toast('Published. Visitors get it within about a minute. You are signed out of the Studio.');
   } catch (e) { toast('Publish failed: ' + e.message, 'err'); }
   finally { const b = document.querySelector('.studio-actions .btn-primary'); if (b) { b.disabled = false; b.textContent = 'Publish to the live site'; } }
 }
