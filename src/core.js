@@ -2150,7 +2150,8 @@ function restorePayload(d) {
   Object.keys(S.assume).forEach(k => { S.assume[k] = clamp(S.assume[k], ASSUME_RANGE[k][0], ASSUME_RANGE[k][1]); });
   /* "from the ledger" is kept only for a field a ledger that parses really fills: a shared file cannot claim ledger-grade evidence */
   const fills = S.ledger ? ledgerPrimitives(ledgerAnalytics(S.ledger)) : {};
-  Object.keys(S.prov).forEach(k => { if (S.prov[k].src === 'ledger' && !(k in fills)) delete S.prov[k]; });
+  /* ...and only while the figure is the ledger's own (rounded as applyLedgerToForm writes it): a typed value cannot borrow its evidence */
+  Object.keys(S.prov).forEach(k => { const f = fills[k]; if (S.prov[k].src === 'ledger' && (f == null || +S.vals[k] !== (/pct$/.test(k) ? Math.round(f * 10) / 10 : Math.round(f)))) delete S.prov[k]; });
   if (d.series && d.series.csv) { const r = parseSeries(d.series.csv); if (r.ok) S.series = r.series; }
   const n = $id('cname'); if (n) n.value = S.name;
   const a = $id('asof'); if (a) a.value = S.asof;

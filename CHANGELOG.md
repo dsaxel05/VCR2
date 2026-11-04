@@ -1,5 +1,13 @@
 # Changelog
 
+## v5.0.13: 2026-11-04
+
+A second independent re-test of the security work found no way to run code or steal a key or token. One fix from it. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Security
+- **"From the ledger" evidence now needs the ledger's own figure.** A shared deal file could attach a real ledger and still mark a different, typed figure as coming from it. The mark is now kept only when the value equals the ledger's figure (`tests/security/imports.test.mjs`).
+- A few of the new Studio and AI messages are shorter, with the same meaning.
+
 ## v5.0.12: 2026-11-04
 
 Security hardening, part two. Scoring is unchanged (rubric 5.0.0, same run IDs).

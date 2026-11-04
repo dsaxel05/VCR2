@@ -12,9 +12,12 @@ const LCSV = 'customer,2025-01,2025-02,2025-03' + LF + 'A,10,10,10' + LF + 'B,20
   const L = { src:'ledger', line:'x' };
   restorePayload({ prov:{ arr_now:L }, ledger:{ csv:'not a ledger at all' } });
   ok('P1 a ledger claim with an unreadable ledger is dropped', !S.prov.arr_now, JSON.stringify(S.prov));
-  restorePayload({ prov:{ arr_now:L, cash_on_hand:L }, ledger:{ csv:LCSV } });
-  ok('P1 a claim on a field the ledger fills is kept', !!S.prov.arr_now);
+  const real = String(Math.round(ledgerPrimitives(ledgerAnalytics(parseLedger(LCSV, 'mrr').ledger)).arr_now));
+  restorePayload({ vals:{ arr_now:real }, prov:{ arr_now:L, cash_on_hand:L }, ledger:{ csv:LCSV } });
+  ok('P1 a claim on a field the ledger fills, with the ledger figure, is kept', !!S.prov.arr_now, [real, JSON.stringify(S.prov)]);
   ok('P1 a claim on a field the ledger does not fill is dropped', !S.prov.cash_on_hand);
+  restorePayload({ vals:{ arr_now:'99000000' }, prov:{ arr_now:L }, ledger:{ csv:LCSV } });
+  ok('P1 a claim on a figure that differs from the ledger is dropped (a typed value cannot borrow ledger evidence)', !S.prov.arr_now, JSON.stringify(S.prov));
 }
 /* 2. A very wide header row was quadratic in the number of columns (50,000 month columns + 50,000 junk columns). */
 {

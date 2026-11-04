@@ -61,7 +61,7 @@ const SETTING_DEFS = [
   /* Display only: these never change a score. Defaults are the owner's assumptions, not market statistics. */
   { id:'salesEffFlag', group:'Display-only metrics (your assumptions, not market statistics)', label:'Sales efficiency: flag below (x)', kind:'number', def:0.5, min:0, max:5, step:0.05, help:'' },
   { id:'churnMixFlag', group:'Display-only metrics (your assumptions, not market statistics)', label:'Churn mix: flag below (x)', kind:'number', def:0.8, min:0, max:5, step:0.05, help:'Below it, revenue leaves faster than customers: the larger ones are going.' },
-  { id:'nextRoundMultiple', group:'Display-only metrics (your assumptions, not market statistics)', label:'Next-round price as a multiple of ARR (x)', kind:'number', def:10, min:1, max:100, step:0.5, help:'Today’s post-money ÷ this = the ARR the next round needs.' },
+  { id:'nextRoundMultiple', group:'Display-only metrics (your assumptions, not market statistics)', label:'Next-round price as a multiple of ARR (x)', kind:'number', def:10, min:1, max:100, step:0.5, help:'' },
 ];
 const SETTING_DEF_BY_ID = Object.fromEntries(SETTING_DEFS.map(d => [d.id, d]));
 /* The value in force: the owner's, else the built-in. */

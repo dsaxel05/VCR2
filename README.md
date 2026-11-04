@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.12" src="https://img.shields.io/badge/version-5.0.12-0e3b34?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.0.13" src="https://img.shields.io/badge/version-5.0.13-0e3b34?style=flat-square"></a>
   <a href="https://vcr2.app/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>

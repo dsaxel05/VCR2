@@ -42,7 +42,7 @@ const tokenStore = {
 tokenStore.purge();
 let _ghIdle = 0;
 let _ghLast = 0;
-function ghIdleOut() { if (!ST.token) return; ST.token = null; ST.user = null; updateStudioLink(); toast('Signed out of the Studio after 15 minutes without activity.'); if (location.hash === '#studio') renderStudioGate(); }
+function ghIdleOut() { if (!ST.token) return; ST.token = null; ST.user = null; updateStudioLink(); toast('Signed out of the Studio after 15 idle minutes.'); if (location.hash === '#studio') renderStudioGate(); }
 function ghTouch() { clearTimeout(_ghIdle); _ghLast = Date.now(); if (ST.token) _ghIdle = setTimeout(ghIdleOut, 15 * 60000); }
 if (typeof window !== 'undefined' && window.addEventListener) {
   ['pointerdown', 'keydown'].forEach(t => window.addEventListener(t, ghTouch, { passive:true }));
@@ -195,7 +195,7 @@ function renderStudioGate(busy, err) {
           <li>Under <b>Permissions → Repository permissions</b>, set <b>Contents</b> to <b>Read and write</b>. Nothing else: leave every other permission at <b>No access</b>.</li>
           <li>Click <b>Generate token</b>, copy it, and paste it above.</li>
         </ol>
-        <p class="field-hint">The token is kept only in this tab’s memory, never saved, and is sent only to api.github.com. You are signed out when the tab closes, after 15 minutes without activity and after each publish. Anyone can see the site; only this token can change it. <b>Treat it like a password to the whole site.</b> Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only.</p>
+        <p class="field-hint">The token stays in this tab’s memory only, is never saved, and goes only to api.github.com. You are signed out on closing the tab, after 15 idle minutes and after each publish. Anyone can see the site; only this token can change it. <b>Treat it like a password to the whole site.</b> Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only.</p>
       </details>`}
     </div>`);
   const b = $id('gh-signin');
@@ -1054,7 +1054,7 @@ async function publishDraft() {
     try { localStorage.setItem('vcr2-studio-draft', JSON.stringify(ST.draft)); } catch (e) {}
     refreshAfterConfig();
     ST.token = null; ST.user = null; clearTimeout(_ghIdle); updateStudioLink(); renderStudioGate();   /* a publish ends the session: the token leaves memory */
-    toast('Published. Visitors get it within about a minute. You are signed out of the Studio.');
+    toast('Published: live within a minute. You are signed out of the Studio.');
   } catch (e) { toast('Publish failed: ' + e.message, 'err'); }
   finally { const b = document.querySelector('.studio-actions .btn-primary'); if (b) { b.disabled = false; b.textContent = 'Publish to the live site'; } }
 }
