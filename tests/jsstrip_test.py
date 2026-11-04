@@ -63,7 +63,7 @@ TIGHT = [
     ('a comment is still removed, and the line after a semicolon joins', "var a = 1; // x, y = z" + chr(10) + "var b = 2;", "var a=1;var b=2;"),
     ('lines after { , ( [ and before } ) ] join', "f({" + chr(10) + "  a: 1," + chr(10) + "  b: [" + chr(10) + "    2" + chr(10) + "  ]" + chr(10) + "});", "f({a:1,b:[2]});"),
     ('a line that may end a statement is kept: no semicolon', "var a = 1" + chr(10) + "var b = 2", "var a=1" + chr(10) + "var b=2"),
-    ('return on its own line is kept apart from its value', "function f() {" + chr(10) + "  return" + chr(10) + "  x;" + chr(10) + "}", "function f(){return" + chr(10) + "x;}"),
+    ('return on its own line is kept apart from its value', "function f() {" + chr(10) + "  return" + chr(10) + "  x;" + chr(10) + "}", "function f(){return" + chr(10) + "x}"),
     ('x++ then a new line is kept', "a++" + chr(10) + "b++", "a++" + chr(10) + "b++"),
     ('a line break inside a string or a template is never touched', "var s = 'a,' + `x," + chr(10) + "y`;", "var s='a,'+`x," + chr(10) + "y`;"),
     ('a line that ends with an operator joins the next', "var t = a &&" + chr(10) + "  b ?" + chr(10) + "  c :" + chr(10) + "  d", "var t=a &&b ?c :d"),
@@ -71,12 +71,17 @@ TIGHT = [
     ('return or throw then a new line stays apart (the line break ends the statement)', "return" + chr(10) + "(x)", "return" + chr(10) + "(x)"),
     ('a line before ++ or -- stays apart', "a" + chr(10) + "++b", "a" + chr(10) + "++b"),
     ('a minus at the end of a line and a minus at the start of the next never meet', "x = a -" + chr(10) + "-b", "x=a -" + chr(10) + "-b"),
+    ('a semicolon before } goes', "function f() { g(); return 1; }", "function f(){g();return 1}"),
+    ('an empty statement before } stays', "function f() { if (a); while (b); for (;;); }", "function f(){if(a);while(b);for(;;);}"),
+    ('else; before } stays', "if (a) b(); else; }", "if(a)b();else;}"),
 ]
 for name, src, exp in TIGHT:
     got = strip_js(src, tight=True)
     ok = got == exp
     print(('PASS ' if ok else 'FAIL ') + 'tight: ' + name + ('' if ok else ' got ' + repr(got) + ' expected ' + repr(exp)))
     bad += not ok
+ok = strip_js("var h = `<p>${ a ? 'x , y' : b + c }</p>`;", html=True, tight=True) == "var h=`<p>${a?'x , y':b+c}</p>`;"
+print(('PASS ' if ok else 'FAIL ') + 'tight: code inside ${ } is tightened too, strings in it are not'); bad += not ok
 ok = strip_js("var a = 1, b = 2;") == "var a = 1, b = 2;"
 print(('PASS ' if ok else 'FAIL ') + 'tight: the default is unchanged'); bad += not ok
 

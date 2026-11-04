@@ -58,7 +58,7 @@ def _skip_braces(s, j):
 _NO_COMPACT = re.compile(r'<pre|<textarea|white-space|<code|<script|<style', re.I)
 
 
-def _compact_tpl(t):
+def _compact_tpl(t, tight=False):
     """t is a whole template literal (both backticks). When it is HTML (its text starts with a tag and holds nothing where whitespace
     shows), the indentation after each newline is removed: a browser collapses a newline plus spaces to the same single space as a
     newline alone, so the page is identical. Expressions inside ${ } are kept, apart from the templates nested in them."""
@@ -79,13 +79,15 @@ def _compact_tpl(t):
         if kind == 'lit':
             out.append(re.sub(r'\n[ \t]+', '\n', x) if eligible else x)
         else:
-            out.append('${' + _compact_expr(x) + '}')
+            out.append('${' + _compact_expr(x, tight) + '}')
     out.append('`')
     return ''.join(out)
 
 
-def _compact_expr(x):
-    """Code inside ${ }: nested templates are compacted; strings, comments and all other code are copied unchanged."""
+def _compact_expr(x, tight=False):
+    """Code inside ${ }: with tight, read like any other code (strip_js, tight); otherwise nested templates are compacted and the rest is copied."""
+    if tight:
+        return strip_js(x, html=True, tight=True)
     out = []; i = 0; n = len(x)
     while i < n:
         c = x[i]
@@ -105,6 +107,21 @@ def _compact_expr(x):
 _TIGHT_KW = {'if', 'for', 'while', 'switch', 'catch', 'function', 'return', 'typeof', 'await', 'void', 'delete', 'in', 'new', 'case', 'throw', 'yield'}
 _TIGHT_OPS = ['===', '!==', '>>>', '**=', '&&=', '||=', '??=', '=>', '==', '!=', '<=', '>=', '&&', '||', '??', '+=', '-=', '*=', '|=', '&=',
               '=', '?', ':', '+', '-', '*', '%', '|', '&', '<', '>']
+
+
+def _head_paren(out):
+    """out (the output so far, one token or character per item) ends with ")": True when that ")" closes the head of an if, for,
+    while or with, so a ";" after it is an empty statement. Strings and regular expressions are single items, so their brackets never count."""
+    depth = 0
+    for j in range(len(out) - 1, -1, -1):
+        if out[j] == ')':
+            depth += 1
+        elif out[j] == '(':
+            depth -= 1
+            if depth == 0:
+                head = ''.join(out[max(0, j - 8):j])
+                return bool(re.search(r'(?:^|[^\w$])(if|for|while|with)\s*$', head))
+    return True
 
 
 def strip_js(s, html=False, tight=False):
@@ -142,7 +159,7 @@ def strip_js(s, html=False, tight=False):
         if c == '`':
             j = _skip_template(s, i)
             tagged = (last == 'a' and word not in _REGEX_WORDS)      # String.raw`...` and other tags: left alone
-            out.append(_compact_tpl(s[i:j]) if html and not tagged else s[i:j]); i = j; last = '`'; word = ''; at_line_start = False; continue
+            out.append(_compact_tpl(s[i:j], tight) if html and not tagged else s[i:j]); i = j; last = '`'; word = ''; at_line_start = False; continue
         if c == '/' and (last == '' or last in _REGEX_AFTER or word in _REGEX_WORDS):
             j = i + 1; in_class = False
             while j < n:
@@ -192,6 +209,15 @@ def strip_js(s, html=False, tight=False):
                 # "a + +b", "a - -b", "a + ++b": the space keeps two operators apart
                 if not (op in ('+', '-') and (after in '+-' or (out and out[-1] in '+-'))):
                     out.append(op); last = op[-1]; word = ''; at_line_start = False; i += len(op) + 2; continue
+        # ";" right before "}" ends nothing the "}" does not already end. It stays where it is a whole empty statement
+        # ("if (x);", "while (x);", "else;"), which would not parse without it.
+        if tight and c == ';':
+            k = i + 1
+            while k < n and s[k] in ' \t\r\n':
+                k += 1
+            if (k < n and s[k] == '}' and last not in ';{' and not (last == 'a' and word in ('else', 'do'))
+                    and not (last == ')' and _head_paren(out))):
+                i += 1; continue
         # an ordinary character
         if c.isalnum() or c in '_$':
             word = word + c if (word or not c.isdigit()) else ''

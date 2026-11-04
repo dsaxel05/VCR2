@@ -2257,8 +2257,17 @@ function modelName(providerId) {
 /* The key goes only in the provider's own header, to the provider's own address: no cookies, no cache, no referrer, no redirect
    to another host, and a time limit. An error from the provider is shown as plain text, without the key or anything shaped like a key. */
 const keyFree = (t, key) => String(t || '').split(key).join('[your key]').replace(/\b(sk-[\w-]{8,}|AIza[\w-]{8,}|gsk_\w{8,}|gh[pousr]_\w{8,}|github_pat_\w{8,})/g, '[a key]').replace(/\s+/g, ' ').slice(0, 180);
+/* A key whose format clearly belongs to another provider is never sent (sk-ant- and sk-or- are read before the plain sk- of OpenAI).
+   Unknown formats pass: providers change formats, and the provider itself still checks the key. */
+const keyOwner = k => ([['anthropic', /^sk-ant-/], ['openrouter', /^sk-or-/], ['openai', /^sk-/], ['groq', /^gsk_/], ['gemini', /^AIza/], ['GitHub', /^(gh[pousr]_|github_pat_)/]]
+  .find(x => x[1].test(String(k).trim())) || [''])[0];
+function keyRefusal(id, key) {
+  const o = keyOwner(key), n = (PROVIDERS[o] || { name:o }).name;
+  return o && o !== id ? `This looks like a key for ${n}, so it was not sent to ${PROVIDERS[id].name}. Choose ${n} as the provider, or paste a key for ${PROVIDERS[id].name}.` : '';
+}
 async function callModel(providerId, key, system, prompt, maxTokens) {
-  const p = PROVIDERS[providerId], model = modelName(providerId);
+  const p = PROVIDERS[providerId], model = modelName(providerId), no = keyRefusal(providerId, key);
+  if (no) throw new Error(no);
   const mt = maxTokens || 4000, ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 90000);
   const post = (url, headers, body) => fetch(url, { method:'POST', headers:Object.assign({ 'content-type':'application/json' }, headers), body:JSON.stringify(body),
     credentials:'omit', cache:'no-store', referrerPolicy:'no-referrer', redirect:'error', signal:ctl.signal });
@@ -2291,7 +2300,8 @@ function aiReady() {
   const key = $id('api-key').value.trim();
   if (!PROVIDERS[provider] || !PROVIDERS[provider].needsKey) return { ok:false, why:'Choose a provider in the sidebar and paste your own key. Nothing is billed to the site owner.' };
   if (!key || key.length < 8) return { ok:false, why:'Paste your own key in the sidebar. Nothing is billed to the site owner.' };
-  return { ok:true, provider, key };
+  const no = keyRefusal(provider, key);
+  return no ? { ok:false, why:no } : { ok:true, provider, key };
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -12,7 +12,7 @@ from playwright.async_api import async_playwright
 import fontroute
 BASE = _paths.BASE
 ORIGIN = _paths.ORIGIN
-FAKE_KEY = 'sk-' + 'A' * 40
+FAKE_KEY = 'sk-ant-' + 'A' * 40   # Anthropic-shaped: a key of another provider's format is refused (v5.0.14)
 FAKE_TOKEN = 'github_pat_' + 'A' * 60
 LINE = 'Uses your own key and your own account. Nothing is billed to the site owner.'
 AI_HOSTS = ['api.anthropic.com', 'api.openai.com', 'generativelanguage.googleapis.com', 'api.groq.com', 'openrouter.ai']
@@ -64,6 +64,12 @@ async def main():
         await pg.evaluate("() => runExtraction()")
         t2 = re.sub(r'\s+', ' ', await pg.evaluate("() => $id('toast').textContent"))
         check('a provider chosen but no key: the same explanation, still nothing sent', 'own' in t2 and 'billed' in t2 and len(outside) == before, t2)
+        # a key in another provider's format is refused before anything leaves (v5.0.14)
+        await pg.fill('#api-key', 'sk-proj-' + 'B' * 40)
+        await pg.evaluate("() => runExtraction()")
+        t3 = re.sub(r'\s+', ' ', await pg.evaluate("() => $id('toast').textContent"))
+        check('an OpenAI key with Anthropic chosen: refused, says why, zero requests', 'key for OpenAI' in t3 and 'not sent' in t3 and len(outside) == before and not provider_calls, [t3, len(outside)])
+        await pg.fill('#api-key', '')
         await pg.evaluate("() => libOpenAIPaste()")
         w = re.sub(r'\s+', ' ', await pg.evaluate("() => (document.querySelector('.modal .warnstrip') || {}).textContent || ''"))
         check('library AI import without a key explains the same way', 'own' in w and 'billed' in w, w)

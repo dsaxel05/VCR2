@@ -1,5 +1,19 @@
 # Changelog
 
+## v5.0.14: 2026-11-04
+
+Calibration now uses only the companies you choose, and a key can no longer go to the wrong provider. Default scoring is unchanged (rubric 5.0.0, same run IDs without calibration).
+
+### Library
+- **Calibration uses only flagged companies.** Each library entry has a "Use for calibration" flag, off by default: for every saved run, every imported comparable and every entry saved before this version. Unflagged companies never move the bars, so weak companies saved for later study cannot distort the standards. The rule is unchanged otherwise: at least 8 flagged companies at a stage for a metric, otherwise the default bars stay. Synthetic sample companies never count. Existing users see the default bars until they flag companies. The flag survives library backups (export and restore); any value other than a plain true is read as off.
+- The calibration signature in the rubric version, and so the run ID, now also covers which companies are flagged.
+
+### Security
+- **A key is never sent to a provider it does not belong to.** If the key's format clearly belongs to another provider (for example an Anthropic key while OpenAI is selected, or a GitHub token anywhere), the page refuses, says why, and sends nothing. Formats it does not recognise are still allowed.
+
+### Under the hood
+- The build also tightens code inside template expressions and drops a semicolon before a closing brace: about 2 KB less to download, same behaviour (`tests/jsstrip_test.py`).
+
 ## v5.0.13: 2026-11-04
 
 A second independent re-test of the security work found no way to run code or steal a key or token. One fix from it. Scoring is unchanged (rubric 5.0.0, same run IDs).

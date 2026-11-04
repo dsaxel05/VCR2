@@ -18,7 +18,7 @@ import fontroute
 BASE = _paths.BASE
 ORIGIN = _paths.ORIGIN
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-FAKE_KEY = 'sk-' + 'A' * 40
+FAKE_KEY = 'sk-ant-' + 'A' * 40   # Anthropic-shaped: a key of another provider's format is refused (v5.0.14)
 TOKEN = 'github_pat_' + 'A' * 60
 AI_HOSTS = ['api.anthropic.com', 'api.openai.com', 'generativelanguage.googleapis.com', 'api.groq.com', 'openrouter.ai']
 results = []

@@ -46,7 +46,7 @@ function libClean(e) {
     id:s(e.id, 80).replace(/[^A-Za-z0-9_.-]/g, '') || ('r' + Math.abs(seedFrom(company + JSON.stringify(metrics))).toString(36)),
     company, stage:slug(e.stage), model:slug(e.model) || 'saas', date:/^\d{4}-\d{2}-\d{2}$/.test(String(e.date)) ? e.date : '', asof:/^\d{4}-\d{2}$/.test(String(e.asof)) ? e.asof : '',
     source:['assessment', 'csv', 'paste', 'json', 'ai', 'synthetic'].includes(e.source) ? e.source : 'json', quote:s(e.quote, 200), metrics, stated, hash:s(e.hash, 40).replace(/[^A-Za-z0-9]/g, ''), rubric:s(e.rubric, 40),
-    blocked:e.blocked === true, majors:Math.max(0, Math.min(100, Math.round(num(e.majors) || 0))), outcome:OUTCOMES.includes(e.outcome) ? e.outcome : '',
+    blocked:e.blocked === true, calibrate:e.calibrate === true, majors:Math.max(0, Math.min(100, Math.round(num(e.majors) || 0))), outcome:OUTCOMES.includes(e.outcome) ? e.outcome : '',
     payload:(e.payload && typeof e.payload === 'object' && !Array.isArray(e.payload)) ? e.payload : null,
   };
 }
@@ -237,8 +237,9 @@ let _calCache = null;
 function calibrationOn() { try { return localStorage.getItem(CAL_KEY) === '1'; } catch (e) { return false; } }
 function setCalibration(on) { try { localStorage.setItem(CAL_KEY, on ? '1' : '0'); } catch (e) {} _calCache = null; }
 let CAL_MIN = 8;   /* the owner can change it: applyConfig */
+/* Only the companies the user flags "Use for calibration" move the bars; synthetic ones never do. */
 function buildCalibration() {
-  const lib = libLoad(), th = {}, used = [];
+  const lib = libLoad().filter(x => x.calibrate === true && x.source !== 'synthetic'), th = {}, used = [];
   const map = { growth_yoy:'growth_yoy', nrr:'nrr', grr:'grr', gross_margin:'gross_margin', burn_multiple:'burn_multiple', cac_payback:'cac_payback',
     ltv_cac:'ltv_cac', magic_number:'magic_number', runway:'runway', rule40:'rule40', arr_per_fte:'arr_per_fte', top5_conc:'top5_conc',
     logo_ret:'logo_ret', quick_ratio:'quick_ratio', hype_ratio:'hype_ratio' };
@@ -247,7 +248,7 @@ function buildCalibration() {
     const cfg = th[thKey]; if (!cfg || cfg.dir === 'band') return;
     ['preseed','seed','a','b'].forEach(st => {
       if (!cfg[st]) return;
-      const xs = lib.filter(x => x.stage === st && x.metrics[libKey] != null && x.source !== 'synthetic-excluded').map(x => x.metrics[libKey]);
+      const xs = lib.filter(x => x.stage === st && x.metrics[libKey] != null).map(x => x.metrics[libKey]);
       if (xs.length < CAL_MIN) return;
       /* Anchors chosen so a company's score roughly equals its percentile among your own deals. */
       const a = cfg.dir === 'hi'
@@ -259,7 +260,7 @@ function buildCalibration() {
       used.push({ key:thKey, stage:st, n:xs.length });
     });
   });
-  const sig = seedFrom(JSON.stringify(used) + JSON.stringify(used.map(u => th[u.key][u.stage]))).toString(16).slice(0, 6);
+  const sig = seedFrom(JSON.stringify(used) + JSON.stringify(used.map(u => th[u.key][u.stage])) + lib.map(x => x.id).sort()).toString(16).slice(0, 6);
   return { th, used, sig };
 }
 function activeThresholds() {
@@ -280,7 +281,7 @@ function calibrationStatus() {
 
 /* ── Synthetic sample, for trying the feature. Clearly labelled; never real companies. ── */
 function loadSyntheticLibrary() {
-  if (!confirm('Add 64 synthetic companies to your library? They are generated for trying the benchmark and calibration features, are labelled “synthetic”, and are not market data.')) return;
+  if (!confirm('Add 64 synthetic companies to your library? They are generated for trying the benchmark features, are labelled “synthetic”, never count for calibration, and are not market data.')) return;
   const rand = mulberry32(20260924);
   const n = (m, s) => m + s * gauss(rand);
   const cfg = {
@@ -357,12 +358,11 @@ function renderLibrary() {
       <div class="calib-row">
         <label class="switch"><input type="checkbox" ${cal.on ? 'checked' : ''} data-change="calib"><span></span></label>
         <div><b>Calibrate the rubric on this library</b>
-          <div class="field-hint">Needs ${CAL_MIN}+ companies at a stage with a metric. Anchors are set at your library’s 15th / 45th / 72nd / 92nd percentiles, so a score of 72 means “better than about 72% of the deals you have seen”. The run hash records the calibration, so results stay reproducible.</div></div>
+          <div class="field-hint">Uses only companies you flag “Use for calibration”: ${CAL_MIN}+ flagged at a stage with a metric. Anchors are set at your library’s 15th / 45th / 72nd / 92nd percentiles, so a score of 72 means “better than about 72% of the deals you have seen”. The run hash records the calibration, so results stay reproducible.</div></div>
       </div>
       <div class="calib-used">${cal.used.length
         ? `${cal.on ? 'Active' : 'Available'} for ${cal.used.length} metric-stage pairs: ${cal.used.slice(0, 18).map(u => `<span class="pill">${esc(DLABEL[u.key] || u.key)} · ${esc(STAGES.find(s => s.id === u.stage).n)} (${u.n})</span>`).join(' ')}${cal.used.length > 18 ? ' …' : ''}${cal.on ? ` · rubric ${esc(rubricVersion())}` : ''}`
-        : 'Not enough data yet for any metric at any stage.'}</div>
-      ${syn && cal.on ? `<div class="warnstrip" style="margin-top:8px"><span>⚠</span><div>Calibration currently includes ${syn} synthetic companies. Remove them before relying on calibrated scores.</div></div>` : ''}
+        : `Not active: ${lib.filter(x => x.calibrate && x.source !== 'synthetic').length} companies flagged, ${CAL_MIN} needed at a stage for a metric. Default bars apply.`}</div>
     </div>
 
     <input class="form-inp" style="margin:10px 0 8px" placeholder="Filter by company or outcome…" value="${esc(_libFilter)}" data-input="libFilter" id="lib-filter" />

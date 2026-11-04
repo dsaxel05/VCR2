@@ -155,7 +155,7 @@ The library stores saved runs and imported comparables in the browser. CSV heade
 
 **Percentiles** compare each metric with same-stage deals (falling back to all stages) once five comparables exist, flipped for lower-is-better metrics.
 
-**Calibration** (opt-in) replaces a metric’s stage anchors with your library’s 15th / 45th / 72nd / 92nd percentiles (8th / 28th / 55th / 85th for lower-is-better, so that the mirrored curve still reads “72 = better than about 72 % of the deals you have seen”) once eight companies at that stage report it, so a score near 72 means “better than about 72% of the deals you have seen”. The rubric version gains a calibration signature, so calibrated runs stay reproducible.
+**Calibration** (opt-in) replaces a metric’s stage anchors with your library’s 15th / 45th / 72nd / 92nd percentiles (8th / 28th / 55th / 85th for lower-is-better, so that the mirrored curve still reads “72 = better than about 72 % of the deals you have seen”) once eight companies at that stage report it, so a score near 72 means “better than about 72% of the deals you have seen”. Only companies flagged “Use for calibration” count (the flag is off by default, including for entries saved before v5.0.14, and synthetic sample companies never count); with fewer than eight flagged companies for a metric and stage, the default bars stay. Until you flag companies you see the default bars. The rubric version gains a calibration signature that covers the anchors and the flagged set, so calibrated runs stay reproducible.
 
 ## 10. Deal: notes, terms and returns
 

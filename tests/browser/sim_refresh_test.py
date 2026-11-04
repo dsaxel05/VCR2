@@ -14,7 +14,7 @@ from playwright.async_api import async_playwright
 import fontroute
 BASE = _paths.BASE
 FILE_URL = (pathlib.Path(__file__).resolve().parents[2] / 'index.html').as_uri()
-FAKE_KEY = 'sk-' + 'A' * 40
+FAKE_KEY = 'sk-ant-' + 'A' * 40   # Anthropic-shaped: a key of another provider's format is refused (v5.0.14)
 results = []
 def check(name, ok, info=''):
     results.append((ok, name, info)); print(('PASS ' if ok else 'FAIL ') + name + ('' if ok else f'  -> {str(info)[:300]}'))
