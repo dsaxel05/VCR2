@@ -197,7 +197,7 @@ async def main():
 
         # ── Built-ins: switch some off ──
         await pg.evaluate("() => studioTab('builtins')")
-        await pg.evaluate("""() => { const flip = (k, id) => { const el = Array.from(document.querySelectorAll('.bi input')).find(i => (i.getAttribute('onchange') || '').includes(`'${k}','${id}'`)); el.click(); };
+        await pg.evaluate("""() => { const flip = (k, id) => { const el = Array.from(document.querySelectorAll('.bi input')).find(i => i.dataset.a === k && i.dataset.b === id); el.click(); };
           flip('checks', 'stated_arr'); flip('questions', 'confirm_funds'); flip('patterns', 'bought_growth'); flip('requests', 'cap_table'); flip('metrics', 'magic_number'); flip('sections', 'team'); }""")
         hidden = await pg.evaluate("() => ST.draft.hidden")
         check('built-ins switched off in the draft', 'stated_arr' in hidden['checks'] and 'team' in hidden['sections'] and 'magic_number' in hidden['metrics'], hidden)

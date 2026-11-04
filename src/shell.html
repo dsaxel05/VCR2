@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <!-- The security policy comes first so that it covers everything after it. Script blocks run only if they are this build's own
      (build.py fills in their SHA-256); click handlers stay inline (script-src-attr). Browsers without script-src-elem fall back to script-src. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; script-src-elem @@SCRIPT_HASHES@@; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src @@SCRIPT_HASHES@@; script-src-elem @@SCRIPT_HASHES@@; script-src-attr 'none'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types vcr2" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
@@ -57,14 +57,14 @@
 </style>
 </head>
 <body spellcheck="false">
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+<div class="sidebar-overlay" id="sidebar-overlay" data-click="toggleSidebar" data-a="#false"></div>
 
 <div class="shell">
 
   <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar" id="sidebar">
     <div class="sb-logo">
-      <button type="button" class="sb-logo-row" onclick="showPage('intro')" aria-label="VCR2, home">
+      <button type="button" class="sb-logo-row" data-click="showPage" data-a="intro" aria-label="VCR2, home">
         <span class="sb-logo-icon" aria-hidden="true"><img src="assets/logo/svg/seal-compact.svg" alt="" width="34" height="34"></span>
         <span class="sb-logo-name">VCR2</span>
       </button>
@@ -92,9 +92,9 @@
     </nav>
 
     <div class="sb-footer">
-      <button type="button" class="nav-item lib-link" onclick="goLibrary()"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
-      <button type="button" class="nav-item lib-link" onclick="showPage('about')"><span class="nav-dot"></span><span class="nav-label">About</span></button>
-      <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" onclick="goStudio()"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
+      <button type="button" class="nav-item lib-link" data-click="goLibrary"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
+      <button type="button" class="nav-item lib-link" data-click="showPage" data-a="about"><span class="nav-dot"></span><span class="nav-label">About</span></button>
+      <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" data-click="goStudio"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
       <p class="api-hint">Alt + M shows or hides this menu.</p>
       <details class="sb-more sb-ai">
       <summary>AI assist (optional)</summary>
@@ -119,7 +119,7 @@
       <div class="api-status ok" id="api-status">Deterministic engine ready</div>
       <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere.</div>
       </details>
-      <button type="button" class="nav-item lib-link sb-reset" onclick="resetApp()"><span class="nav-dot"></span><span class="nav-label">Reset all inputs</span></button>
+      <button type="button" class="nav-item lib-link sb-reset" data-click="resetApp"><span class="nav-dot"></span><span class="nav-label">Reset all inputs</span></button>
     </div>
   </aside>
 
@@ -128,7 +128,7 @@
     <h1 class="sr-only" id="app-h1" hidden></h1>
     <div class="topbar">
       <div class="tb-left">
-        <button type="button" class="btn btn-ghost btn-sm tb-menu" id="sb-toggle" onclick="sidebarToggle()" aria-controls="sidebar" aria-expanded="true" aria-keyshortcuts="Alt+M" title="Show or hide the menu (Alt + M)">ICON:menu Menu</button>
+        <button type="button" class="btn btn-ghost btn-sm tb-menu" id="sb-toggle" data-click="sidebarToggle" aria-controls="sidebar" aria-expanded="true" aria-keyshortcuts="Alt+M" title="Show or hide the menu (Alt + M)">ICON:menu Menu</button>
         <span class="tb-company" id="tb-company">New assessment</span>
         <span class="tb-sep">/</span>
         <span class="tb-section" id="tb-section">Start</span>
@@ -136,8 +136,8 @@
       <span class="tb-cov" id="tb-cov" title="Share of the form's fields you have filled in"><span class="tb-cov-w">Form filled</span> <b id="tb-cov-v">0%</b></span>
       <span class="tb-saved" id="tb-saved" aria-live="polite"></span>
       <div class="tb-right" id="tb-right"></div>
-      <button type="button" class="tb-icon tb-text" id="text-toggle" onclick="cycleTextSize()" aria-label="Change the text size">Aa</button>
-      <button type="button" class="tb-icon" id="theme-toggle" onclick="cycleTheme()" aria-label="Switch theme"></button>
+      <button type="button" class="tb-icon tb-text" id="text-toggle" data-click="cycleTextSize" aria-label="Change the text size">Aa</button>
+      <button type="button" class="tb-icon" id="theme-toggle" data-click="cycleTheme" aria-label="Switch theme"></button>
     </div>
 
     <div class="example-note" id="example-note" role="status" hidden>Example data, not saved. Your own saved draft, if you have one, is untouched. Go to the home page to leave the example.</div>
@@ -152,12 +152,12 @@
             <p class="intro-sub" id="intro-sub">Founders send a deck, a model and an update. VCR2 rebuilds the revenue from the company’s own customer ledger, recomputes every headline metric, shows where the stated figures disagree with the arithmetic, stress-tests the runway, prices the deal, and turns every gap into the question to ask on the next call.</p>
             <div class="resume-card" id="resume-card" hidden>
               <div class="resume-main"><b class="resume-h">Continue your assessment</b><span class="resume-name" id="resume-name"></span><span class="field-hint" id="resume-meta"></span></div>
-              <div class="resume-actions"><button type="button" class="btn btn-primary" onclick="continueDraft()">Continue</button><button type="button" class="btn btn-ghost" onclick="resetApp()">Reset all inputs</button></div>
+              <div class="resume-actions"><button type="button" class="btn btn-primary" data-click="continueDraft">Continue</button><button type="button" class="btn btn-ghost" data-click="resetApp">Reset all inputs</button></div>
             </div>
             <div class="intro-cta">
-              <button class="btn btn-primary btn-lg" onclick="goSetup()">Start an assessment</button>
-              <button class="btn btn-ghost btn-lg" onclick="loadDemo('northwind')">Open the Series A example</button>
-              <button class="btn btn-ghost btn-lg" onclick="watchDemo()"><span class="ico-play" aria-hidden="true">ICON:play</span>Watch the demo</button>
+              <button class="btn btn-primary btn-lg" data-click="goSetup">Start an assessment</button>
+              <button class="btn btn-ghost btn-lg" data-click="loadDemo" data-a="northwind">Open the Series A example</button>
+              <button class="btn btn-ghost btn-lg" data-click="watchDemo"><span class="ico-play" aria-hidden="true">ICON:play</span>Watch the demo</button>
             </div>
             <ul class="trust-list">
               <li><span class="trust-ico" aria-hidden="true">ICON:shield</span>Nothing you enter leaves this browser</li>
@@ -211,9 +211,9 @@
 
         <div class="intro-more">
           <span class="intro-more-l">Also:</span>
-          <button class="btn btn-link" onclick="loadDemo('halcyon')">a clean seed-stage AI example</button>
-          <button class="btn btn-link" onclick="importAssessment()">open a saved assessment</button>
-          <button class="btn btn-link" onclick="goLibrary()">your library</button>
+          <button class="btn btn-link" data-click="loadDemo" data-a="halcyon">a clean seed-stage AI example</button>
+          <button class="btn btn-link" data-click="importAssessment">open a saved assessment</button>
+          <button class="btn btn-link" data-click="goLibrary">your library</button>
         </div>
         <p class="intro-note" id="intro-note">VCR2 is a workflow tool. It does not give investment advice and its score is not a recommendation to buy or sell a security. Both examples are fictional companies with synthetic data.</p>
       </div>
@@ -236,18 +236,18 @@
         <div class="setup-grid">
           <div>
             <label class="form-lbl" for="cname">Company name</label>
-            <input class="form-inp" id="cname" placeholder="e.g. Northwind Data" oninput="S.name=this.value;saveDraft()" />
+            <input class="form-inp" id="cname" placeholder="e.g. Northwind Data" data-input="setName" />
           </div>
           <div>
             <label class="form-lbl" for="asof">Data as of</label>
-            <input class="form-inp" id="asof" type="month" oninput="S.asof=this.value;saveDraft()" />
+            <input class="form-inp" id="asof" type="month" data-input="setAsof" />
           </div>
         </div>
 
         <div class="sec-nav">
-          <button class="btn btn-ghost" onclick="showPage('intro')">Back</button>
+          <button class="btn btn-ghost" data-click="showPage" data-a="intro">Back</button>
           <div class="sec-nav-right">
-            <button class="btn btn-primary" onclick="goIntake()">Continue</button>
+            <button class="btn btn-primary" data-click="goIntake">Continue</button>
           </div>
         </div>
       </div>
@@ -267,10 +267,10 @@
             <p>Revenue by customer by month from the billing system. Wide (one column per month) or long (customer, month, amount). Unlocks cohort retention, the MRR bridge, concentration and the forensic tests.</p>
             <div class="drop-zone" id="ledger-drop">Drop a .csv or Excel .xlsx here, or click to choose</div>
             <details class="paste"><summary>…or paste it</summary><textarea class="intake-ta" id="ledger-paste" placeholder="customer,2025-01,2025-02,2025-03&#10;Acme,4200,4200,4600"></textarea>
-              <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="loadLedgerText(document.getElementById('ledger-paste').value,'pasted')">Load pasted ledger</button></details>
+              <button class="btn btn-ghost btn-sm" style="margin-top:6px" data-click="ledgerPaste">Load pasted ledger</button></details>
             <div class="unit-row"><label for="ledger-unit">Values are</label>
               <select class="field-select mini" id="ledger-unit"><option value="mrr">Monthly recurring revenue (MRR)</option><option value="arr">Annualised (ARR)</option><option value="rev">Monthly billed revenue</option></select>
-              <a href="#" onclick="downloadTemplate('ledger');return false">template</a></div>
+              <a href="#" data-click="downloadTemplate" data-a="ledger">template</a></div>
             <div id="ledger-status"></div>
           </div>
           <div class="intake-box" id="series-box">
@@ -278,8 +278,8 @@
             <p>Month by month: revenue, cash balance, net burn or total expenses, headcount. Any subset works. Unlocks burn trend, default-alive and a calibrated runway simulation.</p>
             <div class="drop-zone" id="series-drop">Drop a .csv or Excel .xlsx here, or click to choose</div>
             <details class="paste"><summary>…or paste it</summary><textarea class="intake-ta" id="series-paste" placeholder="month,revenue,cash,burn,headcount&#10;2025-01,210000,6400000,290000,31"></textarea>
-              <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="loadSeriesText(document.getElementById('series-paste').value,'pasted')">Load pasted financials</button></details>
-            <div class="unit-row"><span></span><a href="#" onclick="downloadTemplate('series');return false">template</a></div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:6px" data-click="seriesPaste">Load pasted financials</button></details>
+            <div class="unit-row"><span></span><a href="#" data-click="downloadTemplate" data-a="series">template</a></div>
             <div id="series-status"></div>
           </div>
         </div>
@@ -307,10 +307,10 @@
         <p class="field-hint ai-own">Uses your own key and your own account. Nothing is billed to the site owner.</p>
         <p class="field-hint ai-sent">“Extract figures with AI” sends only the text in the boxes above, and any files you added here, to the AI provider you chose in the menu, with your key. Nothing else from the form is sent. The key stays in this tab and is forgotten when you close it, unless you tick “Remember this key on this computer”; it is never saved in a deal, a draft or an export.</p>
         <div class="sec-nav">
-          <button class="btn btn-ghost" onclick="showPage('setup')">Back</button>
+          <button class="btn btn-ghost" data-click="showPage" data-a="setup">Back</button>
           <div class="sec-nav-right">
-            <button class="btn btn-ghost" onclick="startSections()">Continue to the evidence form</button>
-            <button class="btn btn-primary" id="extract-btn" onclick="runExtraction()">Extract figures with AI</button>
+            <button class="btn btn-ghost" data-click="startSections">Continue to the evidence form</button>
+            <button class="btn btn-primary" id="extract-btn" data-click="runExtraction">Extract figures with AI</button>
           </div>
         </div>
       </div>
@@ -373,7 +373,7 @@
         </div>
         <div class="lib-actions about-contact" role="group" aria-label="Contact Axel">
           <a class="btn btn-primary" href="mailto:ds.axel05@gmail.com">Email ds.axel05@gmail.com</a>
-          <button type="button" class="btn btn-ghost" onclick="copyEmail()">Copy the address</button>
+          <button type="button" class="btn btn-ghost" data-click="copyEmail">Copy the address</button>
           <a class="btn btn-ghost" href="https://github.com/dsaxel05" target="_blank" rel="noopener noreferrer">GitHub<span class="sr-only"> (opens in a new tab)</span></a>
           <a class="btn btn-ghost" href="https://www.linkedin.com/in/axeldesousa/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
         </div>

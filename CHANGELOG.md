@@ -1,5 +1,18 @@
 # Changelog
 
+## v5.0.12: 2026-11-04
+
+Security hardening, part two. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Security
+- **No inline event handlers, and Trusted Types are enforced.** All 213 inline handlers (`onclick=` and friends) are gone: buttons carry `data-*` attributes and one delegated listener runs only the actions on its explicit list. The security policy now allows scripts only by their build hash and forbids inline handlers (`script-src-attr 'none'`), and every write of HTML, XML parsing and the simulation worker goes through one audited Trusted Types policy. Even if some future text were ever inserted into the page unescaped, it could not run code.
+- **Fixes from an independent re-test of v5.0.11:** "from the ledger" evidence in a shared deal file now needs a ledger that actually reads and a field the ledger fills; assumptions and the open section from a file are kept in range (an extreme value could show NaN, and a huge section number broke Continue); the Studio signs out on the clock as well as on a timer, so a computer that slept for hours cannot leave the token live; the printable memo is also cleared when an example opens or closes and when a new assessment starts; very wide ledgers, ledgers with many near-identical customer names, Excel files with thousands of sheets (only the first 200 are read) and very large library imports (the review lists at most 1,000 rows) no longer freeze the page.
+- The page budget is 252 KB (was 250), with the owner's agreement, for the code above.
+
+### Under the hood
+- Permanent security tests: `tests/browser/security_canary_test.py` (78 checks: every provider, exports, print, reload, library and a Studio publish; it fails if any script runs that should not, if a key or token appears anywhere but its documented place, or if anything is requested from another host), `tests/security/source-guards.test.mjs` (61 checks on the source and the built page), `tests/security/imports.test.mjs`, and more hostile files in `tests/browser/parser_limits_test.py`.
+- The build never joins a line ending in a plus or minus sign with a next line starting with the same sign.
+
 ## v5.0.11: 2026-11-03
 
 Security hardening after a full red-team audit (five independent reviews: hostile files and text, secret exfiltration, parser denial of service, supply chain, hosting and framing). No way was found for a company's files or text to run code in the page or to steal a key or token; the fixes below close the weaker paths that were found. Scoring is unchanged (rubric 5.0.0, same run IDs).

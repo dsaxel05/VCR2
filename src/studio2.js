@@ -32,7 +32,7 @@ function renderTextEditBanner() {
   if (!textEditActive()) { if (el) el.remove(); document.body.classList.remove('te-on'); return; }
   if (!el) { el = document.createElement('div'); el.id = 'te-banner'; el.className = 'preview-banner te-banner'; el.setAttribute('data-no-text-edit', ''); document.body.appendChild(el); }
   document.body.classList.add('te-on');
-  el.innerHTML = `Text edit mode: click any text on the page to change it. <a href="#studio" onclick="stopTextEdit();goStudio();return false">Back to the Studio</a> · <a href="#" onclick="stopTextEdit();return false">Leave edit mode</a>`;
+  setHTML(el, `Text edit mode: click any text on the page to change it. <a href="#studio" data-click="textBackF">Back to the Studio</a> · <a href="#" data-click="textLeaveF">Leave edit mode</a>`);
 }
 function textNodeAt(x, y) {
   let n = null;
@@ -90,12 +90,12 @@ if (typeof document !== 'undefined' && document.addEventListener) {
 function paneStAnyText() {
   const L = textDraft().texts;
   const rows = L.map((r, i) => `<tr>
-      <td><textarea class="intake-ta" style="min-height:44px" aria-label="Words on the site" onchange="setTextReplacement(${i}, 'from', this.value)">${esc(r.from)}</textarea></td>
-      <td><textarea class="intake-ta" style="min-height:44px" aria-label="Replacement" onchange="setTextReplacement(${i}, 'to', this.value)">${esc(r.to)}</textarea></td>
-      <td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="deleteTextReplacement(${i})">Back to built-in</button></td></tr>`).join('');
+      <td><textarea class="intake-ta" style="min-height:44px" aria-label="Words on the site" data-change="setTextReplacement" data-a="#${i}" data-b="from">${esc(r.from)}</textarea></td>
+      <td><textarea class="intake-ta" style="min-height:44px" aria-label="Replacement" data-change="setTextReplacement" data-a="#${i}" data-b="to">${esc(r.to)}</textarea></td>
+      <td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-click="deleteTextReplacement" data-a="#${i}">Back to built-in</button></td></tr>`).join('');
   return `<p class="pg-desc">Change any wording on the site: headings, buttons, explanations, the disclaimer, the memo and the founder email. Click <b>Edit texts on the site</b>, then click any text. Replacements are plain text and apply everywhere the same words appear.</p>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:9px 0"><button class="btn btn-primary" onclick="startTextEdit()">Edit texts on the site</button>
-      <button class="btn btn-ghost" onclick="addTextReplacement()">Add a replacement by typing</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:9px 0"><button class="btn btn-primary" data-click="startTextEdit">Edit texts on the site</button>
+      <button class="btn btn-ghost" data-click="addTextReplacement">Add a replacement by typing</button></div>
     ${L.length ? `<table class="lbl-tbl"><thead><tr><th>Words on the site</th><th>Your words</th><th></th></tr></thead><tbody>${rows}</tbody></table>
       <p class="field-hint">${L.length} of ${TX_MAX} replacements. A replacement whose words are no longer on the site does nothing and can be removed.</p>`
       : `<div class="empty-card"><h3>No text changed yet</h3><p>Everything reads as built in.</p></div>`}`;
@@ -119,10 +119,10 @@ function constValue(d) { const o = ST.draft.settings[d.id]; const v = cleanSetti
 function constIsSet(d) { return cleanSetting(d, ST.draft.settings[d.id]) !== undefined && canonJSON(cleanSetting(d, ST.draft.settings[d.id])) !== canonJSON(d.def); }
 function constControl(d) {
   const cur = constValue(d), id = esc(d.id);
-  if (d.kind === 'select') return `<select class="form-inp" style="margin:0;max-width:420px" aria-label="${esc(d.label)}" onchange="setConst('${id}', this.value)">${d.options.map(([v, l]) => `<option value="${esc(v)}"${cur === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-  if (d.kind === 'text') return `<input class="form-inp" style="width:90px;margin:0" maxlength="3" value="${esc(cur)}" aria-label="${esc(d.label)}" onchange="setConst('${id}', this.value)">`;
-  if (d.kind === 'numbers') return `<span class="const-row" data-const="${id}">${cur.map((x, i) => `<input class="form-inp" style="width:84px;margin:0 4px 0 0" type="number" value="${x}" aria-label="${esc(d.label)} ${i + 1}" onchange="setConstArray('${id}')">`).join('')}</span>`;
-  return `<input class="form-inp" style="width:120px;margin:0" type="number" step="${d.step || 1}" min="${d.min}" max="${d.max}" value="${cur}" aria-label="${esc(d.label)}" onchange="setConst('${id}', this.value)">`;
+  if (d.kind === 'select') return `<select class="form-inp" style="margin:0;max-width:420px" aria-label="${esc(d.label)}" data-change="setConst" data-a="${esc(id)}">${d.options.map(([v, l]) => `<option value="${esc(v)}"${cur === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  if (d.kind === 'text') return `<input class="form-inp" style="width:90px;margin:0" maxlength="3" value="${esc(cur)}" aria-label="${esc(d.label)}" data-change="setConst" data-a="${esc(id)}">`;
+  if (d.kind === 'numbers') return `<span class="const-row" data-const="${id}">${cur.map((x, i) => `<input class="form-inp" style="width:84px;margin:0 4px 0 0" type="number" value="${x}" aria-label="${esc(d.label)} ${i + 1}" data-change="setConstArray" data-a="${esc(id)}">`).join('')}</span>`;
+  return `<input class="form-inp" style="width:120px;margin:0" type="number" step="${d.step || 1}" min="${d.min}" max="${d.max}" value="${cur}" aria-label="${esc(d.label)}" data-change="setConst" data-a="${esc(id)}">`;
 }
 function paneStConstants() {
   const groups = [];
@@ -130,10 +130,10 @@ function paneStConstants() {
   const builtinText = d => d.kind === 'select' ? (d.options.find(o => o[0] === d.def) || [d.def, d.def])[1] : Array.isArray(d.def) ? d.def.join(' / ') : String(d.def);
   const anySet = SETTING_DEFS.some(constIsSet);
   return `<p class="pg-desc">The constants behind how a value becomes a score, how confident the report sounds and how scores are shown. Each shows the built-in value; clear it to go back. Changing these changes scores, so the report states how many settings differ from the built-in ones.</p>
-    ${anySet ? `<button class="btn btn-ghost btn-sm" onclick="resetAllConsts()">Reset all of these to the built-in values</button>` : ''}
+    ${anySet ? `<button class="btn btn-ghost btn-sm" data-click="resetAllConsts">Reset all of these to the built-in values</button>` : ''}
     ${groups.map(([g, ds]) => `<div class="block-title" style="margin-top:14px">${esc(g)}</div>
       ${ds.map(d => `<div class="const-item"><div class="const-l"><label class="form-lbl" style="margin:0">${esc(d.label)}</label>${d.help ? `<div class="field-hint">${esc(d.help)}</div>` : ''}</div>
-        <div class="const-c">${constControl(d)}<div class="field-hint">Built-in: ${esc(builtinText(d))}${constIsSet(d) ? ` · <a href="#" onclick="resetConst('${esc(d.id)}');return false">use the built-in</a>` : ''}</div></div></div>`).join('')}`).join('')}${aiModelBlock()}`;
+        <div class="const-c">${constControl(d)}<div class="field-hint">Built-in: ${esc(builtinText(d))}${constIsSet(d) ? ` · <a href="#" data-click="resetConst" data-a="${esc(d.id)}">use the built-in</a>` : ''}</div></div></div>`).join('')}`).join('')}${aiModelBlock()}`;
 }
 function setConst(id, v) {
   const d = SETTING_DEF_BY_ID[id]; if (!d) return;
@@ -159,8 +159,8 @@ function newSlug(label, taken, prefix) {
   return id;
 }
 function paneStDimensions() {
-  const L = ST.draft.dimensions, add = `<button class="btn btn-primary btn-sm" onclick="editItem('dimensions',-1)">Add a scoring dimension</button>`;
-  return `<p class="pg-desc">VCR2 scores six dimensions: revenue, capital, go-to-market, team, market and governance. Add another (regulatory risk, customer concentration, ESG) then put metrics in it (the “Dimension” box of a metric) and set its weight under <a href="#" onclick="studioTab('scoring');return false">Weights &amp; rules</a>. It starts at about a tenth of the headline score. Up to four.</p>
+  const L = ST.draft.dimensions, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="dimensions" data-b="#-1">Add a scoring dimension</button>`;
+  return `<p class="pg-desc">VCR2 scores six dimensions: revenue, capital, go-to-market, team, market and governance. Add another (regulatory risk, customer concentration, ESG) then put metrics in it (the “Dimension” box of a metric) and set its weight under <a href="#" data-click="studioTab" data-a="scoring">Weights &amp; rules</a>. It starts at about a tenth of the headline score. Up to four.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Dimension</th><th>Description</th><th>Name in formulas</th><th></th></tr></thead><tbody>
       ${L.map((d, i) => `<tr><td>${esc(d.label)}</td><td style="color:var(--t2)">${esc(d.desc)}</td><td class="m">${esc(d.id)}</td>${rowActions('dimensions', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('scoring dimensions of your own', add)}`;
 }
@@ -176,8 +176,8 @@ function editDimension(d, i) {
     } }]);
 }
 function paneStStages() {
-  const L = ST.draft.stages, add = `<button class="btn btn-primary btn-sm" onclick="editItem('stages',-1)">Add a stage</button>`;
-  const names = ['preseed','seed','a','b'].map(s => `<div class="st-row"><span>${esc(BASE.stageName[s])}</span><input class="form-inp" style="max-width:240px;margin:0" aria-label="Name of ${esc(BASE.stageName[s])}" value="${esc((ST.draft.labels.stages || {})[s] || '')}" placeholder="${esc(BASE.stageName[s])}" onchange="setStageName('${s}', this.value)"></div>`).join('');
+  const L = ST.draft.stages, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="stages" data-b="#-1">Add a stage</button>`;
+  const names = ['preseed','seed','a','b'].map(s => `<div class="st-row"><span>${esc(BASE.stageName[s])}</span><input class="form-inp" style="max-width:240px;margin:0" aria-label="Name of ${esc(BASE.stageName[s])}" value="${esc((ST.draft.labels.stages || {})[s] || '')}" placeholder="${esc(BASE.stageName[s])}" data-change="setStageName" data-a="${esc(s)}"></div>`).join('');
   return `<p class="pg-desc">Rename the four stages, or add a stage of your own (Series C, Growth, Pre-IPO). A stage you add is scored with the healthy ranges, weights and deal defaults of the built-in stage you pick, and shows its own name and ARR range.</p>
     <div class="block-title">Names of the built-in stages</div>${names}
     <div class="block-title" style="margin-top:14px">Stages you added</div>
@@ -205,7 +205,7 @@ function editStage(s, i) {
 }
 function aiModelBlock() {
   const cur = ST.draft.settings.aiModels || {};
-  const rows = Object.entries(PROVIDERS).filter(([id, p]) => p.needsKey).map(([id, p]) => `<div class="st-row"><span>${esc(p.name)}</span><input class="form-inp" style="max-width:300px;margin:0" aria-label="Model name for ${esc(p.name)}" value="${esc(cur[id] || '')}" placeholder="${esc(p.model)}" onchange="setAiModel('${id}', this.value)"></div>`).join('');
+  const rows = Object.entries(PROVIDERS).filter(([id, p]) => p.needsKey).map(([id, p]) => `<div class="st-row"><span>${esc(p.name)}</span><input class="form-inp" style="max-width:300px;margin:0" aria-label="Model name for ${esc(p.name)}" value="${esc(cur[id] || '')}" placeholder="${esc(p.model)}" data-change="setAiModel" data-a="${esc(id)}"></div>`).join('');
   return `<div class="block-title" style="margin-top:14px">AI memo drafting: model names</div>
     <p class="field-hint" style="margin-bottom:6px">The model each provider is called with when a visitor turns the optional memo drafting on. Leave empty for the built-in name. The provider web addresses are fixed in the code, so a visitor’s key can only go to the provider they chose.</p>${rows}`;
 }

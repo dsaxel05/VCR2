@@ -270,18 +270,19 @@ function cleanName(s) {
     .replace(/\b(inc|llc|ltd|limited|corp|corporation|co|company|gmbh|sa|sas|sarl|plc|bv|ag|pty|the)\b/g, ' ')
     .replace(/\s+/g, ' ').trim();
 }
-/* Levenshtein distance with an early exit — used to spot near-duplicate customers. */
+/* Levenshtein distance, banded to +/- cap and on the first 40 characters, so long similar names cost little. Returns cap + 1 when farther. */
 function editDistance(a, b, cap = 3) {
+  a = a.slice(0, 40); b = b.slice(0, 40);
   if (Math.abs(a.length - b.length) > cap) return cap + 1;
-  const prev = new Array(b.length + 1).fill(0).map((_, i) => i);
+  const X = cap + 1;
+  let prev = new Array(b.length + 1).fill(0).map((_, j) => Math.min(j, X));
   for (let i = 1; i <= a.length; i++) {
-    let cur = [i], best = i;
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-      if (cur[j] < best) best = cur[j];
+    const cur = new Array(b.length + 1).fill(X);
+    cur[0] = Math.min(i, X);
+    for (let j = Math.max(1, i - cap); j <= Math.min(b.length, i + cap); j++) {
+      cur[j] = Math.min(X, prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
     }
-    if (best > cap) return cap + 1;
-    for (let j = 0; j <= b.length; j++) prev[j] = cur[j];
+    prev = cur;
   }
   return prev[b.length];
 }
@@ -317,7 +318,7 @@ function pickFile(accept, cb, kind) {
     const t = e.target.closest && e.target.closest('[data-tip]');
     if (!t) return;
     const el = ensure();
-    el.innerHTML = t.getAttribute('data-tip');
+    setHTML(el, t.getAttribute('data-tip'));
     el.classList.add('show');
   });
   document.addEventListener('mousemove', e => {
@@ -344,12 +345,12 @@ function openModal(title, bodyHtml, actions = []) {
   /* A dialog opened from the Studio is the owner's safety net (review before publishing, history, editors): wording replacements never touch it. */
   const stu = $id('page-studio');
   if (stu && stu.classList.contains('active')) wrap.setAttribute('data-no-text-edit', '');
-  wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
-    <div class="modal-h"><h3>${esc(title)}</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">×</button></div>
+  setHTML(wrap, `<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <div class="modal-h"><h3>${esc(title)}</h3><button class="modal-x" aria-label="Close" data-click="closeModal">×</button></div>
     <div class="modal-b">${bodyHtml}</div>
     <div class="modal-f">${actions.map((a, i) => `<button class="btn ${a.primary ? 'btn-primary' : 'btn-ghost'}" data-mi="${i}">${esc(a.label)}</button>`).join('')}
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button></div>
-  </div>`;
+      <button class="btn btn-ghost" data-click="closeModal">Close</button></div>
+  </div>`);
   wrap.addEventListener('click', e => { if (e.target === wrap) closeModal(); });
   document.body.appendChild(wrap);
   wrap.querySelectorAll('[data-mi]').forEach(b => b.addEventListener('click', () => actions[+b.dataset.mi].onClick()));

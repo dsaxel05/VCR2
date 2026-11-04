@@ -156,7 +156,7 @@ async def main():
 
         # print memo
         await pg.evaluate("runAnalysis()"); await pg.wait_for_timeout(1500)
-        await pg.evaluate("document.getElementById('print-root').innerHTML = memoHTML(S.result)")
+        await pg.evaluate("setHTML(document.getElementById('print-root'), memoHTML(S.result))")
         await pg.emulate_media(media='print')
         await pg.pdf(path=_paths.SHOTS + 't_memo.pdf', format='A4', print_background=True)
         await pg.screenshot(path=_paths.SHOTS + 't_memo_print.png', full_page=True)

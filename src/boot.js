@@ -85,8 +85,8 @@ function updateKeyStatus(k) {
 }
 function renderFileList() {
   const el = $id('file-list'); if (!el) return;
-  el.innerHTML = S.files.map((f, i) =>
-    `<span class="file-pill">${esc(f.name)} <button onclick="S.files.splice(${i},1);renderFileList()" aria-label="Remove">×</button></span>`).join('');
+  setHTML(el, S.files.map((f, i) =>
+    `<span class="file-pill">${esc(f.name)} <button data-click="rmFile" data-a="${i}" aria-label="Remove">×</button></span>`).join(''));
 }
 
 /* ── Structured file intake ── */
@@ -116,27 +116,27 @@ function renderIntakeStatus() {
   const ls = $id('ledger-status'), ss = $id('series-status');
   const bad = (what, e) => e ? `<div class="warnstrip" role="alert"><span>⚠</span><div><b>${what} not loaded.</b> ${esc(e)}</div></div>` : '';
   if (ls) {
-    if (!S.ledger) ls.innerHTML = bad('Ledger', S._ledgerError);
+    if (!S.ledger) setHTML(ls, bad('Ledger', S._ledgerError));
     else {
       const L = ledgerAnalytics(S.ledger), P = ledgerPrimitives(L);
       const conflicts = Object.keys(P).filter(k => gv(k) != null && S.prov[k]?.src !== 'ledger');
-      ls.innerHTML = bad('Ledger', S._ledgerError) + `<div class="file-ok"><b>✓ ${S.ledger.customers.length} customers × ${L.months.length} months</b> · ${monthLabel(L.months[0])} to ${monthLabel(L.months[L.e])}
+      setHTML(ls, bad('Ledger', S._ledgerError) + `<div class="file-ok"><b>✓ ${S.ledger.customers.length} customers × ${L.months.length} months</b> · ${monthLabel(L.months[0])} to ${monthLabel(L.months[L.e])}
         <div class="field-hint">Ledger ARR ${money(L.arrNow)} · cohort NRR ${fmtPct(L.nrrCohort)} · GRR ${fmtPct(L.grrCohort)} · top-5 ${fmtPct(L.top5, 0)}${L.openingKnown === false ? ' · invoices cover under 24 months, so ARR a year ago, growth and retention are not computed from this file (24+ months of invoices are needed)' : L.window < 12 ? ` · a ${L.window}-month look-back (13+ months of data are needed for the 12-month fields)` : ''}</div>
         ${(S._ledgerWarnings || []).map(w => `<div class="field-hint" style="color:var(--amber-t)">${esc(w)}</div>`).join('')}
         <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" onclick="const n=applyLedgerToForm();renderIntakeStatus();toast(n+' fields filled from the ledger.')">Fill the form from the ledger</button>
-          <button class="btn btn-ghost btn-sm" onclick="S.ledger=null;saveDraft();renderIntakeStatus();updateProgress()">Remove</button></div>
-        ${conflicts.length ? `<div class="field-hint" style="margin-top:4px">${conflicts.length} form field${conflicts.length === 1 ? ' is' : 's are'} already filled by hand. Filling from the ledger overwrites ${conflicts.length === 1 ? 'it' : 'them'}; leaving ${conflicts.length === 1 ? 'it' : 'them'} lets verification test the hand-entered figures against the ledger.</div>` : ''}</div>`;
+          <button class="btn btn-primary btn-sm" data-click="fillLedger">Fill the form from the ledger</button>
+          <button class="btn btn-ghost btn-sm" data-click="rmLedger">Remove</button></div>
+        ${conflicts.length ? `<div class="field-hint" style="margin-top:4px">${conflicts.length} form field${conflicts.length === 1 ? ' is' : 's are'} already filled by hand. Filling from the ledger overwrites ${conflicts.length === 1 ? 'it' : 'them'}; leaving ${conflicts.length === 1 ? 'it' : 'them'} lets verification test the hand-entered figures against the ledger.</div>` : ''}</div>`);
     }
   }
   if (ss) {
-    if (!S.series) ss.innerHTML = bad('Financials', S._seriesError);
+    if (!S.series) setHTML(ss, bad('Financials', S._seriesError));
     else {
       const s = S.series, cols = ['revenue','cash','burn','expenses','headcount'].filter(k => s[k].some(v => v != null));
-      ss.innerHTML = bad('Financials', S._seriesError) + `<div class="file-ok"><b>✓ ${s.months.length} months</b> · ${monthLabel(s.months[0])} to ${monthLabel(s.months[s.months.length - 1])}
+      setHTML(ss, bad('Financials', S._seriesError) + `<div class="file-ok"><b>✓ ${s.months.length} months</b> · ${monthLabel(s.months[0])} to ${monthLabel(s.months[s.months.length - 1])}
         <div class="field-hint">Columns: ${cols.join(', ') || 'none recognised'}</div>
         ${(S._seriesWarnings || []).map(w => `<div class="field-hint" style="color:var(--amber-t)">${esc(w)}</div>`).join('')}
-        <div style="display:flex;gap:4px;margin-top:6px"><button class="btn btn-ghost btn-sm" onclick="S.series=null;saveDraft();renderIntakeStatus();updateProgress()">Remove</button></div></div>`;
+        <div style="display:flex;gap:4px;margin-top:6px"><button class="btn btn-ghost btn-sm" data-click="rmSeries">Remove</button></div></div>`);
     }
   }
 }

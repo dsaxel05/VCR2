@@ -112,7 +112,7 @@ function setChecklist(id, v) {
   S.checklist = S.checklist || {};
   if (v) S.checklist[id] = v; else delete S.checklist[id];   /* 'todo' is stored, so it overrides a status filled from inputs */
   saveDraft();
-  const p = $id('cl-progress'); if (p) p.outerHTML = checklistProgressHTML();
+  const p = $id('cl-progress'); if (p) setHTML(p, checklistProgressHTML(), 1);
   const row = document.querySelector(`tr[data-cl="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id}"]`);
   if (row) { row.className = 'cl-' + (v && v !== 'todo' ? v : 'none'); const h = row.querySelector('.cl-auto'); if (h) h.remove(); }
 }
@@ -128,13 +128,13 @@ function paneChecklist() {
   return `<p class="pg-desc" style="margin-bottom:8px">What investors typically ask for at ${esc(STAGES.find(s => s.id === S.stage).n)}, grouped the way a data room is. Items tied to your inputs or uploaded files fill in on their own; set any status by hand and it is saved with the assessment.</p>
     ${checklistProgressHTML()}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 3px">
-      <label class="api-check" style="margin:0"><input type="checkbox" ${_clAll ? 'checked' : ''} onchange="_clAll=this.checked;$id('rp-checklist').innerHTML=paneChecklist()"> Show later-stage items too</label>
-      <button class="btn btn-ghost btn-sm" onclick="copyChecklistRequest()">Copy the open items as a request list</button>
+      <label class="api-check" style="margin:0"><input type="checkbox" ${_clAll ? 'checked' : ''} data-change="clAll"> Show later-stage items too</label>
+      <button class="btn btn-ghost btn-sm" data-click="copyChecklistRequest">Copy the open items as a request list</button>
     </div>
     ${cats.map(c => `<div class="block-title" style="margin-top:12px">${esc(c)}</div>
       <div class="tbl-wrap"><table class="ledger cl-tbl"><tbody>${items.filter(it => it.cat === c).map(it => { const s = checklistStatus(it);
         return `<tr data-cl="${esc(it.id)}" class="cl-${s.v || 'none'}"><td>${esc(it.text)}${it.custom ? ' <span class="custom-tag">yours</span>' : ''}${STAGE_ORDER[it.from] > STAGE_ORDER[S.stage] ? ` <span class="pill">from ${esc(STAGES.find(x => x.id === it.from).n)}</span>` : ''}${it.why ? `<div class="field-hint">${esc(it.why)}</div>` : ''}</td>
-          <td style="width:190px;white-space:nowrap"><select class="field-select mini" onchange="setChecklist(this.closest('tr').dataset.cl, this.value)">${CL_STATUS.map(([v, l]) => `<option value="${v}"${(s.v || 'todo') === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>${s.auto ? '<div class="field-hint cl-auto">from your inputs</div>' : ''}</td></tr>`; }).join('')}</tbody></table></div>`).join('')}`;
+          <td style="width:190px;white-space:nowrap"><select class="field-select mini" data-change="setChecklist" data-a="${esc(it.id)}">${CL_STATUS.map(([v, l]) => `<option value="${v}"${(s.v || 'todo') === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>${s.auto ? '<div class="field-hint cl-auto">from your inputs</div>' : ''}</td></tr>`; }).join('')}</tbody></table></div>`).join('')}`;
 }
 function copyChecklistRequest() {
   const s = checklistSummary();

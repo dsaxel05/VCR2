@@ -43,13 +43,14 @@ function parseLedger(text, unitHint) {
   if (monthCols.length >= 3) {
     /* WIDE */
     let nameIdx = head.findIndex(h => LEDGER_NAME_RX.test(h));
-    if (nameIdx < 0) nameIdx = head.findIndex((h, i) => !monthCols.some(c => c.i === i));
+    const monthIdx = new Set(monthCols.map(c => c.i));
+    if (nameIdx < 0) nameIdx = head.findIndex((h, i) => !monthIdx.has(i));
     if (nameIdx < 0) return { ok:false, error:'Could not find a customer name column.' };
     if (!unitHint && /\barr\b/i.test(head.join(' '))) unit = 'arr';
     /* Quarterly columns are not single months: spread each quarter over its three months. */
     const quarterly = monthCols.length >= 2 && monthCols.every(c => QUARTER.test(head[c.i]));
     const headMrr = /\bmrr\b/i.test(head.join(' '));
-    const skipped = head.filter((h, i) => i !== nameIdx && !monthCols.some(c => c.i === i) && /\d/.test(h) && h.length <= 20);
+    const skipped = head.filter((h, i) => i !== nameIdx && !monthIdx.has(i) && /\d/.test(h) && h.length <= 20);
     if (skipped.length) warnings.push(`${skipped.length} column${skipped.length === 1 ? '' : 's'} looked like a month but could not be read and ${skipped.length === 1 ? 'was' : 'were'} ignored: ${skipped.slice(0, 4).join(', ')}${skipped.length > 4 ? '…' : ''}.`);
     if (quarterly) warnings.push('The columns are quarters, not months. Each quarter’s amount was spread evenly over its three months' + (headMrr || unit === 'arr' ? '.' : ' (divided by 3, as revenue billed in the quarter). If the figures are monthly recurring revenue at quarter end, put MRR in the column headers.'));
     {

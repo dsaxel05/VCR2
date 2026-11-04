@@ -38,7 +38,7 @@ async def main():
         await pg.fill('#gh-token', TOKEN); await pg.click('#gh-signin'); await pg.wait_for_timeout(500)
 
         # start page: a card for every pane
-        tabs = await pg.evaluate("() => Array.from(document.querySelectorAll('.st-card')).map(c => ((c.getAttribute('onclick') || '').split(\"'\")[1] || ''))")
+        tabs = await pg.evaluate("() => Array.from(document.querySelectorAll('.st-card')).map(c => c.dataset.a || '')")
         for t in ['look', 'anytext', 'constants', 'details', 'dimensions', 'stages', 'differs', 'advanced']:
             check(f'start page has a card for {t}', t in tabs, tabs)
 

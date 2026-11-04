@@ -181,13 +181,15 @@ ${String(text).slice(0, 30000)}`;
 
 function reviewImport(rows, how) {
   if (!rows.length) { toast('Nothing to import: no rows with metrics were found.', 'err'); return; }
+  const extra = Math.max(0, rows.length - LIB_MAX);   /* the library holds LIB_MAX entries: only that many are listed and added */
+  rows = rows.slice(0, LIB_MAX);
   window._pendingImport = rows;
   const cols = LIB_METRICS.filter(m => m.key !== 'score' && rows.some(r => r.metrics[m.key] != null));
   const body = `<p class="pg-desc" style="margin-bottom:8px">${rows.length} compan${rows.length === 1 ? 'y' : 'ies'} found via ${esc(how)}. Untick anything wrong before adding. ${how === 'AI' ? 'Each row keeps the quote it came from. Hover the name.' : ''}</p>
     <div class="tbl-wrap" style="max-height:52vh;overflow:auto"><table class="ledger"><thead><tr><th></th><th>Company</th><th>Stage</th>${cols.map(c => `<th>${esc(c.label)}</th>`).join('')}</tr></thead>
     <tbody>${rows.map((r, i) => `<tr><td><input type="checkbox" checked data-imp="${i}"></td>
       <td${r.quote ? ` data-tip="${tipAttr(esc(r.quote))}"` : ''}>${esc(r.company)}</td><td class="m">${esc(STAGES.find(s => s.id === r.stage)?.n || r.stage)}</td>
-      ${cols.map(c => `<td class="m">${r.metrics[c.key] == null ? 'n/a' : esc(libFmt(c, r.metrics[c.key]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      ${cols.map(c => `<td class="m">${r.metrics[c.key] == null ? 'n/a' : esc(libFmt(c, r.metrics[c.key]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${extra ? `<p class="pg-desc" style="margin-top:8px">${extra.toLocaleString('en-US')} more rows are not shown or added (the library holds ${LIB_MAX}).</p>` : ''}`;
   openModal('Review before adding to your library', body, [{ label:'Add selected', primary:true, onClick:() => {
     const pick = Array.from(document.querySelectorAll('[data-imp]')).filter(x => x.checked).map(x => window._pendingImport[+x.dataset.imp]);
     const list = libLoad();
@@ -330,8 +332,8 @@ function renderLibrary() {
       return (av < bv ? -1 : av > bv ? 1 : 0) * _libSort.dir;
     });
   const cols = ['arr','growth_yoy','nrr','grr','gross_margin','burn_multiple','cac_payback','runway','score'].map(k => LIB_METRICS.find(m => m.key === k));
-  const th = (k, l) => `<th class="sortable" onclick="libSortBy('${k}')">${esc(l)}${_libSort.key === k ? (_libSort.dir > 0 ? ' ↑' : ' ↓') : ''}</th>`;
-  $id('library-content').innerHTML = `
+  const th = (k, l) => `<th class="sortable" data-click="libSortBy" data-a="${esc(k)}">${esc(l)}${_libSort.key === k ? (_libSort.dir > 0 ? ' ↑' : ' ↓') : ''}</th>`;
+  setHTML($id('library-content'), `
     <div class="pg-eyebrow">Library</div>
     <h2 class="pg-title">Your deal data</h2>
     <p class="pg-desc">Every assessment you save lands here, alongside any comparables you import. VCR2 ranks each new company against this set and, if you switch it on, recalibrates its thresholds on it, so the scores reflect how you invest rather than a generic benchmark. Everything stays in this browser until you export it.</p>
@@ -343,17 +345,17 @@ function renderLibrary() {
     </div>
 
     <div class="lib-actions">
-      <button class="btn btn-primary" onclick="libImportCSV()">Import CSV</button>
-      <button class="btn btn-ghost" onclick="libOpenAIPaste()">Paste anything: structure it with AI</button>
-      <button class="btn btn-ghost" onclick="libExport()">Export backup (.json)</button>
-      <button class="btn btn-ghost" onclick="libImportJSON()">Restore backup</button>
-      ${syn ? `<button class="btn btn-ghost" onclick="libRemoveSynthetic()">Remove ${syn} synthetic</button>` : `<button class="btn btn-ghost" onclick="loadSyntheticLibrary()">Add synthetic sample</button>`}
-      ${lib.length ? `<button class="btn btn-ghost" onclick="libClear()">Clear all</button>` : ''}
+      <button class="btn btn-primary" data-click="libImportCSV">Import CSV</button>
+      <button class="btn btn-ghost" data-click="libOpenAIPaste">Paste anything: structure it with AI</button>
+      <button class="btn btn-ghost" data-click="libExport">Export backup (.json)</button>
+      <button class="btn btn-ghost" data-click="libImportJSON">Restore backup</button>
+      ${syn ? `<button class="btn btn-ghost" data-click="libRemoveSynthetic">Remove ${syn} synthetic</button>` : `<button class="btn btn-ghost" data-click="loadSyntheticLibrary">Add synthetic sample</button>`}
+      ${lib.length ? `<button class="btn btn-ghost" data-click="libClear">Clear all</button>` : ''}
     </div>
 
     <div class="calib-card ${cal.on ? 'on' : ''}">
       <div class="calib-row">
-        <label class="switch"><input type="checkbox" ${cal.on ? 'checked' : ''} onchange="setCalibration(this.checked);renderLibrary();toast(this.checked ? 'Thresholds now calibrate on your library.' : 'Back to the default rubric.')"><span></span></label>
+        <label class="switch"><input type="checkbox" ${cal.on ? 'checked' : ''} data-change="calib"><span></span></label>
         <div><b>Calibrate the rubric on this library</b>
           <div class="field-hint">Needs ${CAL_MIN}+ companies at a stage with a metric. Anchors are set at your library’s 15th / 45th / 72nd / 92nd percentiles, so a score of 72 means “better than about 72% of the deals you have seen”. The run hash records the calibration, so results stay reproducible.</div></div>
       </div>
@@ -363,8 +365,8 @@ function renderLibrary() {
       ${syn && cal.on ? `<div class="warnstrip" style="margin-top:8px"><span>⚠</span><div>Calibration currently includes ${syn} synthetic companies. Remove them before relying on calibrated scores.</div></div>` : ''}
     </div>
 
-    <input class="form-inp" style="margin:10px 0 8px" placeholder="Filter by company or outcome…" value="${esc(_libFilter)}" oninput="_libFilter=this.value;renderLibraryTable()" id="lib-filter" />
-    <div id="lib-table">${libTableHTML(rows, cols, th)}</div>`;
+    <input class="form-inp" style="margin:10px 0 8px" placeholder="Filter by company or outcome…" value="${esc(_libFilter)}" data-input="libFilter" id="lib-filter" />
+    <div id="lib-table">${libTableHTML(rows, cols, th)}</div>`);
 }
 function renderLibraryTable() {
   const el = $id('lib-filter'); const pos = el ? el.selectionStart : null;
@@ -378,10 +380,10 @@ function libTableHTML(rows, cols, th) {
       <td>${x.quote ? `<span data-tip="${tipAttr(esc(x.quote))}">${esc(x.company)}</span>` : esc(x.company)}${x.blocked ? ' <span class="pill red">blocked</span>' : ''}<div class="field-hint">${esc(x.date || '')}</div></td>
       <td class="m">${esc(STAGES.find(s => s.id === x.stage)?.n || x.stage)}</td>
       ${cols.map(c => `<td class="m">${esc(libFmt(c, x.metrics[c.key]))}</td>`).join('')}
-      <td><select class="mini-sel" onchange="libSetOutcome(this.closest('tr').dataset.id,this.value)">${OUTCOMES.map(o => `<option${(x.outcome || '') === o ? ' selected' : ''} value="${esc(o)}">${esc(o || 'n/a')}</option>`).join('')}</select></td>
+      <td><select class="mini-sel" data-change="libSetOutcome" data-a="${esc(x.id)}">${OUTCOMES.map(o => `<option${(x.outcome || '') === o ? ' selected' : ''} value="${esc(o)}">${esc(o || 'n/a')}</option>`).join('')}</select></td>
       <td class="m">${esc(x.source)}</td>
-      <td style="white-space:nowrap">${x.payload ? `<button class="btn btn-ghost btn-sm" onclick="libOpen(this.closest('tr').dataset.id)">Open</button>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="libDelete(this.closest('tr').dataset.id)" aria-label="Delete">×</button></td></tr>`).join('')}</tbody></table></div>`;
+      <td style="white-space:nowrap">${x.payload ? `<button class="btn btn-ghost btn-sm" data-click="libOpen" data-a="${esc(x.id)}">Open</button>` : ''}
+        <button class="btn btn-ghost btn-sm" data-click="libDelete" data-a="${esc(x.id)}" aria-label="Delete">×</button></td></tr>`).join('')}</tbody></table></div>`;
 }
 function libSortBy(k) { _libSort = { key:k, dir:_libSort.key === k ? -_libSort.dir : -1 }; renderLibrary(); }
 function libSetOutcome(id, v) { const l = libLoad(); const x = l.find(e => e.id === id); if (x) { x.outcome = v; libSave(l); } }

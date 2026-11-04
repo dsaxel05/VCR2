@@ -45,19 +45,19 @@ async def main():
 
         # Defaults
         await pg.evaluate("() => studioTab('defaults')")
-        await pg.fill("input[onchange=\"setDefault('exit.years.seed', this.value)\"]", '4'); await pg.press("input[onchange=\"setDefault('exit.years.seed', this.value)\"]", 'Tab')
-        await pg.fill("input[onchange=\"setDefault('deal.exit_multiple', this.value)\"]", '6'); await pg.press("input[onchange=\"setDefault('deal.exit_multiple', this.value)\"]", 'Tab')
-        await pg.fill("input[onchange=\"setDefault('evidence.verbal', this.value)\"]", '10'); await pg.press("input[onchange=\"setDefault('evidence.verbal', this.value)\"]", 'Tab')
-        await pg.fill("input[onchange=\"setProb('seed', 0, this.value)\"]", '50'); await pg.press("input[onchange=\"setProb('seed', 0, this.value)\"]", 'Tab'); await pg.wait_for_timeout(100)
+        await pg.fill("input[data-change=\"setDefault\"][data-a=\"exit.years.seed\"]", '4'); await pg.press("input[data-change=\"setDefault\"][data-a=\"exit.years.seed\"]", 'Tab')
+        await pg.fill("input[data-change=\"setDefault\"][data-a=\"deal.exit_multiple\"]", '6'); await pg.press("input[data-change=\"setDefault\"][data-a=\"deal.exit_multiple\"]", 'Tab')
+        await pg.fill("input[data-change=\"setDefault\"][data-a=\"evidence.verbal\"]", '10'); await pg.press("input[data-change=\"setDefault\"][data-a=\"evidence.verbal\"]", 'Tab')
+        await pg.fill("input[data-change=\"setProb\"][data-a=\"seed\"][data-b=\"#0\"]", '50'); await pg.press("input[data-change=\"setProb\"][data-a=\"seed\"][data-b=\"#0\"]", 'Tab'); await pg.wait_for_timeout(100)
         d = await pg.evaluate("() => ST.draft.defaults")
         check('defaults saved', d == { 'exit':{ 'years':{ 'seed':4 }, 'probs':{ 'seed':[50, 28, 12] } }, 'deal':{ 'exit_multiple':6 }, 'evidence':{ 'verbal':0.1 } }, d)
-        await pg.fill("input[onchange=\"setDefault('deal.exit_multiple', this.value)\"]", ''); await pg.press("input[onchange=\"setDefault('deal.exit_multiple', this.value)\"]", 'Tab'); await pg.wait_for_timeout(100)
+        await pg.fill("input[data-change=\"setDefault\"][data-a=\"deal.exit_multiple\"]", ''); await pg.press("input[data-change=\"setDefault\"][data-a=\"deal.exit_multiple\"]", 'Tab'); await pg.wait_for_timeout(100)
         check('clearing a box goes back to the built-in', 'deal' not in await pg.evaluate("() => ST.draft.defaults"))
-        sel = "input[onchange=\"setDefault('exit.years.a', this.value)\"]"
+        sel = "input[data-change=\"setDefault\"][data-a=\"exit.years.a\"]"
         await pg.fill(sel, '50'); await pg.press(sel, 'Tab'); await pg.wait_for_timeout(150)
         check('out-of-range default clamped and shown as used', await pg.input_value(sel) == '20' and 'allowed range' in await pg.inner_text('#toast'), [await pg.input_value(sel), await pg.inner_text('#toast')])
         await pg.fill(sel, ''); await pg.press(sel, 'Tab'); await pg.wait_for_timeout(100)
-        sel = "input[onchange=\"setDefault('stageRange.seed.lo', this.value)\"]"
+        sel = "input[data-change=\"setDefault\"][data-a=\"stageRange.seed.lo\"]"
         await pg.fill(sel, '9000000'); await pg.press(sel, 'Tab'); await pg.wait_for_timeout(150)
         check('stage range From above To refused', 'stageRange' not in await pg.evaluate("() => ST.draft.defaults") and 'must be below' in await pg.inner_text('#toast'))
 

@@ -55,7 +55,7 @@ async function zipRead(z, name) {
 /* A spreadsheet never needs a DOCTYPE or entities, and an internal entity can expand a small part into gigabytes: refuse both. */
 const xmlDoc = s => {
   if (/<!(?:DOCTYPE|ENTITY)/i.test(s)) throw new Error('This workbook has a DOCTYPE declaration. Save the sheet as CSV instead.');
-  return new DOMParser().parseFromString(s, 'application/xml');
+  return parseXML(s);
 };
 const xTags = (node, tag) => Array.from(node.getElementsByTagNameNS('*', tag));
 const xAttr = (el, name) => el.getAttribute(name) != null ? el.getAttribute(name)
@@ -124,7 +124,8 @@ async function readWorkbook(buf) {
     });
   }
   const sheets = [];
-  for (const sh of xTags(wb, 'sheet')) {
+  for (const sh of xTags(wb, 'sheet').slice(0, 200)) {
+    if (performance.now() - XL.t0 > 1e4) throw new Error('This workbook took too long to read. Save the sheet as CSV instead.');
     const rid = xAttr(sh, 'id'), rel = rels.get(rid);
     const state = xAttr(sh, 'state');
     const xml = rel ? await zipRead(z, rel.target) : null;

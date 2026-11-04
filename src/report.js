@@ -33,7 +33,7 @@ function renderResult(R) {
   if (memo) tabs.push(['memo', 'Memo draft']);
   if (!tabs.some(t => t[0] === _rtab)) _rtab = 'overview';
 
-  $id('result-content').innerHTML = `
+  setHTML($id('result-content'), `
     <div class="res-hero">
       <div>
         <div class="res-company">${esc(S.name)}</div>
@@ -51,7 +51,7 @@ function renderResult(R) {
 
     ${(() => {
       const MAIN = ((CFG && CFG.look && CFG.look.views) || REPORT_VIEWS_DEFAULT).filter(id => tabs.some(x => x[0] === id));
-      const btn = ([id, l]) => `<button type="button" class="rtab${_rtab === id ? ' active' : ''}" role="tab" id="rt-${id}" aria-controls="rp-${id}" aria-selected="${_rtab === id}" tabindex="${_rtab === id ? 0 : -1}" onclick="rtab(this,'${id}')" onkeydown="rtabKey(event)">${esc(l)}</button>`;
+      const btn = ([id, l]) => `<button type="button" class="rtab${_rtab === id ? ' active' : ''}" role="tab" id="rt-${id}" aria-controls="rp-${id}" aria-selected="${_rtab === id}" tabindex="${_rtab === id ? 0 : -1}" data-click="rtab" data-a="${esc(id)}" data-keydown="rtabKey">${esc(l)}</button>`;
       const main = MAIN.map(id => tabs.find(x => x[0] === id)), rest = tabs.filter(x => !MAIN.includes(x[0]));
       return `<div class="rtabs" role="tablist" aria-label="Report sections">${main.map(btn).join('')}</div>
     <details class="rtabs-more"${rest.some(x => x[0] === _rtab) ? ' open' : ''}><summary>More views <span class="more-count">${rest.length} more</span></summary>
@@ -76,14 +76,14 @@ function renderResult(R) {
     </div>` : ''}
 
     <div class="res-nav">
-      <button class="btn btn-ghost" onclick="editData()">Edit inputs</button>
+      <button class="btn btn-ghost" data-click="editData">Edit inputs</button>
       <div class="res-nav-right">
-        <button class="btn btn-success" onclick="printMemo()">IC memo · print / PDF</button>
-        <button class="btn btn-ghost" onclick="founderEmail()">Founder email</button>
-        <button class="btn btn-ghost" onclick="saveRunToLibrary()">Save to library</button>
-        <button class="btn btn-ghost" onclick="exportAssessment()">Export .json</button>
-        <button class="btn btn-ghost" onclick="downloadReport()">Markdown</button>
-        <button class="btn btn-ghost" onclick="resetApp()">New assessment</button>
+        <button class="btn btn-success" data-click="printMemo">IC memo · print / PDF</button>
+        <button class="btn btn-ghost" data-click="founderEmail">Founder email</button>
+        <button class="btn btn-ghost" data-click="saveRunToLibrary">Save to library</button>
+        <button class="btn btn-ghost" data-click="exportAssessment">Export .json</button>
+        <button class="btn btn-ghost" data-click="downloadReport">Markdown</button>
+        <button class="btn btn-ghost" data-click="resetApp">New assessment</button>
       </div>
     </div>
     <div class="runmeta">
@@ -91,10 +91,10 @@ function renderResult(R) {
       Figures are as supplied by the user or computed from user-supplied files and are not independently verified. Default thresholds are editable calibrations, not market statistics.
       ${(R.inputLimits || []).map(x => `<br><b>${esc(x)}</b>`).join('')}
       ${customisationNote() ? `<br>${esc(customisationNote())}` : ''}${wordingNote() ? `<br>${esc(wordingNote())}` : ''}${CONFIG_FALLBACK ? `<br><b>A setting made in the Studio caused an error, so this report uses the built-in rules.</b>` : ''}
-    </div>`;
+    </div>`);
 }
 /* A wide table shows its main columns; the rest (cells marked col-d) appear on request. */
-function detailBtn() { return `<p class="table-tools"><button type="button" class="btn-link detail-toggle" aria-expanded="false" onclick="toggleDetail(this)">Show details</button></p>`; }
+function detailBtn() { return `<p class="table-tools"><button type="button" class="btn-link detail-toggle" aria-expanded="false" data-click="toggleDetail">Show details</button></p>`; }
 function toggleDetail(b) {
   const wrap = b.parentNode.nextElementSibling; if (!wrap) return;
   const on = wrap.classList.toggle('show-detail');
@@ -124,7 +124,7 @@ function rtabKey(e) {
   e.preventDefault(); tabs[j].focus(); tabs[j].click();
 }
 function goTab(id) {
-  const b = Array.from(document.querySelectorAll('.rtab')).find(x => (x.getAttribute('onclick') || '').includes(`'${id}'`));
+  const b = Array.from(document.querySelectorAll('.rtab')).find(x => x.dataset.a === id);
   if (!b) return;
   const more = b.closest('details'); if (more) more.open = true;
   rtab(b, id); b.scrollIntoView({ block:'nearest', inline:'center' });
@@ -189,7 +189,7 @@ function paneOverview(R) {
     ${wnt}
     <div class="block-title" style="margin-top:16px">First five questions for the founders</div>
     <div class="qlist">${questions.slice(0, 5).map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="goTab('questions')">All ${questions.length} questions →</button>`;
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px" data-click="goTab" data-a="questions">All ${questions.length} questions →</button>`;
 }
 
 /* ── Risk map: every red and amber signal by type ── */
@@ -233,7 +233,7 @@ function paneRevenue(R) {
       ? `<div class="block-title">Monthly revenue (from monthly financials)</div>${chartLine(SR.months.map(m => monthLabel(m)), SR.revenue, { label:'Monthly revenue' })}` : '';
     return `${line}<div class="empty-card"><h3>Load the customer ledger to unlock this view</h3>
       <p>Upload revenue by customer by month: any billing-system export works, wide or long. VCR2 rebuilds the MRR bridge, true cohort retention (not the waterfall approximation), concentration and nine forensic tests from it.</p>
-      <button class="btn btn-primary btn-sm" onclick="showPage('intake')">Add a ledger</button></div>`;
+      <button class="btn btn-primary btn-sm" data-click="showPage" data-a="intake">Add a ledger</button></div>`;
   }
   const cm = LED.cmgr3, top = LED.pareto.slice(0, 10);
   const nrrGap = LED.nrrFlow != null && LED.nrrCohort != null ? LED.nrrFlow - LED.nrrCohort : null;
@@ -253,7 +253,7 @@ function paneRevenue(R) {
     <div class="block-title" style="margin-top:16px">MRR bridge by month</div>
     ${chartBridge(LED.bridge)}
     <div class="block-title" style="margin-top:16px">Cohort retention ${LED.quarterly ? '(quarterly cohorts, months since start)' : '(monthly cohorts)'}
-      <span class="seg"><button class="seg-b active" onclick="cohortMode(this,'dollar')">Dollar</button><button class="seg-b" onclick="cohortMode(this,'logo')">Logo</button></span></div>
+      <span class="seg"><button class="seg-b active" data-click="cohortMode" data-a="dollar">Dollar</button><button class="seg-b" data-click="cohortMode" data-a="logo">Logo</button></span></div>
     <div id="cohort-hm">${cohortHeatmap(LED, 'dollar')}</div>
     <p class="field-hint" style="margin-top:4px">Each cell is revenue (or logos) at that age as a share of the cohort's starting MRR. Faded cells are partial: not every customer in the cohort is that old yet. Customers already live in the first ledger month have no known start and are excluded.</p>
     ${ct ? `<div class="optbox ${ct.newer < ct.older - 8 ? 'bad' : ct.newer > ct.older + 5 ? 'good' : ''}" style="margin-top:8px"><b>Cohort quality.</b> At month ${ct.age}, older cohorts retain ${fmtPct(ct.older, 0)} of starting MRR and newer cohorts ${fmtPct(ct.newer, 0)} (${ct.n} cohorts compared${ct.slope != null ? `, trend ${fmtSigned(ct.slope, 1, ' pts per cohort')}` : ''}).</div>` : ''}
@@ -263,7 +263,7 @@ function paneRevenue(R) {
 }
 function cohortMode(btn, mode) {
   btn.parentNode.querySelectorAll('.seg-b').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-  const LED = S.result && S.result.LED; if (LED) $id('cohort-hm').innerHTML = cohortHeatmap(LED, mode);
+  const LED = S.result && S.result.LED; if (LED) setHTML($id('cohort-hm'), cohortHeatmap(LED, mode));
 }
 
 /* ── Forensics ── */
@@ -271,7 +271,7 @@ function paneForensics(R) {
   const LED = R.LED;
   const intro = `<p class="pg-desc" style="margin-bottom:10px">Tests an auditor would run on the revenue data. None of them is proof of anything; each tells you where to look, and each states its own limits.</p>`;
   if (!LED) return intro + `<div class="empty-card"><h3>Forensics need the customer ledger</h3><p>The tests look at customer-level billing: spikes before a raise, one-off charges booked as recurring, duplicate logos, quarter-end pull-forward and the first-digit distribution. Load a ledger on the source material step.</p>
-    <button class="btn btn-primary btn-sm" onclick="showPage('intake')">Add a ledger</button></div>`;
+    <button class="btn btn-primary btn-sm" data-click="showPage" data-a="intake">Add a ledger</button></div>`;
   const bf = (R.forensics.find(f => f.id === 'benford') || {}).bf;
   return intro + `<div class="fx-list">${R.forensics.map(f => `
     <div class="fx ${f.status}"><div class="fx-h"><span class="fx-i" aria-hidden="true">${STATUS_ICON[f.status]}</span><strong>${esc(f.title)}</strong><span class="fx-st">${esc(STATUS_LABEL[f.status])}</span></div>
@@ -302,7 +302,7 @@ function paneRunway(R) {
     ${inp('milestone', 'Next-stage ARR bar', P.milestone, '100000', A.milestone != null ? 'your override' : 'default for the next stage')}
     ${inp('horizon', 'Horizon, months', A.horizon, '6', '12 to 60')}
   </div>
-  <div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-primary btn-sm" onclick="applyAssumptions()">Re-run simulation</button><button class="btn btn-ghost btn-sm" onclick="resetAssumptions()">Reset to evidence</button></div>`;
+  <div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-primary btn-sm" data-click="applyAssumptions">Re-run simulation</button><button class="btn btn-ghost btn-sm" data-click="resetAssumptions">Reset to evidence</button></div>`;
   if (missing.length) return `<div class="empty-card"><h3>Projections need ${esc(missing.join(', '))}</h3><p>Fill these on the evidence form, or load monthly financials, and the default-alive test and the simulation run automatically.</p></div>`;
   const daCard = da ? `<div class="da ${da.alive ? 'alive' : 'dead'}"><div class="da-v">${da.alive ? 'Default alive' : 'Default dead'}</div>
     <p>${da.alive ? `At ${fmtPct(P.g)} monthly revenue growth and ${fmtPct(P.eg)} monthly expense growth, revenue overtakes expenses in <b>${da.months} months</b>, with cash bottoming at ${money(da.low)}.`
@@ -363,7 +363,7 @@ function paneDeal(R) {
   if (!X) { const di = SECTIONS.findIndex(s => s.deal);
     if (di < 0 || sectionHidden(SECTIONS[di])) return `<div class="suppressed">Deal pricing is switched off on this site.</div>`;
     return `<div class="empty-card"><h3>Enter the proposed terms to price the deal</h3><p>Round size and pre-money are enough to start. Add your cheque, the pool requirement, SAFE terms and your fund size for ownership at exit, the fund-returner test and the full liquidation waterfall.</p>
-    <button class="btn btn-primary btn-sm" onclick="jumpTo(SECTIONS.findIndex(s=>s.deal))">Open Round & returns</button></div>`; }
+    <button class="btn btn-primary btn-sm" data-click="openDeal">Open Round & returns</button></div>`; }
   const I = X.I;
   const capRows = [
     ['This round', X.fNew, I.check > 0 ? `your cheque ${money(I.check)} = ${fmtPct(X.ownEntry * 100, 2)}` : ''],
@@ -413,7 +413,7 @@ function returnsHTML(X) {
   if (!Rt) return '';
   if (Rt.missing) return `<div class="block-title" style="margin-top:20px">Returns: VC Method and First Chicago</div>
     <div class="empty-card"><h3>An exit case is needed</h3><p>Enter today’s ARR and its growth, or a base-case ARR at exit in Exit scenarios, to compute the return this price produces.</p>
-    ${(() => { const ei = SECTIONS.findIndex(s => s.id === 'exits'); return ei >= 0 && !sectionHidden(SECTIONS[ei]) ? `<button class="btn btn-ghost btn-sm" onclick="jumpTo(${ei})">Open Exit scenarios</button>` : ''; })()}</div>`;
+    ${(() => { const ei = SECTIONS.findIndex(s => s.id === 'exits'); return ei >= 0 && !sectionHidden(SECTIONS[ei]) ? `<button class="btn btn-ghost btn-sm" data-click="jumpTo" data-a="#${ei}">Open Exit scenarios</button>` : ''; })()}</div>`;
   const who = Rt.who === 'us' ? 'your cheque' : 'the round as a whole';
   const nm = { downside:'Downside', base:'Base', upside:'Upside' };
   const cls = v => v == null ? '' : v >= Rt.r ? 'good' : v >= Rt.r * 0.6 ? 'warn' : 'bad';
@@ -471,7 +471,7 @@ function paneBench(R) {
   const head = `<p class="pg-desc" style="margin-bottom:10px">Where this company sits among the deals in your own library (${B.total} saved). Percentiles are “better than”, so lower-is-better metrics are flipped. ${cal.on && cal.used.length ? `Scores are calibrated on your library (rubric ${esc(R.sc.rubric)}).` : ''}</p>`;
   const ranked = B.rows.filter(r => r.pct != null);
   const body = B.total < 5 ? `<div class="empty-card"><h3>Your library is still small</h3><p>Save runs to the library, import comparables from CSV, or paste them in any format and let a model structure them. At five comparable deals the percentiles switch on; at ${CAL_MIN} per stage you can calibrate the rubric on your own data.</p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="saveRunToLibrary()">Save this run</button><button class="btn btn-ghost btn-sm" onclick="goLibrary()">Open the library</button></div></div>`
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-click="saveRunToLibrary">Save this run</button><button class="btn btn-ghost btn-sm" data-click="goLibrary">Open the library</button></div></div>`
     : percentileHTML(B.rows) + (ranked.length ? '' : '<p class="field-hint">No metric has five comparable deals yet.</p>');
   const fmtField = (k, v) => { if (v == null) return 'n/a'; const f = ALL_FIELDS().find(x => x.id === k) || {};
     return f.unit === '$' ? money(v) : f.unit === '%' ? fmtPct(v) : f.unit === 'months' ? fmtMo(v) : f.unit === 'x' ? fmtX(v, 2) : String(Math.round(v * 100) / 100); };
@@ -554,7 +554,7 @@ function driversHTML(sc) {
 /* ── Questions ── */
 function paneQuestions(R) {
   return `<p class="pg-desc" style="margin-bottom:10px">Ordered by what would most change the decision: gates, contradictions, risk patterns and forensic signals, then evidence gaps.</p>
-    <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="founderEmail()">Draft the founder email</button><button class="btn btn-ghost btn-sm" onclick="copyText(S.result.questions.map((q,i)=>(i+1)+'. '+q.text).join('\\n'),'Questions copied.')">Copy as a list</button></div>
+    <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-click="founderEmail">Draft the founder email</button><button class="btn btn-ghost btn-sm" data-click="copyQuestions">Copy as a list</button></div>
     <div class="qlist">${R.questions.map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>`;
 }
 

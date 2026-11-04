@@ -124,7 +124,7 @@ function renderThemeToggle() {
   const dark = resolvedTheme() === 'dark';
   b.setAttribute('aria-label', dark ? 'Switch to the light theme' : 'Switch to the dark theme');
   b.setAttribute('title', dark ? 'Light theme' : 'Dark theme');
-  b.innerHTML = icon(dark ? 'sun' : 'moon');
+  setHTML(b, icon(dark ? 'sun' : 'moon'));
 }
 if (typeof window !== 'undefined' && window.matchMedia) {
   try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (themePref() === 'auto') applyLook(); }); } catch (e) { /* old browser */ }

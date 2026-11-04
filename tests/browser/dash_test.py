@@ -99,10 +99,10 @@ async def main():
             await pg.evaluate("() => { goVerify(); }"); await pg.wait_for_timeout(200)
             screens[f'{ex} verify'] = await pg.evaluate(TEXT_JS)
             await pg.evaluate("() => { S.result = assessAll(); showPage('result'); renderResult(S.result); }"); await pg.wait_for_timeout(300)
-            tabs = await pg.evaluate("() => Array.from(document.querySelectorAll('.rtab')).map(b => (b.getAttribute('onclick') || '').match(/rtab\\('([a-z]+)'/) ? RegExp.$1 : null).filter(Boolean)")
+            tabs = await pg.evaluate("() => Array.from(document.querySelectorAll('.rtab')).map(b => b.dataset.a).filter(Boolean)")
             for t in tabs:
                 await pg.evaluate("(t) => goTab(t)", t); screens[f'{ex} report {t}'] = await pg.evaluate(TEXT_JS)
-            screens[f'{ex} memo'] = await pg.evaluate("() => { const d = document.createElement('div'); d.innerHTML = memoHTML(S.result); return d.textContent + ' ' + d.innerHTML.replace(/<[^>]*>/g, ' '); }")
+            screens[f'{ex} memo'] = await pg.evaluate("() => { const d = document.createElement('div'); setHTML(d, memoHTML(S.result)); return d.textContent + ' ' + d.innerHTML.replace(/<[^>]*>/g, ' '); }")
             screens[f'{ex} markdown'] = await pg.evaluate("() => { window.__md = []; window.downloadFile = (n, c) => window.__md.push(String(c)); downloadReport(); return window.__md.join('\\n'); }")
             screens[f'{ex} founder email'] = await pg.evaluate("() => { const f = founderEmailText(S.result); return typeof f === 'string' ? f : JSON.stringify(f); }")
         await pg.evaluate("() => { goLibrary(); }"); await pg.wait_for_timeout(200)

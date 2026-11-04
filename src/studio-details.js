@@ -34,10 +34,10 @@ function filterDetailRows(q) {
 }
 function paneStDetails() {
   const shown = (kind, id, key) => { const v = metaVal(kind, id, key); return Array.isArray(v) ? v.join(', ') : (v == null ? '' : v); };
-  const inp = (kind, id, key, ph, wide) => `<input class="form-inp lbl-inp" style="${wide ? '' : 'min-width:110px'}" value="${esc(shown(kind, id, key))}" placeholder="${esc(ph || 'Built-in')}" onchange="setMeta('${kind}','${esc(id)}','${key}', this.value)">`;
+  const inp = (kind, id, key, ph, wide) => `<input class="form-inp lbl-inp" style="${wide ? '' : 'min-width:110px'}" value="${esc(shown(kind, id, key))}" placeholder="${esc(ph || 'Built-in')}" data-change="setMeta" data-a="${esc(kind)}" data-b="${esc(id)}" data-c="${esc(key)}">`;
   const sel = (kind, id, key, opts) => {
     const c = metaVal(kind, id, key), cur = c === true ? 'yes' : c === false ? 'no' : (c == null ? '' : c);
-    return `<select class="st-num" style="width:auto" onchange="setMeta('${kind}','${esc(id)}','${key}', this.value)">${opts.map(([v, l]) => `<option value="${v}"${cur === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    return `<select class="st-num" style="width:auto" data-change="setMeta" data-a="${esc(kind)}" data-b="${esc(id)}" data-c="${esc(key)}">${opts.map(([v, l]) => `<option value="${v}"${cur === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
   };
   const tbl = (title, head, rows) => `<details class="paste" style="margin-top:10px"><summary>${esc(title)}</summary><div class="tbl-wrap det-tbl"><table class="ledger"><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></details>`;
   const fieldRows = BASE.sectionFields.flatMap(b => b.fields.filter(f => f.t !== 'bool').map(f => {
@@ -68,7 +68,7 @@ function paneStDetails() {
       <td>${inp('checks', id, 'lever', LEVER_DEFAULTS.contradictions, true)}</td></tr>`).join('');
   const modelCells = (kind, id, base) => {
     const cur = metaVal(kind, id, 'models'), list = Array.isArray(cur) ? cur : (base || []);
-    return `<div class="bi-grid">${modelOpts().map(([v, l]) => `<label class="bi"><input type="checkbox" data-mk="${esc(kind + ':' + id)}" value="${esc(v)}" ${list.includes(v) ? 'checked' : ''} onchange="setMetaModels('${kind}','${esc(id)}')"> <span>${esc(l)}</span></label>`).join('')}</div>`;
+    return `<div class="bi-grid">${modelOpts().map(([v, l]) => `<label class="bi"><input type="checkbox" data-mk="${esc(kind + ':' + id)}" value="${esc(v)}" ${list.includes(v) ? 'checked' : ''} data-change="setMetaModels" data-a="${esc(kind)}" data-b="${esc(id)}"> <span>${esc(l)}</span></label>`).join('')}</div>`;
   };
   const ansModelRows = CAT_DEFS.map(([key, field, label]) => `<tr data-q="${esc((key + ' ' + label).toLowerCase())}"><td>${esc(label)}<div class="field-hint">${esc(key)}</div></td><td>${modelCells('answers', key, RUBRIC.categorical[key].models)}</td></tr>`).join('')
     + RUBRIC.booleans.map(b => `<tr data-q="${esc((b.id + ' ' + b.note).toLowerCase())}"><td>${esc(b.note)}<div class="field-hint">${esc(b.id)}</div></td><td>${modelCells('booleans', b.id, b.models)}</td></tr>`).join('');
@@ -77,7 +77,7 @@ function paneStDetails() {
     unverified_inputs:'Unverified inputs', confirm_calls:'Confirmatory customer calls', confirm_funds:'Confirmatory use of funds' };
   const famRows = Object.keys(LEVER_DEFAULTS).map(f => `<tr data-q="${esc((f + ' ' + (FAM_LABELS[f] || f)).toLowerCase())}"><td>${esc(FAM_LABELS[f] || f)}<div class="field-hint">${esc(f)}</div></td>
       <td>${inp('families', f, 'lever', LEVER_DEFAULTS[f], true)}</td>
-      <td><input class="st-num" type="number" min="0" max="10" step="any" value="${esc(metaVal('families', f, 'p') != null ? metaVal('families', f, 'p') : '')}" placeholder="${esc(QUESTION_P[f] != null ? QUESTION_P[f] : '')}" aria-label="Order of ${esc(FAM_LABELS[f] || f)}" onchange="setMeta('families','${esc(f)}','p', this.value)"></td></tr>`).join('');
+      <td><input class="st-num" type="number" min="0" max="10" step="any" value="${esc(metaVal('families', f, 'p') != null ? metaVal('families', f, 'p') : '')}" placeholder="${esc(QUESTION_P[f] != null ? QUESTION_P[f] : '')}" aria-label="Order of ${esc(FAM_LABELS[f] || f)}" data-change="setMeta" data-a="families" data-b="${esc(f)}" data-c="p"></td></tr>`).join('');
   const promptRows = ['memo', 'extraction'].map(k => `<tr data-q="ai prompt ${k}"><td>${k === 'memo' ? 'Memo narrative' : 'Extraction from pasted material'}</td>
       <td class="field-hint">${esc(AI_RULES[k])}</td>
       <td>${k === 'memo' ? inp('prompts', k, 'voice', AI_VOICE_DEFAULT, true) : 'n/a'}</td><td>${inp('prompts', k, 'note', 'Nothing added', true)}</td></tr>`).join('');
@@ -85,7 +85,7 @@ function paneStDetails() {
       <td>${inp('booleans', b.id, 'note', b.note, true)}</td>
       <td>${sel('booleans', b.id, 'dim', [['', 'Built-in']].concat(Object.keys(BASE.dimlabel).map(k => [k, BASE.dimlabel[k]])).concat(dimensionChoices()))}</td></tr>`).join('');
   return `<p class="pg-desc">The parts of built-in items that are not their name: quick-pick values, choices, deal-breaker explanations and triggers, red-flag severity, checklist categories and the wording of yes/no points. Leave a box empty for the built-in value. Names are on the Rename tab; points are on Scored answers.</p>
-    <input class="form-inp" placeholder="Search…" oninput="filterDetailRows(this.value)" style="max-width:420px;margin-bottom:4px">
+    <input class="form-inp" placeholder="Search…" data-input="filterDetailRows" style="max-width:420px;margin-bottom:4px">
     ${tbl('Fields: group heading, quick picks, extra choices, unit, required', ['Field', 'Group heading', 'Quick picks / extra choices', 'Unit', 'Required'], fieldRows)}
     ${tbl('Deal-breakers: explanation, request, lever, trigger', ['Deal-breaker', 'Why it matters', 'Request to the founder', 'If unresolved (lever)', 'Trigger'], gateRows)}
     ${tbl('Red flags and strengths: severity, risk row, explanation, question, lever', ['Pattern', 'Severity', 'Risk row', 'Explanation', 'Question', 'If unresolved (lever)'], patRows)}
@@ -110,7 +110,7 @@ function otherFiguresTable() {
   const rows = keys.map(k => {
     const mine = ST.draft.formulas[k] || (ST.draft.labels.units || {})[k] || (ST.draft.labels.metrics || {})[k] || ST.draft.hidden.metrics.includes(k);
     return `<tr data-q="${esc((k + ' ' + metricName(k)).toLowerCase())}"><td>${esc(metricName(k))}${mine ? ' <span class="pill amber">yours</span>' : ''}${ST.draft.hidden.metrics.includes(k) ? ' <span class="pill">switched off</span>' : ''}<div class="field-hint">${esc(k)}</div></td>
-      <td class="m">${esc(ST.draft.formulas[k] || 'built-in')}</td><td style="text-align:right"><button class="btn btn-ghost btn-sm" data-k="${esc(k)}" onclick="editDerived(this.dataset.k)">Change</button></td></tr>`;
+      <td class="m">${esc(ST.draft.formulas[k] || 'built-in')}</td><td style="text-align:right"><button class="btn btn-ghost btn-sm" data-k="${esc(k)}" data-click="editDerived">Change</button></td></tr>`;
   }).join('');
   return `<div class="block-title" style="margin-top:16px">Other figures VCR2 computes (shown, not scored)</div>
     <p class="field-hint" style="margin-bottom:6px">Customer lifetime, CAC, ACV, implied burn and similar. You can rename one, change its unit, replace its calculation or switch it off.</p>

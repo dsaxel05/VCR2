@@ -108,7 +108,7 @@ async def main():
         # the hero button scrolls to the video and plays it
         await pg.evaluate("() => { document.getElementById('demo-video').pause(); window.scrollTo(0, 0); }"); await pg.wait_for_timeout(300)
         n0 = await pg.evaluate("() => window.__plays")
-        await pg.click('button[onclick="watchDemo()"]'); await pg.wait_for_timeout(600)
+        await pg.click('button[data-click="watchDemo"]'); await pg.wait_for_timeout(600)
         st = await pg.evaluate("() => { const r = document.getElementById('demo-video').getBoundingClientRect(); return { plays: window.__plays, inView: r.top >= 0 && r.bottom <= innerHeight + 2 || (r.top < innerHeight && r.bottom > 0 && r.height > innerHeight * 0.5) }; }")
         check('"Watch the demo" scrolls to the video and starts it', st['plays'] > n0 and st['inView'], [n0, st])
 

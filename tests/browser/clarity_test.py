@@ -74,7 +74,7 @@ async def main():
         check('a share above 100% is said in times, below it in percent',
               om == ['18 times the whole market reachable in five years', '1.6 times the bottom-up market (TAM)', '30% of the bottom-up market (TAM)', '4.2% of the market', None], om)
         ev = await pg.evaluate("""() => { const out = []; ['loadNorthwind', 'loadHalcyon'].forEach(f => { window[f](); const R = assessAll();
-            R.patterns.forEach(p => out.push(p.evidence.join(' | '))); const t = document.createElement('div'); t.innerHTML = paneDeal(R); out.push(t.textContent); }); return out.join(' || '); }""")
+            R.patterns.forEach(p => out.push(p.evidence.join(' | '))); const t = document.createElement('div'); setHTML(t, paneDeal(R)); out.push(t.textContent); }); return out.join(' || '); }""")
         check('no "NNN% of bottom-up TAM" or "% of the market reachable" is left in patterns or the deal pane', not re.search(r'\d{3,}% of (the )?(bottom-up|market)', ev) and 'of the market reachable' not in ev, ev[:300])
 
         # 3. the static page says nothing stale

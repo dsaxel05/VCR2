@@ -70,6 +70,7 @@ TIGHT = [
     ('a next line that starts with . or ( joins', "p" + chr(10) + "  .then(f)" + chr(10) + "  .catch(g)", "p.then(f).catch(g)"),
     ('return or throw then a new line stays apart (the line break ends the statement)', "return" + chr(10) + "(x)", "return" + chr(10) + "(x)"),
     ('a line before ++ or -- stays apart', "a" + chr(10) + "++b", "a" + chr(10) + "++b"),
+    ('a minus at the end of a line and a minus at the start of the next never meet', "x = a -" + chr(10) + "-b", "x=a -" + chr(10) + "-b"),
 ]
 for name, src, exp in TIGHT:
     got = strip_js(src, tight=True)

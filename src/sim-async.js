@@ -39,7 +39,7 @@ function simGuard(key) {
 function simWorker() {
   if (_simWorker || _simBroken) return _simWorker;
   try {
-    _simWorker = new Worker(URL.createObjectURL(new Blob([simWorkerSource()], { type:'text/javascript' })));
+    _simWorker = startWorker(simWorkerSource());
     _simWorker.onmessage = e => {
       const job = _simJobs.get(e.data.id); if (!job) return;
       _simJobs.delete(e.data.id);

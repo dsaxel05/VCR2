@@ -171,7 +171,8 @@ def strip_js(s, html=False, tight=False):
             # the line break there never ends a statement. It is kept after return, throw, break, continue, yield and let
             # (where it does end one), around ++ and --, and before a comment.
             nx2 = s[k:k + 2]
-            held = (last == 'a' and word in ('return', 'throw', 'break', 'continue', 'yield', 'let')) or ''.join(out[-2:]) in ('++', '--')
+            held = ((last == 'a' and word in ('return', 'throw', 'break', 'continue', 'yield', 'let')) or ''.join(out[-2:]) in ('++', '--')
+                    or (last in '+-' and k < n and s[k] == last))   # "a -" then "-b" must not become "a --b"
             if last in '{,;([' or (k < n and s[k] in '})]') or (not held and (last in '=+-*%&|^<>?:!'
                     or (k < n and s[k] in '.?:&|+-*=,([' and nx2 not in ('++', '--', '//', '/*')))):
                 at_line_start = True; i += 1; continue

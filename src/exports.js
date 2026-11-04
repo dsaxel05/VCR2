@@ -14,8 +14,8 @@ const GATE_ASK = {
 /* ── IC memo: a light, print-ready document rendered into #print-root ── */
 function printMemo() {
   const R = S.result; if (!R) return;
-  $id('print-root').innerHTML = memoHTML(R);
-  window.addEventListener('afterprint', () => { $id('print-root').textContent = ''; }, { once:true });   /* the memo leaves the page once printed */
+  setHTML($id('print-root'), memoHTML(R));
+  window.addEventListener('afterprint', clearPrint, { once:true });   /* the memo leaves the page once printed */
   setTimeout(() => window.print(), 60);
 }
 function memoHTML(R) {

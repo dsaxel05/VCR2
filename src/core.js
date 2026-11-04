@@ -21,10 +21,24 @@
    ═══════════════════════════════════════════════════════════════ */
 /* Short for the lookup the page makes most. */
 const $id = id => document.getElementById(id);
+/* The printable memo of the last deal must never outlive it: Ctrl+P prints whatever #print-root holds. */
+const clearPrint = () => { const p = $id('print-root'); if (p) p.textContent = ''; };
 
 /* ── ESCAPING: every interpolation of user or model text goes through esc() ── */
 const ESC_MAP = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ESC_MAP[c]);
+
+/* ── TRUSTED TYPES: the one audited way into the page's HTML parser and into a Worker ──
+   The CSP asks the browser to refuse any other string on its way into the HTML parser, the XML parser or a worker.
+   Callers escape their own text with esc(); the policy itself only marks the string as app-made. */
+const TT = globalThis.trustedTypes && trustedTypes.createPolicy('vcr2', {
+  createHTML: s => s,
+  createScriptURL: u => { if (!/^blob:/.test(u)) throw new TypeError('Only a blob may start a worker'); return u; }
+});
+const htmlOf = s => TT ? TT.createHTML(s) : s;
+const setHTML = (el, s, outer) => { if (outer) el.outerHTML = htmlOf(s); else el.innerHTML = htmlOf(s); };
+const parseXML = s => new DOMParser().parseFromString(htmlOf(s), 'application/xml');
+const startWorker = src => { const u = URL.createObjectURL(new Blob([src], { type:'text/javascript' })); return new Worker(TT ? TT.createScriptURL(u) : u); };
 
 /* ── FORMATTERS ── */
 const nf = new Intl.NumberFormat('en-US');
@@ -1658,11 +1672,11 @@ function updateTopbar(id) {
   const own = id === 'intro' || id === 'about';   /* these two pages carry their own visible h1 */
   if (h1) { h1.textContent = own ? '' : (c.textContent + ' · ' + s.textContent); h1.hidden = own; }
   const right = $id('tb-right');
-  right.innerHTML = '';
+  setHTML(right, '');
   if (id === 'section') {
     /* "Sections": a plain list to jump between evidence sections while the sidebar is hidden. */
     const w = document.createElement('span'); w.className = 'tb-sec';
-    w.innerHTML = `<select class="form-inp" id="tb-sections" aria-label="Jump to a section" onchange="jumpTo(+this.value);$id('tb-sections').focus()">${SECTIONS.map((s, i) => sectionHidden(s) ? '' : `<option value="${i}"${i === S.section ? ' selected' : ''}>${esc(s.label)}</option>`).join('')}</select>`;
+    setHTML(w, `<select class="form-inp" id="tb-sections" aria-label="Jump to a section" data-change="secSel">${SECTIONS.map((s, i) => sectionHidden(s) ? '' : `<option value="${i}"${i === S.section ? ' selected' : ''}>${esc(s.label)}</option>`).join('')}</select>`);
     right.appendChild(w);
   }
   if (id === 'section' || id === 'verify') {
@@ -1672,13 +1686,13 @@ function updateTopbar(id) {
     right.appendChild(b);
   }
   if (id === 'result') {
-    right.innerHTML = '<button class="btn btn-ghost btn-sm" onclick="printMemo()">Print memo</button><button class="btn btn-ghost btn-sm" onclick="editData()">Edit inputs</button>';
+    setHTML(right, '<button class="btn btn-ghost btn-sm" data-click="printMemo">Print memo</button><button class="btn btn-ghost btn-sm" data-click="editData">Edit inputs</button>');
   }
   if (id === 'library' && S.result) {
-    right.innerHTML = '<button class="btn btn-ghost btn-sm" onclick="renderResult(S.result);showPage(\'result\')">Back to the report</button>';
+    setHTML(right, '<button class="btn btn-ghost btn-sm" data-click="backReport">Back to the report</button>');
   }
   if (id === 'intake' || id === 'setup') {
-    right.innerHTML = '<button class="btn btn-ghost btn-sm" onclick="goLibrary()">Library</button>';
+    setHTML(right, '<button class="btn btn-ghost btn-sm" data-click="goLibrary">Library</button>');
   }
 }
 function updateProgress() {
@@ -1708,28 +1722,28 @@ function refreshNavCounts() {
 function buildNav() {
   const nav = $id('sb-nav');
   /* Buttons, not clickable divs: reachable and operable with the keyboard. */
-  nav.innerHTML = `<button type="button" class="nav-item" onclick="showPage('intake');renderIntakeStatus()"><span class="nav-dot"></span><span class="nav-label">Source material &amp; data files</span><span class="nav-count" aria-hidden="true">${icon('upload', 'ico-sm')}</span></button>
+  setHTML(nav, `<button type="button" class="nav-item" data-click="intakeNav"><span class="nav-dot"></span><span class="nav-label">Source material &amp; data files</span><span class="nav-count" aria-hidden="true">${icon('upload', 'ico-sm')}</span></button>
     <div class="sb-nav-label" id="sb-nav-sections">Evidence sections</div>` + SECTIONS.map((sec, i) => sectionHidden(sec) ? '' : `
-    <button type="button" class="nav-item${sec.deal ? ' deal' : ''}" id="ni-${i}" data-sec="${esc(sec.id)}" onclick="jumpTo(${i})">
+    <button type="button" class="nav-item${sec.deal ? ' deal' : ''}" id="ni-${i}" data-sec="${esc(sec.id)}" data-click="jumpTo" data-a="#${i}">
       <span class="nav-dot"></span>
       <span class="nav-label">${esc(sec.label)}</span>
       <span class="nav-count">0/${visibleFields(sec).length}</span>
     </button>`).join('') +
-    `<button type="button" class="nav-item nav-verify" onclick="goVerify()">
-      <span class="nav-dot"></span><span class="nav-label">Verification &amp; report</span><span class="nav-count" aria-hidden="true">${icon('arrow', 'ico-sm')}</span></button>`;
+    `<button type="button" class="nav-item nav-verify" data-click="goVerify">
+      <span class="nav-dot"></span><span class="nav-label">Verification &amp; report</span><span class="nav-count" aria-hidden="true">${icon('arrow', 'ico-sm')}</span></button>`);
 }
 function buildStages() {
-  $id('stage-grid').innerHTML = STAGES.filter(s => !s.hidden || s.id === S.stage).map(s => `
-    <button type="button" class="stage-card${S.stage === s.id ? ' sel' : ''}" id="stc-${s.id}" aria-pressed="${S.stage === s.id}" onclick="selStage('${s.id}')">
+  setHTML($id('stage-grid'), STAGES.filter(s => !s.hidden || s.id === S.stage).map(s => `
+    <button type="button" class="stage-card${S.stage === s.id ? ' sel' : ''}" id="stc-${s.id}" aria-pressed="${S.stage === s.id}" data-click="selStage" data-a="${esc(s.id)}">
       <span class="stage-n">${esc(s.n)}</span><span class="stage-s">${esc(s.s)}</span>
-    </button>`).join('');
+    </button>`).join(''));
 }
 function buildTypes() {
-  $id('type-grid').innerHTML = MODELS.filter(t => !t.hidden || t.id === S.model).map(t => `
-    <button type="button" class="type-card${S.model === t.id ? ' sel' : ''}" id="tc-${t.id}" aria-pressed="${S.model === t.id}" onclick="selModel('${t.id}')">
+  setHTML($id('type-grid'), MODELS.filter(t => !t.hidden || t.id === S.model).map(t => `
+    <button type="button" class="type-card${S.model === t.id ? ' sel' : ''}" id="tc-${t.id}" aria-pressed="${S.model === t.id}" data-click="selModel" data-a="${esc(t.id)}">
       <span class="type-em">${modelMark(t)}</span>
       <span class="type-n">${esc(t.n)}</span><span class="type-s">${esc(t.s)}</span>
-    </button>`).join('');
+    </button>`).join(''));
   const m = MODELS.find(x => x.id === S.model);
   $id('calib-note').textContent = m ? (m.note || CALIB_NOTE[m.calib]) : '';
 }
@@ -1742,7 +1756,7 @@ function goIntake() {
   showPage('intake'); renderIntakeStatus();
 }
 function lastVisibleSection() { let i = SECTIONS.length - 1; while (i > 0 && sectionHidden(SECTIONS[i])) i--; return i; }
-function startSections() { let i = 0; while (i < SECTIONS.length - 1 && sectionHidden(SECTIONS[i])) i++; S.section = i; renderSection(i); showPage('section'); }
+function startSections() { clearPrint(); let i = 0; while (i < SECTIONS.length - 1 && sectionHidden(SECTIONS[i])) i++; S.section = i; renderSection(i); showPage('section'); }
 function jumpTo(i) { saveSec(); S.section = i; renderSection(i); showPage('section'); }
 function prevSec() {
   saveSec();
@@ -1788,7 +1802,7 @@ function evidencePicker(f) {
   if (!sec || sec.claims || sec.deal || f.t === 'txt') return '';
   const cur = evidenceOf(f.id);
   return `<select class="ev-sel ev-${cur || 'none'}" title="Where does this number come from? Stronger evidence narrows the score's confidence band." aria-label="Evidence source for ${esc(f.lbl)}"
-    onchange="setEvidence('${f.id}',this.value,this)">${EVIDENCE.map(e => `<option value="${e.id}"${e.id === cur ? ' selected' : ''}>${esc(e.short)}</option>`).join('')}</select>`;
+    data-change="evidence" data-a="${esc(f.id)}">${EVIDENCE.map(e => `<option value="${e.id}"${e.id === cur ? ' selected' : ''}>${esc(e.short)}</option>`).join('')}</select>`;
 }
 function setEvidence(id, v, el) {
   if (v) S.evid[id] = v; else S.evid[id] = '';
@@ -1803,13 +1817,13 @@ function renderField(f) {
 
   if (f.t === 'bool') {
     const v = S.bools[f.id];
-    return `<div class="bool-card field-card${filled}" id="fc-${f.id}" tabindex="0" data-bool-id="${f.id}" onkeydown="boolKeydown(event,'${f.id}')">
+    return `<div class="bool-card field-card${filled}" id="fc-${f.id}" tabindex="0" data-bool-id="${f.id}" data-keydown="boolKey" data-a="${esc(f.id)}">
       <div class="field-lbl">${esc(f.lbl)} ${gate}${provBadge(f.id)}${evidencePicker(f)}</div>
       ${hint}
       <div class="bool-grp">
-        <button class="bool-btn yes${v === true ? ' active' : ''}"  onclick="setBool('${f.id}',true)">Yes</button>
-        <button class="bool-btn no${v === false ? ' active' : ''}"  onclick="setBool('${f.id}',false)">No</button>
-        <button class="bool-btn unk${v === undefined ? ' active' : ''}" onclick="setBool('${f.id}',undefined)">Unknown</button>
+        <button class="bool-btn yes${v === true ? ' active' : ''}"  data-click="setBool" data-a="${esc(f.id)}" data-b="#true">Yes</button>
+        <button class="bool-btn no${v === false ? ' active' : ''}"  data-click="setBool" data-a="${esc(f.id)}" data-b="#false">No</button>
+        <button class="bool-btn unk${v === undefined ? ' active' : ''}" data-click="setBool" data-a="${esc(f.id)}">Unknown</button>
       </div>
     </div>`;
   }
@@ -1817,14 +1831,14 @@ function renderField(f) {
     return `<div class="field-card field-item${filled}" id="fc-${f.id}">
       <div class="field-lbl">${esc(f.lbl)}${req}${provBadge(f.id)}${evidencePicker(f)}</div>
       ${hint}
-      <select class="field-select" data-fid="${f.id}" data-kind="select" onchange="S.sel['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive()">
+      <select class="field-select" data-fid="${f.id}" data-kind="select" data-change="selChange" data-a="${esc(f.id)}">
         <option value="">Not answered</option>
         ${f.options.map(o => `<option value="${esc(o)}"${S.sel[f.id] === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}
       </select>
     </div>`;
   }
   const chips = f.chips ? `<div class="chip-row">${f.chips.map(c =>
-    `<button class="chip${String(S.vals[f.id]) === String(c) ? ' active' : ''}" onclick="setChip('${f.id}',${c})">${c}${f.unit === '%' ? '%' : ''}</button>`).join('')}</div>` : '';
+    `<button class="chip${String(S.vals[f.id]) === String(c) ? ' active' : ''}" data-click="setChip" data-a="${esc(f.id)}" data-b="#${c}">${c}${f.unit === '%' ? '%' : ''}</button>`).join('')}</div>` : '';
   const unit = f.unit ? ` <span class="field-unit">(${esc(f.unit)})</span>` : '';
   const meta = `${provBadge(f.id)}${evidencePicker(f)}`;
   return `<div class="field-card field-item${filled}" id="fc-${f.id}">
@@ -1832,11 +1846,11 @@ function renderField(f) {
     ${hint}
     ${f.multiline
       ? `<textarea class="field-inp field-area" id="fi-${f.id}" data-fid="${f.id}" rows="4" placeholder="${esc(f.example || fieldExample(f))}"
-           oninput="S.vals['${f.id}']=this.value;updateFieldCardState('${f.id}');liveDerive();saveDraft()">${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}</textarea>`
+           data-input="fieldIn" data-a="${esc(f.id)}">${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}</textarea>`
       : `<input class="field-inp" id="fi-${f.id}" data-fid="${f.id}" type="text"${f.t === 'num' ? ` data-kind="num" autocomplete="off" aria-describedby="fe-${f.id}"` : ''}
            value="${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}"
            placeholder="${esc(fieldExample(f))}"
-           oninput="${f.t === 'num' ? 'numField(this)' : `S.vals['${f.id}']=this.value`};updateFieldCardState('${f.id}');liveDerive();saveDraft()" />${f.t === 'num' ? `<div class="field-err" id="fe-${f.id}" aria-live="polite"></div>` : ''}`}
+           data-input="fieldIn" data-a="${esc(f.id)}"${f.t === 'num' ? ' data-b="1"' : ''} />${f.t === 'num' ? `<div class="field-err" id="fe-${f.id}" aria-live="polite"></div>` : ''}`}
     ${chips}
     ${meta ? `<div class="field-meta">${meta}</div>` : ''}
   </div>`;
@@ -1980,20 +1994,20 @@ function renderSection(idx) {
 
     ${groupFieldsOf(split.main).map(g => fieldGroupHTML(sec, g)).join('')}
 
-    ${split.more.length ? `<details class="more-options"${MORE_OPEN[sec.id] ? ' open' : ''} ontoggle="MORE_OPEN['${esc(sec.id)}']=this.open">
+    ${split.more.length ? `<details class="more-options"${MORE_OPEN[sec.id] ? ' open' : ''} data-toggle="moreOpen" data-a="${esc(sec.id)}">
       <summary><span>More options</span><span class="more-count">${split.more.length} more field${split.more.length === 1 ? '' : 's'}${moreFilled ? ' &middot; ' + moreFilled + ' filled' : ''}</span></summary>
       ${groupFieldsOf(split.more).map(g => fieldGroupHTML(sec, g)).join('')}
     </details>` : ''}
 
     <div class="sec-nav">
-      <button class="btn btn-ghost" onclick="prevSec()">${idx === 0 ? 'Back' : 'Previous'}</button>
+      <button class="btn btn-ghost" data-click="prevSec">${idx === 0 ? 'Back' : 'Previous'}</button>
       <div class="sec-nav-right">
-        <button class="btn btn-primary btn-lg" onclick="nextSec()">${idx === SECTIONS.length - 1 ? 'Go to verification' : 'Next section'}</button>
+        <button class="btn btn-primary btn-lg" data-click="nextSec">${idx === SECTIONS.length - 1 ? 'Go to verification' : 'Next section'}</button>
       </div>
     </div>
-    <p class="sec-foot"><button class="btn-link" onclick="clearSection()">Clear this section</button><span class="sec-kbd-hint">On a yes-no question, press Y, N or U.</span></p>`;
+    <p class="sec-foot"><button class="btn-link" data-click="clearSection">Clear this section</button><span class="sec-kbd-hint">On a yes-no question, press Y, N or U.</span></p>`;
 
-  $id('section-content').innerHTML = html;
+  setHTML($id('section-content'), html);
   liveDerive();
   refreshNavCounts();
   window.scrollTo({ top:0 });
@@ -2002,17 +2016,17 @@ function renderSection(idx) {
 function sectionBanner(sec) {
   if (sec.id === 'revenue' || sec.id === 'gtm') {
     const LED = S.ledger ? ledgerAnalytics(S.ledger) : null;
-    if (!LED) return sec.id === 'revenue' ? `<div class="sector-note">No customer ledger loaded. Upload revenue by customer by month on the <a href="#" onclick="showPage('intake');return false">source material</a> step and VCR2 computes these fields (and true cohort retention) itself.</div>` : '';
+    if (!LED) return sec.id === 'revenue' ? `<div class="sector-note">No customer ledger loaded. Upload revenue by customer by month on the <a href="#" data-click="showPage" data-a="intake">source material</a> step and VCR2 computes these fields (and true cohort retention) itself.</div>` : '';
     const P = ledgerPrimitives(LED);
     const diff = Object.keys(P).filter(k => SECTIONS.find(x => x.id === sec.id).fields.some(f => f.id === k) && gv(k) != null && S.prov[k]?.src !== 'ledger').length;
     return `<div class="sector-note ledger-note">Customer ledger loaded: ${S.ledger.customers.length} customers × ${LED.months.length} months (${monthLabel(LED.months[0])} to ${monthLabel(LED.months[LED.e])}).
       Ledger ARR ${money(LED.arrNow)} · cohort NRR ${fmtPct(LED.nrrCohort)} · GRR ${fmtPct(LED.grrCohort)}.
-      <button class="btn btn-ghost btn-sm" style="margin-left:6px" onclick="applyLedgerToForm();renderSection(S.section);toast('Ledger figures applied to the form.')">Apply ledger figures to the form</button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:6px" data-click="applyLedger">Apply ledger figures to the form</button>
       ${diff ? `<span style="display:block;margin-top:4px;color:var(--amber-t)">${diff} field${diff === 1 ? '' : 's'} here were entered by hand; the verification step compares them against the ledger.</span>` : ''}</div>`;
   }
   if (sec.id === 'model') {
     const m = MODELS.find(x => x.id === S.model);
-    return `<div class="sector-note">Showing the ${esc(m ? m.n : '')} fields. Change the business model on the <a href="#" onclick="goSetup();return false">setup step</a> to see others.</div>`;
+    return `<div class="sector-note">Showing the ${esc(m ? m.n : '')} fields. Change the business model on the <a href="#" data-click="goSetup">setup step</a> to see others.</div>`;
   }
   return '';
 }
@@ -2036,8 +2050,8 @@ const LIVE_BY_SECTION = {
 function liveDeal(slot) {
   const { D } = derive();
   const X = dealMath(D);
-  if (!X) { slot.innerHTML = `<div class="derived-panel"><div class="derived-head"><h3>Deal maths</h3><span>waiting for round size and pre-money</span></div>
-    <p style="font-size:.8125rem;color:var(--t2)">Enter the round size and the pre-money to see post-money, your ownership, the effective pre-money after the pool shuffle and SAFE conversion, and what exit would return your fund.</p></div>`; return; }
+  if (!X) { setHTML(slot, `<div class="derived-panel"><div class="derived-head"><h3>Deal maths</h3><span>waiting for round size and pre-money</span></div>
+    <p style="font-size:.8125rem;color:var(--t2)">Enter the round size and the pre-money to see post-money, your ownership, the effective pre-money after the pool shuffle and SAFE conversion, and what exit would return your fund.</p></div>`); return; }
   const tiles = [
     ['Post-money', money(X.P), 'pre-money + new money'],
     ['Your ownership at entry', X.ownEntry != null ? fmtPct(X.ownEntry * 100, 2) : 'n/a', 'cheque ÷ post-money'],
@@ -2046,8 +2060,8 @@ function liveDeal(slot) {
     ['Exit to return the fund', X.fundReturner != null ? money(X.fundReturner) : 'n/a', 'fund size ÷ ownership at exit'],
     ['Entry multiple', X.entryMult != null ? fmtX(X.entryMult) + ' ARR' : 'n/a', 'post-money ÷ ARR'],
   ];
-  slot.innerHTML = `<div class="derived-panel"><div class="derived-head"><h3>Deal maths</h3><span>computed live · full analysis in the report</span></div>
-    <div class="derived-grid">${tiles.map(t => `<div class="dv n"><div class="dv-lbl">${esc(t[0])}</div><div class="dv-val">${esc(t[1])}</div><div class="dv-form">${esc(t[2])}</div></div>`).join('')}</div></div>`;
+  setHTML(slot, `<div class="derived-panel"><div class="derived-head"><h3>Deal maths</h3><span>computed live · full analysis in the report</span></div>
+    <div class="derived-grid">${tiles.map(t => `<div class="dv n"><div class="dv-lbl">${esc(t[0])}</div><div class="dv-val">${esc(t[1])}</div><div class="dv-form">${esc(t[2])}</div></div>`).join('')}</div></div>`);
 }
 function liveDerive() {
   const slot = $id('derived-slot'); if (!slot) return;
@@ -2058,9 +2072,9 @@ function liveDerive() {
   const supp = suppressions(D);
 
   if (!keys.length) {
-    slot.innerHTML = `<div class="derived-panel"><div class="derived-head"><h3>What your numbers show so far</h4>
+    setHTML(slot, `<div class="derived-panel"><div class="derived-head"><h3>What your numbers show so far</h4>
       <span>waiting for inputs</span></div>
-      <p class="derived-empty">Nothing to show yet. Fill in the fields below and the figures appear here as soon as they can be worked out.</p></div>`;
+      <p class="derived-empty">Nothing to show yet. Fill in the fields below and the figures appear here as soon as they can be worked out.</p></div>`);
     return;
   }
   const th = activeThresholds();
@@ -2072,7 +2086,7 @@ function liveDerive() {
     return s >= 72 ? 'g' : s >= 45 ? 'a' : 'r';
   };
   const shownKeys = derivedShowAll ? keys : keys.slice(0, 3);
-  slot.innerHTML = `<div class="derived-panel">
+  setHTML(slot, `<div class="derived-panel">
     <div class="derived-head"><h3>What your numbers show so far</h3><span>${keys.length} figure${keys.length === 1 ? '' : 's'}, worked out for you</span></div>
     <div class="derived-grid">${shownKeys.map(k => `
       <div class="dv ${cls(k)}">
@@ -2081,8 +2095,8 @@ function liveDerive() {
         ${derivedShowAll ? `<div class="dv-form">${esc(F[k] || '')}</div>` : ''}
         ${supp[k] ? `<div class="dv-form" style="color:var(--amber-t)">not scored at this scale</div>` : ''}
       </div>`).join('')}</div>
-    ${keys.length > 3 ? `<button type="button" class="btn-link derived-toggle" onclick="derivedShowAll=!derivedShowAll;liveDerive()" aria-expanded="${derivedShowAll}">${derivedShowAll ? 'Show fewer' : 'Show details (' + (keys.length - 3) + ' more)'}</button>` : ''}
-  </div>`;
+    ${keys.length > 3 ? `<button type="button" class="btn-link derived-toggle" data-click="derivedAll" aria-expanded="${derivedShowAll}">${derivedShowAll ? 'Show fewer' : 'Show details (' + (keys.length - 3) + ' more)'}</button>` : ''}
+  </div>`);
 }
 let derivedShowAll = false;
 
@@ -2098,9 +2112,11 @@ function draftPayload() {
 /* Saved drafts, exports and library entries come from files: keep only well-formed values. */
 function cleanMap(o, test) {
   const out = {};
-  if (o && typeof o === 'object' && !Array.isArray(o)) Object.keys(o).forEach(k => { if (/^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(k) && !RESERVED_ID.test(k) && test(o[k])) out[k] = o[k]; });
+  if (o && typeof o === 'object' && !Array.isArray(o)) Object.keys(o).forEach(k => { if (/^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(k) && !RESERVED_ID.test(k) && test(o[k], k)) out[k] = o[k]; });
   return out;
 }
+/* The range each runway assumption may take: a value outside it is pulled to the edge, so a file cannot push the report into NaN or 100% odds. */
+const ASSUME_RANGE = { decay:[0, 25], horizon:[12, 60], paths:[500, 2e4], milestone:[0, 1e12], gOverride:[-50, 100], egOverride:[-50, 100], sdOverride:[0, 100] };
 function restorePayload(d) {
   d = d && typeof d === 'object' ? d : {};
   const okStr = v => typeof v === 'string' || (typeof v === 'number' && isFinite(v));
@@ -2112,12 +2128,11 @@ function restorePayload(d) {
     /* A model added in the Studio may not be loaded yet when a draft is restored, so any well-formed id is kept. */
     model:MODELS.some(m => m.id === d.model) || (typeof d.model === 'string' && /^[a-z][a-z0-9_]{1,39}$/.test(d.model) && !RESERVED_ID.test(d.model)) ? d.model : 'saas',
     asof:typeof d.asof === 'string' && /^\d{4}-\d{2}$/.test(d.asof) ? d.asof : '',
-    section:Number.isInteger(d.section) && d.section >= 0 ? d.section : 0,
+    section:Number.isInteger(d.section) && d.section >= 0 ? Math.min(d.section, SECTIONS.length - 1) : 0,
     vals:cleanMap(d.vals, okStr), bools:cleanMap(d.bools, v => typeof v === 'boolean'), sel:cleanMap(d.sel, v => typeof v === 'string'),
-    /* "from the ledger" is kept only when the file carries a ledger: a shared file cannot claim ledger-grade evidence it does not have */
-    prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' ? !!(d.ledger && d.ledger.csv) : v.src === 'extracted')),
+    prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' || v.src === 'extracted')),
     evid:cleanMap(d.evid, v => EVIDENCE.some(e => e.id === v)),
-    assume:cleanMap(d.assume, v => typeof v === 'number' && isFinite(v)), notes:typeof d.notes === 'string' ? d.notes : '',
+    assume:cleanMap(d.assume, (v, k) => typeof v === 'number' && isFinite(v) && !!ASSUME_RANGE[k]), notes:typeof d.notes === 'string' ? d.notes : '',
     checklist:cleanMap(d.checklist, v => ['todo','requested','received','reviewed','issue','na'].includes(v)),
   });
   /* A number that arrives as text ("1,200,000", "€1.200") is read once, here, with the shared rules. One that cannot be
@@ -2132,6 +2147,10 @@ function restorePayload(d) {
     if (n == null) { S.restoreNotes.push(`${id}: "${v.slice(0, 40)}" was not read`); delete S.vals[id]; } else S.vals[id] = String(n);
   });
   if (d.ledger && d.ledger.csv) { const r = parseLedger(d.ledger.csv, 'mrr'); if (r.ok) S.ledger = r.ledger; }
+  Object.keys(S.assume).forEach(k => { S.assume[k] = clamp(S.assume[k], ASSUME_RANGE[k][0], ASSUME_RANGE[k][1]); });
+  /* "from the ledger" is kept only for a field a ledger that parses really fills: a shared file cannot claim ledger-grade evidence */
+  const fills = S.ledger ? ledgerPrimitives(ledgerAnalytics(S.ledger)) : {};
+  Object.keys(S.prov).forEach(k => { if (S.prov[k].src === 'ledger' && !(k in fills)) delete S.prov[k]; });
   if (d.series && d.series.csv) { const r = parseSeries(d.series.csv); if (r.ok) S.series = r.series; }
   const n = $id('cname'); if (n) n.value = S.name;
   const a = $id('asof'); if (a) a.value = S.asof;
@@ -2187,7 +2206,7 @@ function renderResumeCard() {
 function continueDraft() { loadDraft(); buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); renderSection(S.section); showPage('section'); }
 /* Going home closes an example; the person's own draft, if any, is back as it was. */
 function leaveExample() {
-  S = blankState();
+  clearPrint(); S = blankState();
   ['cname', 'asof', 'intake-deck', 'intake-fin', 'ledger-paste', 'series-paste'].forEach(id => { const el = $id(id); if (el) el.value = ''; });
   loadDraft(); buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); renderFileList(); updateProgress();
 }
@@ -2195,14 +2214,14 @@ function leaveExample() {
 function resetApp() {
   if (!confirm('Reset all inputs?\n\nThis deletes, in this browser: all inputs, the uploaded ledger and financials, notes, assumptions, the report in progress and the saved draft.\n\nIt does not touch your library, Studio settings, theme, text size or AI key.\n\nThis cannot be undone.')) return;
   _epoch++; simAbort();
-  const pr = $id('print-root'); if (pr) pr.textContent = '';   /* the last printed memo goes too */
+  clearPrint();   /* the last printed memo goes too */
   try { ['vcr3-draft', 'vcr3-draft-meta', 'vcr4-memo'].forEach(k => localStorage.removeItem(k)); } catch (e) {}
   S = blankState(); _draftWarned = false;
   document.querySelectorAll('#page-setup input, #page-setup textarea, #page-intake input, #page-intake textarea').forEach(el => {
     if (el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked; else el.value = '';
   });
   document.querySelectorAll('#page-setup select, #page-intake select').forEach(el => { el.selectedIndex = 0; });
-  ['section-content', 'verify-content', 'result-content'].forEach(id => { const el = $id(id); if (el) el.innerHTML = ''; });
+  ['section-content', 'verify-content', 'result-content'].forEach(id => { const el = $id(id); if (el) setHTML(el, ''); });
   buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); renderFileList(); updateProgress();
   const sb = $id('sidebar'), nav = $id('sb-nav'); if (sb) sb.scrollTop = 0; if (nav) nav.scrollTop = 0;
   showPage('intro'); renderResumeCard(); showSaved('', 0);
@@ -2354,7 +2373,7 @@ function goVerify() {
     ${c.ask ? `<div class="ask">${esc(c.ask)}</div>` : ''}
   </div>`;
 
-  $id('verify-content').innerHTML = `
+  setHTML($id('verify-content'), `
     <div class="pg-eyebrow">Step 4 of 4</div>
     <h2 class="pg-title">Verification</h2>
     <p class="pg-desc">${checkCount()} checks compare what the company states against what the underlying figures produce${LED ? ', and every summary figure against the customer ledger' : ''}. This runs before any score is computed, because a score built on numbers that do not reconcile is worse than no score.</p>
@@ -2385,11 +2404,11 @@ function goVerify() {
       </table></div>` : ''}
 
     <div class="sec-nav">
-      <button class="btn btn-ghost" onclick="jumpTo(lastVisibleSection())">Back to inputs</button>
+      <button class="btn btn-ghost" data-click="backInputs">Back to inputs</button>
       <div class="sec-nav-right">
-        <button class="btn btn-primary" onclick="runAnalysis()">Generate report</button>
+        <button class="btn btn-primary" data-click="runAnalysis">Generate report</button>
       </div>
-    </div>`;
+    </div>`);
   showPage('verify');
 }
 /* Number of distinct check families in runChecks (stated-vs-computed, structural, ledger, series). */

@@ -9,7 +9,7 @@ src = root/'src' if (root/'src'/'shell.html').exists() else root
 shell = (src/'shell.html').read_text(encoding='utf-8')
 css_files = ['style-tokens.css', 'style.css', 'style-v4.css', 'style-studio.css', 'style-identity.css']
 js_files = ['core.js', 'provenance.js', 'util.js', 'ledger.js', 'series.js', 'deal.js', 'sim.js', 'sim-async.js', 'patterns.js', 'checklist.js',
-            'library.js', 'config.js', 'owner.js', 'owner-settings.js', 'owner-diff.js', 'theme.js', 'icons.js', 'charts.js', 'report.js', 'exports.js', 'xlsx.js', 'studio.js', 'studio2.js', 'studio-details.js', 'studio-safety.js', 'demo.js', 'motion.js', 'boot.js']
+            'library.js', 'config.js', 'owner.js', 'owner-settings.js', 'owner-diff.js', 'theme.js', 'icons.js', 'charts.js', 'report.js', 'exports.js', 'xlsx.js', 'studio.js', 'studio2.js', 'studio-details.js', 'studio-safety.js', 'demo.js', 'motion.js', 'actions.js', 'boot.js']
 css = '\n'.join((src/f).read_text(encoding='utf-8') for f in css_files if (src/f).exists())
 js = '\n'.join((src/f).read_text(encoding='utf-8') for f in js_files if (src/f).exists())
 if not (len(sys.argv) > 1 and sys.argv[1] == '--readable'):
@@ -40,6 +40,6 @@ blocks = re.findall(r'<script>(.*?)</script>', out, flags=re.S)
 assert blocks and '@@SCRIPT_HASHES@@' in out, 'the shell needs its inline scripts and the @@SCRIPT_HASHES@@ slot in the policy'
 assert not re.search(r'<script\s+[^>]', out), 'a <script> with attributes would not be covered by the hashes'
 hashes = ' '.join("'sha256-" + base64.b64encode(hashlib.sha256(b.encode('utf-8')).digest()).decode('ascii') + "'" for b in blocks)
-out = out.replace('@@SCRIPT_HASHES@@', hashes)
+out = out.replace('@@SCRIPT_HASHES@@', hashes)   # fills script-src and script-src-elem
 (root/'index.html').write_text(out, encoding='utf-8', newline='\n')  # LF everywhere: CI compares builds byte for byte
 print('built index.html', len(out.splitlines()), 'lines', len(out.encode())//1024, 'KB')

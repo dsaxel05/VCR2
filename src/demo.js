@@ -109,7 +109,7 @@ function ledgerFromSpec(g) {
 }
 
 function loadDemo(which) {
-  which = which || 'northwind';
+  which = which || 'northwind'; clearPrint();
   S = blankState(); S.example = true;       /* in memory only: an example never replaces a saved draft */
   if (which === 'halcyon') loadHalcyon(); else loadNorthwind();
   $id('cname').value = S.name;

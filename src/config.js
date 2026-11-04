@@ -685,7 +685,7 @@ function applyBranding() {
   const h1 = document.querySelector('.intro-h1');
   if (h1 && !h1.dataset.orig) h1.dataset.orig = h1.innerHTML;
   /* *word* in the owner's headline gets the highlight mark (the text is escaped first). */
-  if (h1) { if (b.headline && String(b.headline).trim()) h1.innerHTML = esc(b.headline).replace(/\*([^*]{1,60})\*/g, '<span class="mark">$1</span>'); else if (h1.dataset.orig) h1.innerHTML = h1.dataset.orig; }
+  if (h1) { if (b.headline && String(b.headline).trim()) setHTML(h1, esc(b.headline).replace(/\*([^*]{1,60})\*/g, '<span class="mark">$1</span>')); else if (h1.dataset.orig) setHTML(h1, h1.dataset.orig); }
   const keep = (sel, key) => { const el = document.querySelector(sel); if (!el) return; if (!el.dataset.orig) el.dataset.orig = el.textContent; el.textContent = (b[key] && String(b[key]).trim()) ? b[key] : el.dataset.orig; };
   keep('.intro-sub', 'subtitle'); keep('.intro-note', 'note'); keep('.sb-logo-name', 'appName'); keep('.hero-kicker', 'kicker');
   /* The browser-tab title: the owner's words, or the built-in one again. */

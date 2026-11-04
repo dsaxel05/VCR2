@@ -68,6 +68,17 @@ async def main():
         r = await pg.evaluate(JS, workbook(sheet=rows))
         check('a real-size workbook (150,000 cells) still opens', r['ok'], r)
         check(f"... in time ({r['ms']:.0f} ms)", r['ms'] < 8000, r)
+        # 20,000 sheets (190 KB): only the first 200 are read
+        n = 20000
+        wbx = '<?xml version="1.0"?><workbook ' + NS + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + ''.join(f'<sheet name="s{i}" sheetId="{i+1}" r:id="r{i}"/>' for i in range(n)) + '</sheets></workbook>'
+        rl = '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + ''.join(f'<Relationship Id="r{i}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' for i in range(n)) + '</Relationships>'
+        bz = io.BytesIO()
+        with zipfile.ZipFile(bz, 'w', zipfile.ZIP_DEFLATED) as z:
+            z.writestr('xl/workbook.xml', wbx); z.writestr('xl/_rels/workbook.xml.rels', rl)
+            z.writestr('xl/worksheets/sheet1.xml', f'<?xml version="1.0"?><worksheet {NS}><sheetData/><!--' + 'x' * 2000 + '--></worksheet>')
+        r = await pg.evaluate("async b64 => { const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); const t = performance.now(); const s = await readWorkbook(u.buffer); return { n:s.length, ms:performance.now() - t }; }", base64.b64encode(bz.getvalue()).decode())
+        check('a workbook with 20,000 sheets reads at most 200 of them', r['n'] <= 200, r)
+        check(f"... in time ({r['ms']:.0f} ms)", r['ms'] < BUDGET, r)
         await b.close()
     bad = [r for r in results if not r[0]]
     print(f'\n{len(results) - len(bad)}/{len(results)} passed')

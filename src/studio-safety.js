@@ -90,11 +90,11 @@ function paneStDiffers() {
   const n = L.length;
   return `<p class="pg-desc">Everything in your draft that is not the built-in site: ${n ? `<b>${n}</b> setting${n === 1 ? '' : 's'}` : 'nothing yet'}. Each has a way back. The same count appears on every report as “N settings differ from the built-in rules”.</p>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px">
-      <button class="btn btn-ghost btn-sm" onclick="resetEverything()"${n ? '' : ' disabled'}>Reset everything to built-in</button>
-      <button class="btn btn-ghost btn-sm" onclick="reviewPublish()">Review changes against the live site</button></div>
+      <button class="btn btn-ghost btn-sm" data-click="resetEverything"${n ? '' : ' disabled'}>Reset everything to built-in</button>
+      <button class="btn btn-ghost btn-sm" data-click="reviewPublish">Review changes against the live site</button></div>
     ${n ? Object.entries(groups).map(([a, items]) => `<div class="block-title" style="margin-top:10px">${esc(DIFF_AREAS[a] || a)} (${items.length})</div>
       <div class="tbl-wrap"><table class="ledger"><tbody>${items.map(d => { const key = d.key.slice(a.length + 1);
-        return `<tr><td>${esc(d.text)}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-ghost btn-sm" data-area="${esc(a)}" data-key="${esc(key)}" onclick="resetDiffItem(this.dataset.area, this.dataset.key)">${DIFF_LISTS.includes(a) ? 'Delete' : 'Back to built-in'}</button></td></tr>`; }).join('')}</tbody></table></div>`).join('')
+        return `<tr><td>${esc(d.text)}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-ghost btn-sm" data-area="${esc(a)}" data-key="${esc(key)}" data-click="resetDiffItem">${DIFF_LISTS.includes(a) ? 'Delete' : 'Back to built-in'}</button></td></tr>`; }).join('')}</tbody></table></div>`).join('')
       : `<div class="empty-card"><h3>The site is exactly as built</h3><p>Nothing in your draft differs from the built-in rules.</p></div>`}`;
 }
 
@@ -149,11 +149,11 @@ async function openHistory() {
     const el = $id('hist-body'); if (!el) return;
     if (!r.ok || !Array.isArray(r.body)) { el.textContent = `GitHub answered ${r.status}. Try again in a moment.`; return; }
     if (!r.body.length) { el.textContent = 'Nothing has been published yet.'; return; }
-    el.outerHTML = `<div class="tbl-wrap"><table class="ledger"><tbody>${r.body.map(c => {
+    setHTML(el, `<div class="tbl-wrap"><table class="ledger"><tbody>${r.body.map(c => {
       const d = c.commit && c.commit.author && c.commit.author.date ? new Date(c.commit.author.date).toLocaleString('en-GB') : '';
       return `<tr><td>${esc(d)}</td><td>${esc(String((c.commit && c.commit.message) || '').split('\n')[0].slice(0, 90))}</td>
-        <td style="text-align:right"><button class="btn btn-ghost btn-sm" data-sha="${esc(c.sha)}" onclick="loadVersion(this.dataset.sha)">Load into my draft</button></td></tr>`; }).join('')}</tbody></table></div>
-      <p class="field-hint">Loading a version puts it in your draft only. Review it, then publish to make it live again.</p>`;
+        <td style="text-align:right"><button class="btn btn-ghost btn-sm" data-sha="${esc(c.sha)}" data-click="loadVersion">Load into my draft</button></td></tr>`; }).join('')}</tbody></table></div>
+      <p class="field-hint">Loading a version puts it in your draft only. Review it, then publish to make it live again.</p>`, 1);
   } catch (e) { const el = $id('hist-body'); if (el) el.textContent = e.message; }
 }
 async function loadVersion(sha) {
@@ -180,14 +180,14 @@ function paneStAdvanced() {
   const t = repoTarget();
   const text = JSON.stringify(Object.assign(normalizeConfig(JSON.parse(JSON.stringify(ST.draft))), { owner:t.owner, repo:t.repo, branch:t.branch, path:t.path }), null, 2);
   return `<p class="pg-desc">The whole configuration as JSON: every setting on every tab. Edit it here for bulk changes, or paste a configuration. It is checked as you type. Nothing changes until you press Apply, and everything is still validated, so a broken file can never break the site.</p>
-    <textarea class="intake-ta formula" id="adv-json" spellcheck="false" style="min-height:360px" oninput="advCheck()">${esc(text)}</textarea>
+    <textarea class="intake-ta formula" id="adv-json" spellcheck="false" style="min-height:360px" data-input="advCheck">${esc(text)}</textarea>
     <div class="fx-status" id="adv-status" role="status"></div>
     <div id="adv-drops" class="field-hint"></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-      <button class="btn btn-primary btn-sm" id="adv-apply" onclick="advApply()">Apply to my draft</button>
-      <button class="btn btn-ghost btn-sm" onclick="downloadDraft()">Download</button>
-      <button class="btn btn-ghost btn-sm" onclick="importDraft()">Import a file</button>
-      <button class="btn btn-ghost btn-sm" onclick="advReset()">Reload from my draft</button></div>`;
+      <button class="btn btn-primary btn-sm" id="adv-apply" data-click="advApply">Apply to my draft</button>
+      <button class="btn btn-ghost btn-sm" data-click="downloadDraft">Download</button>
+      <button class="btn btn-ghost btn-sm" data-click="importDraft">Import a file</button>
+      <button class="btn btn-ghost btn-sm" data-click="advReset">Reload from my draft</button></div>`;
 }
 function advRead() {
   const ta = $id('adv-json'); if (!ta) return { ok:false, error:'' };
@@ -207,7 +207,7 @@ function advCheck() {
     const n = settingsDiff(r.norm).length;
     if (errs.length) { st.className = 'fx-status bad'; st.textContent = errs[0] + (errs.length > 1 ? ` (and ${errs.length - 1} more)` : ''); if (ap) ap.disabled = true; }
     else { st.className = 'fx-status ok'; st.textContent = `Valid · ${n} setting${n === 1 ? '' : 's'} differ from built-in.`; if (ap) ap.disabled = false; }
-    if (dr) dr.innerHTML = r.dropped.length ? `Not recognised, and left out when applied: <code>${r.dropped.map(esc).join('</code>, <code>')}</code>` : '';
+    if (dr) setHTML(dr, r.dropped.length ? `Not recognised, and left out when applied: <code>${r.dropped.map(esc).join('</code>, <code>')}</code>` : '');
   }, 150);
 }
 function advApply() {

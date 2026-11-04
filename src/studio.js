@@ -41,12 +41,15 @@ const tokenStore = {
 };
 tokenStore.purge();
 let _ghIdle = 0;
-function ghTouch() { clearTimeout(_ghIdle); if (ST.token) _ghIdle = setTimeout(() => { if (ST.token) { ST.token = null; ST.user = null; updateStudioLink(); toast('Signed out of the Studio after 15 minutes without activity.'); if (location.hash === '#studio') renderStudioGate(); } }, 15 * 60000); }
+let _ghLast = 0;
+function ghIdleOut() { if (!ST.token) return; ST.token = null; ST.user = null; updateStudioLink(); toast('Signed out of the Studio after 15 minutes without activity.'); if (location.hash === '#studio') renderStudioGate(); }
+function ghTouch() { clearTimeout(_ghIdle); _ghLast = Date.now(); if (ST.token) _ghIdle = setTimeout(ghIdleOut, 15 * 60000); }
 if (typeof window !== 'undefined' && window.addEventListener) {
   ['pointerdown', 'keydown'].forEach(t => window.addEventListener(t, ghTouch, { passive:true }));
   window.addEventListener('pagehide', () => { ST.token = null; });
 }
 async function gh(path, opts) {
+  if (ST.token && _ghLast && Date.now() - _ghLast > 15 * 60000) { ghIdleOut(); throw new Error('Signed out after 15 minutes without activity.'); }
   let res;
   try { res = await fetch(GH_API + path, Object.assign({ cache:'no-store', headers:{ Accept:'application/vnd.github+json', Authorization:'Bearer ' + ST.token, 'X-GitHub-Api-Version':'2022-11-28' } }, opts || {})); }
   catch (e) { const err = new Error('Could not reach GitHub. Check the connection and try again.'); err.keep = true; throw err; }
@@ -157,7 +160,7 @@ function renderPreviewBanner() {
   let el = $id('preview-banner');
   if (!previewOn()) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'preview-banner'; el.className = 'preview-banner'; el.setAttribute('data-no-text-edit', ''); document.body.appendChild(el); }
-  el.innerHTML = `Previewing your unpublished Studio draft: visitors see the live version. <a href="#studio" onclick="goStudio();return false">Open Studio</a> · <a href="#" onclick="setPreview(false);return false">Stop preview</a>`;
+  setHTML(el, `Previewing your unpublished Studio draft: visitors see the live version. <a href="#studio" data-click="goStudio">Open Studio</a> · <a href="#" data-click="setPreview" data-a="#false">Stop preview</a>`);
 }
 
 /* ── Entry ── */
@@ -174,7 +177,7 @@ async function openStudio() {
 }
 function renderStudioGate(busy, err) {
   const t = repoTarget();
-  $id('studio-content').innerHTML = `
+  setHTML($id('studio-content'), `
     <div class="studio-gate">
       <div class="pg-eyebrow">Owner Studio</div>
       <h2 class="pg-title">Only the owner of ${esc(t.owner)}/${esc(t.repo)} can open this</h2>
@@ -183,7 +186,7 @@ function renderStudioGate(busy, err) {
       ${err ? `<div class="warnstrip"><span>⚠</span><div>${esc(err)}</div></div>` : ''}
       <label class="form-lbl" for="gh-token">GitHub token</label>
       <input class="form-inp" id="gh-token" type="password" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-bwignore placeholder="github_pat_…">
-      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary" id="gh-signin">Sign in</button><button class="btn btn-ghost" onclick="leaveStudio()">Back to the app</button></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary" id="gh-signin">Sign in</button><button class="btn btn-ghost" data-click="leaveStudio">Back to the app</button></div>
       <details class="paste" style="margin-top:14px" open><summary>How to create the token (one minute)</summary>
         <ol class="howto">
           <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (signed in as ${esc(t.owner)}).</li>
@@ -194,7 +197,7 @@ function renderStudioGate(busy, err) {
         </ol>
         <p class="field-hint">The token is kept only in this tab’s memory, never saved, and is sent only to api.github.com. You are signed out when the tab closes, after 15 minutes without activity and after each publish. Anyone can see the site; only this token can change it. <b>Treat it like a password to the whole site.</b> Use a 7-day token limited to <b>${esc(t.owner)}/${esc(t.repo)}</b> with <b>Contents: Read and write</b> only.</p>
       </details>`}
-    </div>`;
+    </div>`);
   const b = $id('gh-signin');
   if (b) b.onclick = async () => {
     const v = $id('gh-token').value;
@@ -216,7 +219,7 @@ const STUDIO_GROUPS = [
 function renderStudio() {
   const t = repoTarget();
   if (typeof studioResetTrack === 'function') studioResetTrack();
-  $id('studio-content').innerHTML = `
+  setHTML($id('studio-content'), `
     <div class="studio-head">
       <div>
         <div class="pg-eyebrow">Owner Studio · @${esc(ST.user)}</div>
@@ -227,24 +230,24 @@ function renderStudio() {
     <div class="studio-bar">
       <div id="studio-status" class="studio-status"></div>
       <div class="studio-actions">
-        <label class="api-check"><input type="checkbox" id="st-preview" ${previewOn() ? 'checked' : ''} onchange="setPreview(this.checked)"> Preview draft in this browser</label>
-        <button class="btn btn-ghost btn-sm" id="st-undo" onclick="studioUndo()" ${ST.undo && ST.undo.length ? '' : 'disabled'} title="Ctrl+Z">Undo</button>
-        <button class="btn btn-ghost btn-sm" id="st-redo" onclick="studioRedo()" ${ST.redo && ST.redo.length ? '' : 'disabled'} title="Ctrl+Y">Redo</button>
-        <button class="btn btn-primary btn-sm" onclick="reviewPublish()">Publish to the live site</button>
-        <button class="btn btn-ghost btn-sm" onclick="openHistory()">Publish history</button>
-        <button class="btn btn-ghost btn-sm" onclick="downloadDraft()">Download config</button>
-        <button class="btn btn-ghost btn-sm" onclick="importDraft()">Import config</button>
-        <button class="btn btn-ghost btn-sm" onclick="discardDraft()">Discard draft</button>
-        <button class="btn btn-ghost btn-sm" onclick="studioSignOut()">Sign out</button>
+        <label class="api-check"><input type="checkbox" id="st-preview" ${previewOn() ? 'checked' : ''} data-change="setPreview"> Preview draft in this browser</label>
+        <button class="btn btn-ghost btn-sm" id="st-undo" data-click="studioUndo" ${ST.undo && ST.undo.length ? '' : 'disabled'} title="Ctrl+Z">Undo</button>
+        <button class="btn btn-ghost btn-sm" id="st-redo" data-click="studioRedo" ${ST.redo && ST.redo.length ? '' : 'disabled'} title="Ctrl+Y">Redo</button>
+        <button class="btn btn-primary btn-sm" data-click="reviewPublish">Publish to the live site</button>
+        <button class="btn btn-ghost btn-sm" data-click="openHistory">Publish history</button>
+        <button class="btn btn-ghost btn-sm" data-click="downloadDraft">Download config</button>
+        <button class="btn btn-ghost btn-sm" data-click="importDraft">Import config</button>
+        <button class="btn btn-ghost btn-sm" data-click="discardDraft">Discard draft</button>
+        <button class="btn btn-ghost btn-sm" data-click="studioSignOut">Sign out</button>
       </div>
     </div>
     ${ST.conflict ? `<div class="warnstrip" id="st-conflict"><span>⚠</span><div>The live configuration was changed after this draft was started, from another device or directly on GitHub. Publishing this draft would replace those changes.
-      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="startFromLive()">Start again from the live version</button><button class="btn btn-ghost btn-sm" onclick="keepDraftOverLive()">Keep my draft</button></div></div></div>` : ''}
-    <div class="studio-body"><nav class="studio-nav studio-tabs" aria-label="Studio index">${STUDIO_GROUPS.map(([g, tabs]) => `<div class="sn-group"><div class="sn-h">${esc(g)}</div><div class="sn-items">${tabs.map(([id, l]) => `<button class="rtab${ST.tab === id ? ' active' : ''}" onclick="studioTab('${id}')">${esc(l)}</button>`).join('')}</div></div>`).join('')}</nav>
-    <div id="studio-pane"></div></div>`;
+      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-click="startFromLive">Start again from the live version</button><button class="btn btn-ghost btn-sm" data-click="keepDraftOverLive">Keep my draft</button></div></div></div>` : ''}
+    <div class="studio-body"><nav class="studio-nav studio-tabs" aria-label="Studio index">${STUDIO_GROUPS.map(([g, tabs]) => `<div class="sn-group"><div class="sn-h">${esc(g)}</div><div class="sn-items">${tabs.map(([id, l]) => `<button class="rtab${ST.tab === id ? ' active' : ''}" data-click="studioTab" data-a="${esc(id)}">${esc(l)}</button>`).join('')}</div></div>`).join('')}</nav>
+    <div id="studio-pane"></div></div>`);
   renderStudioStatus(); renderStudioPane();
 }
-function studioTab(id) { ST.tab = id; document.querySelectorAll('.studio-tabs .rtab').forEach(b => b.classList.toggle('active', (b.getAttribute('onclick') || '').includes(`'${id}'`))); renderStudioPane();
+function studioTab(id) { ST.tab = id; document.querySelectorAll('.studio-tabs .rtab').forEach(b => b.classList.toggle('active', b.dataset.a === id)); renderStudioPane();
   const p = $id('studio-pane'); if (p && p.getBoundingClientRect().top < 0) p.scrollIntoView({ block:'start' }); }
 function renderStudioStatus() {
   const el = $id('studio-status'); if (!el || !ST.draft) return;
@@ -252,56 +255,56 @@ function renderStudioStatus() {
   const NAMES = { fields:'inputs', metrics:'metrics', checks:'checks', gates:'deal-breakers', questions:'questions', patterns:'red flags', requests:'document requests', checklist:'checklist',
     benchmarks:'benchmark data', models:'business models', hidden:'built-in items', labels:'renamed items', thresholds:'healthy ranges', metricWeights:'metric weights', stageWeights:'dimension weights',
     categorical:'scored answers', booleans:'yes/no points', checkTol:'check tolerances', patternParams:'red-flag triggers', defaults:'defaults', settings:'scoring rules', branding:'home page texts', look:'look & feel', texts:'text replacements' };
-  el.innerHTML = ch.length ? `<span class="pill amber">draft</span> Unpublished changes: ${ch.map(k => esc(NAMES[k] || k)).join(', ')}` : `<span class="pill green">live</span> The live site matches your draft${CFG_PUBLISHED.updated ? ` · last published ${esc(new Date(CFG_PUBLISHED.updated).toLocaleString('en-GB'))}` : ''}`;
+  setHTML(el, ch.length ? `<span class="pill amber">draft</span> Unpublished changes: ${ch.map(k => esc(NAMES[k] || k)).join(', ')}` : `<span class="pill green">live</span> The live site matches your draft${CFG_PUBLISHED.updated ? ` · last published ${esc(new Date(CFG_PUBLISHED.updated).toLocaleString('en-GB'))}` : ''}`);
 }
 function renderStudioPane() {
   const el = $id('studio-pane'); if (!el) return;
   const R = { home:paneStHome, fields:paneStFields, metrics:paneStMetrics, checks:paneStChecks, gates:paneStGates, questions:paneStQuestions, patterns:paneStPatterns, requests:paneStRequests, checklist:paneStChecklist,
     benchmarks:paneStBenchmarks, models:paneStModels, answers:paneStAnswers, defaults:paneStDefaults, triggers:paneStTriggers, tolerances:paneStTolerances,
     builtins:paneStBuiltins, labels:paneStLabels, scoring:paneStScoring, standards:paneStStandards, look:paneStLook, texts:paneStTexts, anytext:paneStAnyText, constants:paneStConstants, details:paneStDetails, differs:paneStDiffers, advanced:paneStAdvanced, dimensions:paneStDimensions, stages:paneStStages, help:paneStHelp };
-  el.innerHTML = (R[ST.tab] || paneStHome)();
+  setHTML(el, (R[ST.tab] || paneStHome)());
 }
 const stEmpty = (what, btn) => `<div class="empty-card"><h3>No ${esc(what)} yet</h3><p>Add one and it appears for every visitor once you publish.</p>${btn}</div>`;
-const rowActions = (kind, i) => `<td style="white-space:nowrap;text-align:right"><button class="btn btn-ghost btn-sm" onclick="editItem('${kind}',${i})">Edit</button> <button class="btn btn-ghost btn-sm" onclick="moveItem('${kind}',${i},-1)" aria-label="Move up">↑</button> <button class="btn btn-ghost btn-sm" onclick="deleteItem('${kind}',${i})" aria-label="Delete">Delete</button></td>`;
+const rowActions = (kind, i) => `<td style="white-space:nowrap;text-align:right"><button class="btn btn-ghost btn-sm" data-click="editItem" data-a="${esc(kind)}" data-b="#${i}">Edit</button> <button class="btn btn-ghost btn-sm" data-click="moveItem" data-a="${esc(kind)}" data-b="#${i}" data-c="#-1" aria-label="Move up">↑</button> <button class="btn btn-ghost btn-sm" data-click="deleteItem" data-a="${esc(kind)}" data-b="#${i}" aria-label="Delete">Delete</button></td>`;
 
 function paneStFields() {
-  const L = ST.draft.fields, add = `<button class="btn btn-primary btn-sm" onclick="editItem('fields',-1)">Add a field</button>`;
+  const L = ST.draft.fields, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="fields" data-b="#-1">Add a field</button>`;
   return `<p class="pg-desc">Fields are the inputs people fill in on the evidence form. Use them for anything an investor wants captured, a new KPI, a yes/no diligence item, a choice list. Their names can be used in formulas.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Label</th><th>Name in formulas</th><th>Section</th><th>Type</th><th></th></tr></thead><tbody>
       ${L.map((f, i) => `<tr><td>${esc(f.label)}${f.required ? ' <span class="pill red">required</span>' : ''}</td><td class="m">${esc(f.id)}</td><td>${esc(sectionLabel(f.section))}</td><td>${esc(typeLabel(f))}</td>${rowActions('fields', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('custom fields', add)}`;
 }
 function paneStMetrics() {
-  const L = ST.draft.metrics, add = `<button class="btn btn-primary btn-sm" onclick="editItem('metrics',-1)">Add a metric</button>`;
+  const L = ST.draft.metrics, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="metrics" data-b="#-1">Add a metric</button>`;
   return `<p class="pg-desc">Metrics are computed from fields and other metrics with a formula. Give one a dimension and stage thresholds and it is scored like any built-in metric; leave the dimension empty and it is shown but not scored.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Metric</th><th>Formula</th><th>Scored in</th><th>Value now</th><th></th></tr></thead><tbody>
       ${L.map((m, i) => { const v = previewValue(m.formula, m.key); return `<tr><td>${esc(m.label)}<div class="field-hint">${esc(m.key)}</div></td><td class="m">${esc(m.formula)}</td><td>${esc((dimOptsNow().concat(dimensionChoices()).find(d => d[0] === m.dim) || dimOptsNow()[0])[1])}${m.dim ? ` · ${m.dir === 'lo' ? 'lower' : 'higher'} is better` : ''}</td><td class="m">${esc(fmtPreview(v, m.unit))}</td>${rowActions('metrics', i)}</tr>`; }).join('')}</tbody></table></div>` : stEmpty('custom metrics', add)}`;
 }
 function paneStChecks() {
-  const L = ST.draft.checks, add = `<button class="btn btn-primary btn-sm" onclick="editItem('checks',-1)">Add a check</button>`;
+  const L = ST.draft.checks, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="checks" data-b="#-1">Add a check</button>`;
   return `<p class="pg-desc">A check compares something the company states with something VCR2 computes. It lands in verification, the findings and the question list, and counts towards blocking the score when it is material.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Check</th><th>Stated field</th><th>Computed as</th><th>Tolerance</th><th></th></tr></thead><tbody>
       ${L.map((c, i) => `<tr><td>${esc(c.title)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td class="m">${esc(c.tol)}${c.mode === 'pts' ? ' pts' : '%'} / ${esc(c.hard)}${c.mode === 'pts' ? ' pts' : '%'}</td>${rowActions('checks', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('custom checks', add)}`;
 }
 function paneStQuestions() {
-  const L = ST.draft.questions, add = `<button class="btn btn-primary btn-sm" onclick="editItem('questions',-1)">Add a question</button>`;
+  const L = ST.draft.questions, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="questions" data-b="#-1">Add a question</button>`;
   return `<p class="pg-desc">Questions go into the question list and the founder email. Leave the condition empty to always ask; add one to ask only when it applies, for example <code>nrr &lt; 100</code> or <code>model == 'fintech'</code>.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Question</th><th>Asked when</th><th>Priority</th><th></th></tr></thead><tbody>
       ${L.map((q, i) => `<tr><td>${esc(q.text)}</td><td class="m">${esc(q.when || 'always')}</td><td>${esc(q.priority || 'normal')}</td>${rowActions('questions', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('custom questions', add)}`;
 }
 function paneStPatterns() {
-  const L = ST.draft.patterns, add = `<button class="btn btn-primary btn-sm" onclick="editItem('patterns',-1)">Add a pattern</button>`;
+  const L = ST.draft.patterns, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="patterns" data-b="#-1">Add a pattern</button>`;
   return `<p class="pg-desc">Patterns are the risk and strength cards on the overview. A pattern fires when its condition is true. Combine several metrics with <code>and</code> / <code>or</code>.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Pattern</th><th>Fires when</th><th>Type</th><th></th></tr></thead><tbody>
       ${L.map((p, i) => `<tr><td>${esc(p.title)}</td><td class="m">${esc(p.when)}</td><td>${esc(p.sev === 'red' ? 'risk' : p.sev === 'green' ? 'strength' : 'watch')}</td>${rowActions('patterns', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('custom patterns', add)}`;
 }
 function paneStRequests() {
-  const L = ST.draft.requests, add = `<button class="btn btn-primary btn-sm" onclick="editItem('requests',-1)">Add a request</button>`;
+  const L = ST.draft.requests, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="requests" data-b="#-1">Add a request</button>`;
   return `<p class="pg-desc">Document requests appear under “Documents to request”, in the IC memo and in the founder email.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Request</th><th>Asked when</th><th></th></tr></thead><tbody>
       ${L.map((r, i) => `<tr><td>${esc(r.text)}</td><td class="m">${esc(r.when || 'always')}</td>${rowActions('requests', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('custom requests', add)}`;
 }
 function paneStChecklist() {
-  const L = ST.draft.checklist, add = `<button class="btn btn-primary btn-sm" onclick="editItem('checklist',-1)">Add a checklist item</button>`;
+  const L = ST.draft.checklist, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="checklist" data-b="#-1">Add a checklist item</button>`;
   return `<p class="pg-desc">The diligence checklist in every report lists what investors ask for at each stage. Add the items your fund always requests; switch built-in ones off under “Switch on or off”.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Item</th><th>Category</th><th>From</th><th></th></tr></thead><tbody>
       ${L.map((c, i) => `<tr><td>${esc(c.text)}</td><td>${esc(c.category || 'Financial')}</td><td>${esc((STAGES.find(s => s.id === c.from) || STAGES[0]).n)}</td>${rowActions('checklist', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('checklist items of your own', add)}`;
@@ -320,7 +323,7 @@ function editChecklist(c, i) {
 function paneStBuiltins() {
   const H = ST.draft.hidden;
   const toggles = (kind, items, note) => `<div class="bi-group"><div class="block-title">${esc(note)}</div><div class="bi-grid">${items.map(([id, label]) =>
-    `<label class="bi"><input type="checkbox" ${H[kind].includes(id) ? '' : 'checked'} onchange="toggleBuiltin('${kind}','${esc(id)}',this.checked)"> <span>${esc(label)}</span></label>`).join('')}</div></div>`;
+    `<label class="bi"><input type="checkbox" ${H[kind].includes(id) ? '' : 'checked'} data-change="toggleBuiltin" data-a="${esc(kind)}" data-b="${esc(id)}"> <span>${esc(label)}</span></label>`).join('')}</div></div>`;
   const secItems = SECTIONS.filter(s => s.id !== 'custom').map(s => [s.id, s.label]);
   const fieldGroups = BASE.sectionFields.map(b => { const sec = SECTIONS.find(s => s.id === b.id); return toggles('fields', b.fields.map(f => [f.id, f.lbl]), `Fields: ${sec ? sec.label : b.id}`); }).join('');
   const metricItems = Object.keys(BASE.dlabel).map(k => [k, metricName(k)]);
@@ -348,7 +351,7 @@ function toggleBuiltin(kind, id, on) {
 function paneStLabels() {
   const L = ST.draft.labels;
   const row = (kind, id, base, cur, ph) => `<tr data-q="${esc((id + ' ' + base).toLowerCase())}"><td class="m" style="white-space:nowrap">${esc(id)}</td><td>${esc(base || '')}</td>
-    <td><input class="form-inp lbl-inp" value="${esc(cur || '')}" placeholder="${esc(ph || 'Keep the built-in text')}" onchange="setLabel('${kind}','${esc(id)}', this.value)"></td></tr>`;
+    <td><input class="form-inp lbl-inp" value="${esc(cur || '')}" placeholder="${esc(ph || 'Keep the built-in text')}" data-change="setLabel" data-a="${esc(kind)}" data-b="${esc(id)}"></td></tr>`;
   const fieldRows = BASE.sectionFields.flatMap(b => b.fields.map(f => row('fields', f.id, BASE.flabel[f.id], L.fields[f.id]))).join('');
   const hintRows = BASE.sectionFields.flatMap(b => b.fields.map(f => row('hints', f.id, BASE.fhint[f.id] || 'n/a', L.hints[f.id], 'Keep the built-in hint'))).join('');
   const metricRows = Object.keys(BASE.dlabel).map(k => row('metrics', k, BASE.dlabel[k], L.metrics[k])).join('');
@@ -366,7 +369,7 @@ function paneStLabels() {
   const n = LABEL_KINDS.reduce((a, k) => a + Object.keys(L[k] || {}).length, 0);
   const tbl = (title, rows, open) => `<details class="paste" style="margin-top:9px"${open ? ' open' : ''}><summary>${esc(title)}</summary><div class="tbl-wrap lbl-tbl"><table class="ledger"><thead><tr><th>Name</th><th>Built-in text</th><th>Your text</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
   return `<p class="pg-desc">Use the words your investors use. A new label replaces the built-in one everywhere, the form, the report, the memo and the question list. Fields, metrics, sections, dimensions, red flags, deal-breakers and checklist items can all be renamed. Names used in formulas never change. Leave a box empty to keep the built-in text.${n ? ` <b>${n}</b> item${n === 1 ? '' : 's'} renamed.` : ''}</p>
-    <input class="form-inp" placeholder="Search by name or label…" oninput="filterLabelRows(this.value);filterLabelRowsOpen(this.value)" style="max-width:420px;margin-bottom:9px">
+    <input class="form-inp" placeholder="Search by name or label…" data-input="filterLabels" style="max-width:420px;margin-bottom:9px">
     <div class="block-title">Field labels</div>
     <div class="tbl-wrap lbl-tbl"><table class="ledger"><thead><tr><th>Name</th><th>Built-in label</th><th>Your label</th></tr></thead><tbody>${fieldRows}</tbody></table></div>
     <div class="block-title" style="margin-top:14px">Metric labels</div>
@@ -389,36 +392,36 @@ function filterLabelRowsOpen(q) { if (String(q || '').trim()) document.querySele
 function filterLabelRows(q) { q = String(q || '').trim().toLowerCase(); document.querySelectorAll('.lbl-tbl tbody tr').forEach(r => r.style.display = !q || r.dataset.q.includes(q) ? '' : 'none'); }
 function paneStScoring() {
   const s = ST.draft.settings, minN = Object.assign({}, BASE.minN, s.minN || {}), ns = Object.assign({}, BASE.nextStage, s.nextStage || {});
-  const num = (id, v, step, onch) => `<input class="st-num" type="number" step="${step || 'any'}" value="${v == null ? '' : esc(v)}" onchange="${onch}">`;
+  const num = (id, v, step, onch) => `<input class="st-num" type="number" step="${step || 'any'}" value="${v == null ? '' : esc(v)}" ${onch}>`;
   const dims = ['revenue','capital','gtm','team','market','govern'].concat(ST.draft.dimensions.map(d => d.id));
   const dimName = d => (ST.draft.dimensions.find(x => x.id === d) || {}).label || DIM_LABEL[d];
   const sw = st => Object.assign({}, BASE.weights[st], ST.draft.stageWeights[st] || {});
   return `
     <div class="block-title">How evidence counts</div>
     <p class="field-hint" style="margin-bottom:6px">A score above 50 is pulled towards 50 in proportion to how weak its evidence is (a founder’s word, an untagged figure) and fully kept when it rests on bank records, a billing export or audited accounts. Scores below 50 are never pulled up: bad news is believed as stated.</p>
-    <div class="st-row"><span>Evidence adjustment</span><select class="st-num" style="width:auto" onchange="setSettingStr('evidenceMode', this.value)">
+    <div class="st-row"><span>Evidence adjustment</span><select class="st-num" style="width:auto" data-change="setSettingStr" data-a="evidenceMode">
       ${[['gentle','Gentle (recommended): unverified good news keeps about 60% of its lead'],['strict','Strict: good news keeps only its evidence share'],['off','Off: evidence only widens the range']].map(([v, l]) => `<option value="${v}" ${(s.evidenceMode || 'gentle') === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
-    <div class="st-row"><span>Customer lifetime cap for LTV (years)</span>${num('ltv', s.ltvCapYears != null ? s.ltvCapYears : 5, 'any', "setSetting('ltvCapYears', this.value)")}</div>
-    <div class="st-row"><span>Overlap cap: related metrics together weigh at most this many times their largest member (0 = off)</span>${num('corr', s.correlationCap != null ? s.correlationCap : 2, 'any', "setSetting('correlationCap', this.value)")}</div>
+    <div class="st-row"><span>Customer lifetime cap for LTV (years)</span>${num('ltv', s.ltvCapYears != null ? s.ltvCapYears : 5, 'any', 'data-change="setSetting" data-a="ltvCapYears"')}</div>
+    <div class="st-row"><span>Overlap cap: related metrics together weigh at most this many times their largest member (0 = off)</span>${num('corr', s.correlationCap != null ? s.correlationCap : 2, 'any', 'data-change="setSetting" data-a="correlationCap"')}</div>
     ${corrPanel()}
     <div class="block-title" style="margin-top:14px">Deal conventions</div>
     <p class="field-hint" style="margin-bottom:6px">What a convertible note’s valuation cap is measured on. The first is the usual reading of a pre-money cap; the second shields the note from SAFE and pool dilution, as VCR2 did before 5.0.</p>
-    <div class="st-row"><span>Note valuation cap is measured on</span><select class="st-num" style="width:auto" onchange="setSettingStr('noteCapBasis', this.value)">
+    <div class="st-row"><span>Note valuation cap is measured on</span><select class="st-num" style="width:auto" data-change="setSettingStr" data-a="noteCapBasis">
       ${[['existing','The existing shares (recommended)'],['block','The whole pre-money block, including SAFE shares and the pool top-up']].map(([v, l]) => `<option value="${v}" ${(s.noteCapBasis || 'existing') === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
     <div class="block-title" style="margin-top:14px">Blocking</div>
-    <div class="st-row"><span>Withhold the score after this many material contradictions</span>${num('ba', s.blockAfter != null ? s.blockAfter : 3, 1, "setSetting('blockAfter', this.value)")}</div>
+    <div class="st-row"><span>Withhold the score after this many material contradictions</span>${num('ba', s.blockAfter != null ? s.blockAfter : 3, 1, 'data-change="setSetting" data-a="blockAfter"')}</div>
     <div class="block-title" style="margin-top:14px">Minimum sample sizes</div>
     <p class="field-hint" style="margin-bottom:6px">Below these, a metric is shown but not scored.</p>
     ${[['retention','Customers a year ago, for NRR / GRR / quick ratio'],['unit_economics','New customers, for CAC payback and LTV:CAC'],['quota','Quota-carrying reps'],['growth_base','Opening ARR for a growth rate ($)'],['arr_per_fte','Headcount for ARR per employee'],['magic_number','ARR for the magic number ($)'],['pmf_survey','Survey responses for the product-market-fit test']]
-      .map(([k, l]) => `<div class="st-row"><span>${esc(l)}</span>${num(k, minN[k], 'any', `setMinN('${k}', this.value)`)}</div>`).join('')}
+      .map(([k, l]) => `<div class="st-row"><span>${esc(l)}</span>${num(k, minN[k], 'any', `data-change="setMinN" data-a="${esc(k)}"`)}</div>`).join('')}
     <div class="block-title" style="margin-top:14px">Next-stage ARR bar used by the simulation</div>
-    ${STAGE_IDS.map(st => `<div class="st-row"><span>${esc(STAGES.find(x => x.id === st).n)}</span>${num(st, ns[st], 'any', `setNextStage('${st}', this.value)`)}</div>`).join('')}
+    ${STAGE_IDS.map(st => `<div class="st-row"><span>${esc(STAGES.find(x => x.id === st).n)}</span>${num(st, ns[st], 'any', `data-change="setNextStage" data-a="${esc(st)}"`)}</div>`).join('')}
     <p class="field-hint">Leave Series B+ empty to use twice the current ARR.</p>
     <div class="block-title" style="margin-top:14px">Dimension weights by stage</div>
     <p class="field-hint" style="margin-bottom:6px">Any numbers: each stage is rescaled to 100%.</p>
     <div class="tbl-wrap"><table class="ledger"><thead><tr><th>Stage</th>${dims.map(d => `<th>${esc(dimName(d))}</th>`).join('')}<th></th></tr></thead><tbody>
-      ${STAGE_IDS.map(st => `<tr><td>${esc(STAGES.find(x => x.id === st).n)}</td>${dims.map(d => `<td>${num(d, sw(st)[d] != null ? Math.round(sw(st)[d] * 1000) / 10 : 10, 'any', `setStageWeight('${st}','${d}', this.value)`)}</td>`).join('')}<td>${ST.draft.stageWeights[st] && Object.keys(ST.draft.stageWeights[st]).length ? `<button class="btn btn-ghost btn-sm" onclick="resetStageWeights('${st}')">Back to built-in</button>` : ''}</td></tr>`).join('')}</tbody></table></div>
-    <p class="field-hint" style="margin-top:14px">What counts as healthy for each metric is in the <a href="#" onclick="studioTab('standards');return false">Healthy ranges</a> tab.</p>`;
+      ${STAGE_IDS.map(st => `<tr><td>${esc(STAGES.find(x => x.id === st).n)}</td>${dims.map(d => `<td>${num(d, sw(st)[d] != null ? Math.round(sw(st)[d] * 1000) / 10 : 10, 'any', `data-change="setStageWeight" data-a="${esc(st)}" data-b="${esc(d)}"`)}</td>`).join('')}<td>${ST.draft.stageWeights[st] && Object.keys(ST.draft.stageWeights[st]).length ? `<button class="btn btn-ghost btn-sm" data-click="resetStageWeights" data-a="${esc(st)}">Back to built-in</button>` : ''}</td></tr>`).join('')}</tbody></table></div>
+    <p class="field-hint" style="margin-top:14px">What counts as healthy for each metric is in the <a href="#" data-click="studioTab" data-a="standards">Healthy ranges</a> tab.</p>`;
 }
 /* Metrics measured together: each metric is in one group or none. The overlap cap above limits how much a group can weigh. */
 function corrDraft() { const g = ST.draft.settings.correlationGroups; return JSON.parse(JSON.stringify(g && typeof g === 'object' ? g : CORR_GROUPS)); }
@@ -432,17 +435,17 @@ function corrPanel() {
   const keys = [...new Set(Object.keys(RUBRIC.thresholds).concat(...names.map(n => g[n])).concat((ST.draft.metrics || []).map(m => m.key)))];
   const label = k => DLABEL[k] || ((ST.draft.metrics || []).find(m => m.key === k) || {}).label || k;
   const of = k => names.find(n => g[n].includes(k)) || '';
-  const rows = keys.sort((a, b) => label(a).localeCompare(label(b))).map(k => `<tr><td>${esc(label(k))}</td><td><select class="st-num" style="width:auto" aria-label="Group of ${esc(label(k))}" onchange="setCorrMember('${esc(k)}', this.value)">
+  const rows = keys.sort((a, b) => label(a).localeCompare(label(b))).map(k => `<tr><td>${esc(label(k))}</td><td><select class="st-num" style="width:auto" aria-label="Group of ${esc(label(k))}" data-change="setCorrMember" data-a="${esc(k)}">
       <option value="">Measured alone</option>${names.map(n => `<option value="${esc(n)}"${of(k) === n ? ' selected' : ''}>${esc(n.replace(/_/g, ' '))}</option>`).join('')}</select></td></tr>`).join('');
   const changed = !!ST.draft.settings.correlationGroups;
   return `<div class="block-title" style="margin-top:14px">Metrics measured together</div>
     <p class="field-hint" style="margin-bottom:6px">Several metrics can say the same thing (growth and quick ratio, for example). Metrics in one group count as one signal: together they weigh at most the overlap cap above times the largest of them. A group needs two metrics to do anything.</p>
     <details class="paste"><summary>Groups and their metrics (${names.length} group${names.length === 1 ? '' : 's'}, ${keys.length} metrics)</summary>
       <div class="tbl-wrap"><table class="ledger"><thead><tr><th>Metric</th><th>Measured together with</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <div class="st-row"><span>Groups: ${names.map(n => `<b>${esc(n.replace(/_/g, ' '))}</b> (${g[n].length}) <button class="btn-link" onclick="removeCorrGroup('${esc(n)}')" aria-label="Remove the group ${esc(n)}">remove</button>`).join(' &middot; ') || 'none'}</span></div>
-      <div class="st-row"><span>Add a group</span><input class="form-inp" id="corr-new" style="max-width:14rem;margin:0" placeholder="e.g. unit economics" aria-label="Name of a new group"><button class="btn btn-ghost btn-sm" onclick="addCorrGroup($id('corr-new').value)">Add</button></div>
+      <div class="st-row"><span>Groups: ${names.map(n => `<b>${esc(n.replace(/_/g, ' '))}</b> (${g[n].length}) <button class="btn-link" data-click="removeCorrGroup" data-a="${esc(n)}" aria-label="Remove the group ${esc(n)}">remove</button>`).join(' &middot; ') || 'none'}</span></div>
+      <div class="st-row"><span>Add a group</span><input class="form-inp" id="corr-new" style="max-width:14rem;margin:0" placeholder="e.g. unit economics" aria-label="Name of a new group"><button class="btn btn-ghost btn-sm" data-click="addCorr">Add</button></div>
     </details>
-    ${changed ? `<p style="margin-top:6px"><button class="btn-link" onclick="corrSave(JSON.parse(JSON.stringify(CORR_GROUPS)))">Back to the built-in groups</button></p>` : ''}`;
+    ${changed ? `<p style="margin-top:6px"><button class="btn-link" data-click="corrReset">Back to the built-in groups</button></p>` : ''}`;
 }
 function setCorrMember(key, group) {
   const g = corrDraft(); Object.keys(g).forEach(n => { g[n] = g[n].filter(k => k !== key); });
@@ -488,12 +491,12 @@ function paneStStandards() {
   const keys = Object.keys(RUBRIC.thresholds);
   const changed = keys.filter(k => ST.draft.thresholds[k] || ST.draft.metricWeights[k] != null).length;
   return `<p class="pg-desc">The bar VCR2 uses to call each metric poor, good or excellent, at each stage. When investors tell you a different number is healthy, change it here, every report uses your bar once you publish, and marks it “your standard”. Your own metrics’ ranges are set in the Metrics tab.${changed ? ` <b>${changed}</b> changed.` : ''}</p>
-    <input class="form-inp" placeholder="Search a metric…" oninput="filterStdRows(this.value)" style="max-width:420px;margin-bottom:9px">
+    <input class="form-inp" placeholder="Search a metric…" data-input="filterStdRows" style="max-width:420px;margin-bottom:9px">
     <div class="tbl-wrap std-tbl"><table class="ledger"><thead><tr><th>Metric</th><th>Better when</th>${STAGE_IDS.map(st => `<th>Good at ${esc(stageName(st))}</th>`).join('')}<th></th></tr></thead><tbody>
     ${keys.map(k => { const cfg = RUBRIC.thresholds[k], t = thrFor(k), mine = !!(ST.draft.thresholds[k] || ST.draft.metricWeights[k] != null), off = ST.draft.hidden.metrics.includes(k);
       return `<tr data-q="${esc((k + ' ' + metricName(k)).toLowerCase())}" class="${off ? 'std-off' : ''}"><td>${esc(BASE.dlabel[k] || k)}${mine ? ' <span class="pill amber">yours</span>' : ''}${off ? ' <span class="pill">switched off</span>' : ''}${cfg.models ? `<div class="field-hint">${esc(cfg.models.map(m => (MODELS.find(x => x.id === m) || {}).n || m).join(', '))} only</div>` : ''}</td>
         <td style="color:var(--t2)">${cfg.dir === 'band' ? 'inside a range' : cfg.dir === 'hi' ? 'higher' : 'lower'}</td>${cfg.dir === 'band' ? `<td class="m" colspan="${STAGE_IDS.length}">${esc(bandFor(k).ideal.join(' to '))} is healthy; limits ${esc(bandFor(k).hard.join(' and '))}</td>` : STAGE_IDS.map(st => `<td class="m">${esc(goodBar(k, cfg.dir, t[st]))}</td>`).join('')}
-        <td style="text-align:right"><button class="btn btn-ghost btn-sm" onclick="editStandard('${k}')">Change</button></td></tr>`; }).join('')}</tbody></table></div>${otherFiguresTable()}`;
+        <td style="text-align:right"><button class="btn btn-ghost btn-sm" data-click="editStandard" data-a="${esc(k)}">Change</button></td></tr>`; }).join('')}</tbody></table></div>${otherFiguresTable()}`;
 }
 function filterStdRows(q) { q = String(q || '').trim().toLowerCase(); document.querySelectorAll('.std-tbl tbody tr').forEach(r => r.style.display = !q || r.dataset.q.includes(q) ? '' : 'none'); }
 /* Healthy range of a banded metric: the owner's values in the draft, else the built-in. */
@@ -505,7 +508,7 @@ function editStandard(key) {
   openModal(`What counts as healthy: ${metricName(key)}`, `
     <p class="pg-desc" style="margin-bottom:8px">${base.dir === 'hi' ? 'Higher is better' : 'Lower is better'}. Four values per stage, from lowest to highest; the score moves smoothly between them. Leave a whole row empty to stop scoring this metric at that stage. The sentence under each row shows how VCR2 will read it.</p>
     <div class="tbl-wrap"><table class="ledger"><thead><tr><th>Stage</th>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>
-    ${STAGE_IDS.map(st => `<tr><td>${esc(stageName(st))}</td>${[0,1,2,3].map(i => `<td><input class="st-num" type="number" step="any" id="thr-${st}-${i}" value="${t[st] ? esc(t[st][i]) : ''}" oninput="sayStandard('${key}')"></td>`).join('')}</tr>
+    ${STAGE_IDS.map(st => `<tr><td>${esc(stageName(st))}</td>${[0,1,2,3].map(i => `<td><input class="st-num" type="number" step="any" id="thr-${st}-${i}" value="${t[st] ? esc(t[st][i]) : ''}" data-input="sayStandard" data-a="${esc(key)}"></td>`).join('')}</tr>
       <tr class="std-say"><td></td><td colspan="4"><div class="field-hint" id="thr-say-${st}">${esc(thrSentence(key, base.dir, t[st]))}</div>${base[st] ? `<div class="field-hint">Built-in: ${esc(base[st].map(v => thrFmt(key, v)).join(' · '))}</div>` : ''}</td></tr>`).join('')}</tbody></table></div>
     ${edRow('Weight inside its dimension', `<input class="form-inp" type="number" step="any" id="thr-w" value="${esc(ST.draft.metricWeights[key] != null ? ST.draft.metricWeights[key] : (BASE.mw[key] || 1))}">`, `Built-in ${esc(BASE.mw[key] || 1)}. Higher means this metric moves its dimension more.`)}
     ${edRow('Where the built-in bar comes from', provenanceBlock(key))}
@@ -603,8 +606,8 @@ function resetStandard(key) { delete ST.draft.thresholds[key]; delete ST.draft.m
 function paneStTexts() {
   const b = ST.draft.branding;
   const row = (k, l, ph, area) => `<label class="form-lbl" style="margin-top:9px">${esc(l)}</label>${area
-    ? `<textarea class="intake-ta" style="min-height:80px" onchange="setBrand('${k}', this.value)" placeholder="${esc(ph)}">${esc(b[k] || '')}</textarea>`
-    : `<input class="form-inp" style="margin-bottom:0" value="${esc(b[k] || '')}" placeholder="${esc(ph)}" onchange="setBrand('${k}', this.value)">`}`;
+    ? `<textarea class="intake-ta" style="min-height:80px" data-change="setBrand" data-a="${esc(k)}" placeholder="${esc(ph)}">${esc(b[k] || '')}</textarea>`
+    : `<input class="form-inp" style="margin-bottom:0" value="${esc(b[k] || '')}" placeholder="${esc(ph)}" data-change="setBrand" data-a="${esc(k)}">`}`;
   return `<p class="pg-desc">Leave a box empty to keep the built-in text.</p>
     ${row('appName', 'App name in the sidebar', 'VCR2')}
     ${row('pageTitle', 'Title in the browser tab (up to 70 characters)', 'VCR2: evidence-first diligence engine')}
@@ -618,16 +621,16 @@ function paneStTexts() {
 function paneStLook() {
   const L = ST.draft.look || {}, acc = L.accent || 'brass', frame = L.frame || 'on', div = L.divider || 'diamond';
   const ACC_SW = { brass:['#0E3B34', '#B8934A', '#8E1F2F'], garnet:['#0E3B34', '#8E1F2F', '#8E1F2F'], emerald:['#0E3B34', '#1F7A5C', '#8E1F2F'] };
-  const accCard = ([id, name]) => `<label class="look-card${acc === id ? ' sel' : ''}"><input type="radio" name="st-accent" value="${id}" ${acc === id ? 'checked' : ''} onchange="setLook('accent', this.value)">
+  const accCard = ([id, name]) => `<label class="look-card${acc === id ? ' sel' : ''}"><input type="radio" name="st-accent" value="${id}" ${acc === id ? 'checked' : ''} data-change="setLook" data-a="accent">
       <span class="look-sw" aria-hidden="true">${ACC_SW[id].map(c => `<i style="background:${c}"></i>`).join('')}</span>
       <b>${esc(name)}${id === 'brass' ? ' <em>built-in default</em>' : ''}</b><span>${id === 'brass' ? 'Brass hairlines on ivory, deep-green ink.' : id === 'garnet' ? 'The hairlines and accents take the garnet used for risk.' : 'The hairlines and accents take an emerald.'}</span></label>`;
-  const pill = (name, cur, opts, lbl) => `<div class="look-themes" role="radiogroup" aria-label="${esc(lbl || name)}">${opts.map(([id, l]) => `<label class="look-pill${cur === id ? ' sel' : ''}"><input type="radio" name="st-${name}" value="${id}" ${cur === id ? 'checked' : ''} onchange="setLook('${name}', this.value)"> ${esc(l)}</label>`).join('')}</div>`;
+  const pill = (name, cur, opts, lbl) => `<div class="look-themes" role="radiogroup" aria-label="${esc(lbl || name)}">${opts.map(([id, l]) => `<label class="look-pill${cur === id ? ' sel' : ''}"><input type="radio" name="st-${name}" value="${id}" ${cur === id ? 'checked' : ''} data-change="setLook" data-a="${esc(name)}"> ${esc(l)}</label>`).join('')}</div>`;
   const colour = (k, label, hint, base) => {
     const v = L[k] || '', chk = v ? colourCheck(k, v) : null;
     return `<div class="look-colour"><label class="form-lbl" for="st-c-${k}">${esc(label)}</label>
-      <div class="look-colour-row"><input type="color" id="st-c-${k}" value="${esc(v || base)}" onchange="setLookColour('${k}', this.value)" aria-describedby="st-c-${k}-msg">
-        <input class="form-inp" style="max-width:120px;margin:0" value="${esc(v)}" placeholder="${esc(base)}" onchange="setLookColour('${k}', this.value)" aria-label="${esc(label)} as a hex code">
-        ${v ? `<button class="btn btn-ghost btn-sm" onclick="setLookColour('${k}', '')">Use the built-in colour</button>` : ''}</div>
+      <div class="look-colour-row"><input type="color" id="st-c-${k}" value="${esc(v || base)}" data-change="setLookColour" data-a="${esc(k)}" aria-describedby="st-c-${k}-msg">
+        <input class="form-inp" style="max-width:120px;margin:0" value="${esc(v)}" placeholder="${esc(base)}" data-change="setLookColour" data-a="${esc(k)}" aria-label="${esc(label)} as a hex code">
+        ${v ? `<button class="btn btn-ghost btn-sm" data-click="setLookColour" data-a="${esc(k)}" data-b="">Use the built-in colour</button>` : ''}</div>
       <div class="field-hint" id="st-c-${k}-msg">${chk ? (chk.ok ? `Readable: ${chk.msg}` : `<span class="look-bad">Not applied: ${esc(chk.msg)}</span>`) : esc(hint)}</div></div>`;
   };
   const th = L.theme || 'light';
@@ -640,19 +643,19 @@ function paneStLook() {
     <div class="block-title" style="margin-top:16px">Divider</div>
     ${pill('divider', div, [['diamond', 'Line with a diamond'], ['plain', 'Plain line']])}
     <div class="block-title" style="margin-top:16px">Default theme for visitors</div>
-    <div class="look-themes" role="radiogroup" aria-label="Default theme">${[['light','Light (default)'],['dark','Dark'],['auto','Follow the visitor’s device']].map(([id, l]) => `<label class="look-pill${th === id ? ' sel' : ''}"><input type="radio" name="st-theme" value="${id}" ${th === id ? 'checked' : ''} onchange="setLook('theme', this.value)"> ${esc(l)}</label>`).join('')}</div>
+    <div class="look-themes" role="radiogroup" aria-label="Default theme">${[['light','Light (default)'],['dark','Dark'],['auto','Follow the visitor’s device']].map(([id, l]) => `<label class="look-pill${th === id ? ' sel' : ''}"><input type="radio" name="st-theme" value="${id}" ${th === id ? 'checked' : ''} data-change="setLook" data-a="theme"> ${esc(l)}</label>`).join('')}</div>
     <div class="block-title" style="margin-top:16px">Text size</div>
     <p class="field-hint" style="margin-bottom:6px">The size of every word on the site. Visitors can change it for themselves with the “Aa” button.</p>
     ${pill('text', L.text || 'normal', [['normal', 'Normal (default)'], ['large', 'Large'], ['xlarge', 'Extra large']])}
-    ${L.text ? `<p style="margin-top:6px"><button class="btn-link" onclick="setLook('text', 'normal')">Reset the text size to Normal</button></p>` : ''}
+    ${L.text ? `<p style="margin-top:6px"><button class="btn-link" data-click="setLook" data-a="text" data-b="normal">Reset the text size to Normal</button></p>` : ''}
     <div class="block-title" style="margin-top:16px">Page scale</div>
     <p class="field-hint" style="margin-bottom:6px">How much fits on a screen. 75% is built in: compact, with readable type. 90% and 100% zoom the whole page (text, spacing and controls) by 1.2 and 1.33.</p>
     ${pill('page', L.page || '75', [['75', '75% (default)'], ['90', '90%'], ['100', '100%']])}
-    ${L.page ? `<p style="margin-top:6px"><button class="btn-link" onclick="setLook('page', '75')">Reset the page scale to 75%</button></p>` : ''}
+    ${L.page ? `<p style="margin-top:6px"><button class="btn-link" data-click="setLook" data-a="page" data-b="75">Reset the page scale to 75%</button></p>` : ''}
     <div class="block-title" style="margin-top:16px">Sidebar on start</div>
     <p class="field-hint" style="margin-bottom:6px">Open or hidden when a visitor first arrives. Visitors can still change it.</p>
     ${pill('sidebar', L.sidebar || 'open', [['open', 'Open (default)'], ['hidden', 'Hidden']], 'Sidebar on start')}
-    ${L.sidebar ? `<p style="margin-top:6px"><button class="btn-link" onclick="setLook('sidebar', 'open')">Reset the sidebar to open</button></p>` : ''}
+    ${L.sidebar ? `<p style="margin-top:6px"><button class="btn-link" data-click="setLook" data-a="sidebar" data-b="open">Reset the sidebar to open</button></p>` : ''}
     <div class="block-title" style="margin-top:16px">Shape and size</div>
     <p class="field-hint" style="margin-bottom:6px">Corners apply to buttons, fields and panels. The three sizes are added on top of the text size above.</p>
     <p class="field-lbl" style="margin-top:9px">Corners</p>
@@ -685,8 +688,8 @@ const SIZE_CHOICES = [['small', 'Smaller'], ['normal', 'Built in'], ['large', 'L
 function viewsPicker(cur) {
   return `<div class="look-views" role="group" aria-label="Report views in sight">${REPORT_VIEWS.map(([id, l]) => {
     const i = cur.indexOf(id);
-    return `<label class="look-pill${i >= 0 ? ' sel' : ''}"><input type="checkbox" value="${id}" ${i >= 0 ? 'checked' : ''} onchange="setLookView('${id}', this.checked)"> ${i >= 0 ? (i + 1) + '. ' : ''}${esc(l)}</label>`;
-  }).join('')}</div>${(ST.draft.look || {}).views ? `<p style="margin-top:6px"><button class="btn-link" onclick="setLook('views', '')">Reset to the built-in four</button></p>` : ''}`;
+    return `<label class="look-pill${i >= 0 ? ' sel' : ''}"><input type="checkbox" value="${id}" ${i >= 0 ? 'checked' : ''} data-change="setLookView" data-a="${esc(id)}"> ${i >= 0 ? (i + 1) + '. ' : ''}${esc(l)}</label>`;
+  }).join('')}</div>${(ST.draft.look || {}).views ? `<p style="margin-top:6px"><button class="btn-link" data-click="setLook" data-a="views" data-b="">Reset to the built-in four</button></p>` : ''}`;
 }
 function setLookView(id, on) {
   ST.draft.look = ST.draft.look || {};
@@ -753,16 +756,16 @@ const edRow = (label, html, hint) => `<div class="ed-row"><label class="form-lbl
 const val = id => { const el = $id(id); return el ? el.value : ''; };
 function formulaBox(id, value, opts) {
   opts = opts || {};
-  return `<textarea class="intake-ta formula" id="${id}" style="min-height:64px" maxlength="1000" spellcheck="false" oninput="checkFormula('${id}', ${opts.optional ? 'true' : 'false'}, '${esc(opts.self || '')}', ${opts.allowSelf ? 'true' : 'false'})">${esc(value || '')}</textarea>
+  return `<textarea class="intake-ta formula" id="${id}" style="min-height:64px" maxlength="1000" spellcheck="false" data-input="formula" data-c="${esc(opts.self || '')}"${opts.optional ? ' data-a="1"' : ''}${opts.allowSelf ? ' data-b="1"' : ''}>${esc(value || '')}</textarea>
     <div class="fx-status" id="${id}-st"></div>
-    <details class="paste"><summary>Pick a field or metric name</summary><input class="form-inp" placeholder="Search…" oninput="filterRef(this,'${id}')" style="margin:4px 0">${identifierReference(id)}</details>`;
+    <details class="paste"><summary>Pick a field or metric name</summary><input class="form-inp" placeholder="Search…" data-input="filterRef" data-a="${esc(id)}" style="margin:4px 0">${identifierReference(id)}</details>`;
 }
 function identifierReference(targetId) {
   const known = knownIdentifiers(ST.draft || CFG);
   const groups = {};
   known.forEach((info, id) => { const g = info.kind === 'field' || info.kind === 'custom field' ? `Fields: ${info.sec === 'custom' ? 'custom' : info.sec}` : info.kind === 'custom metric' ? 'Your metrics' : info.kind === 'special' ? 'Special' : 'Computed metrics'; (groups[g] = groups[g] || []).push([id, info.label]); });
   return `<div class="ref-list">${Object.entries(groups).map(([g, items]) => `<div class="ref-g"><div class="ref-h">${esc(g)}</div>${items.map(([id, l]) =>
-    `<button type="button" class="ref-i" data-q="${esc((id + ' ' + l).toLowerCase())}" ${targetId ? `onclick="insertRef('${targetId}','${esc(id)}')"` : ''}><code>${esc(id)}</code> ${esc(l)}</button>`).join('')}</div>`).join('')}</div>`;
+    `<button type="button" class="ref-i" data-q="${esc((id + ' ' + l).toLowerCase())}" ${targetId ? `data-click="insertRef" data-a="${esc(targetId)}" data-b="${esc(id)}"` : ''}><code>${esc(id)}</code> ${esc(l)}</button>`).join('')}</div>`).join('')}</div>`;
 }
 function filterRef(inp, id) { const q = inp.value.trim().toLowerCase(); inp.parentNode.querySelectorAll('.ref-i').forEach(b => b.style.display = !q || b.dataset.q.includes(q) ? '' : 'none'); }
 function insertRef(target, id) {
@@ -836,7 +839,7 @@ function editField(f, i) {
     ${edRow('Name used in formulas', `<input class="form-inp m" id="ed-id" value="${esc(f.id || '')}" placeholder="filled in from the label" ${i >= 0 ? 'readonly' : ''}>`, i >= 0 ? 'Fixed once created, so saved assessments keep their values.' : 'Lower case letters, numbers and underscores.')}
     ${edRow('Section', `<select class="field-select" id="ed-section">${optionList(secOpts, f.section || 'custom')}</select>`)}
     ${edRow('Group heading inside the section', `<input class="form-inp" id="ed-group" value="${esc(f.group || '')}" placeholder="e.g. Pipeline">`)}
-    ${edRow('Type', `<select class="field-select" id="ed-type" onchange="$id('ed-num-wrap').style.display=this.value==='num'?'':'none';$id('ed-opt-wrap').style.display=this.value==='select'?'':'none';$id('ed-score-wrap').style.display=this.value==='select'?'':'none'">${optionList([['num','Number'],['bool','Yes / no'],['select','Choice from a list'],['txt','Text']], f.type || 'num')}</select>`)}
+    ${edRow('Type', `<select class="field-select" id="ed-type" data-change="edType">${optionList([['num','Number'],['bool','Yes / no'],['select','Choice from a list'],['txt','Text']], f.type || 'num')}</select>`)}
     <div id="ed-num-wrap" style="${(f.type || 'num') === 'num' ? '' : 'display:none'}">${edRow('Unit', `<select class="field-select" id="ed-unit">${optionList(UNIT_OPTS, f.unit || '')}</select>`)}
       ${edRow('Quick-pick values', `<input class="form-inp" id="ed-chips" value="${esc((f.chips || []).join(', '))}" placeholder="e.g. 10, 20, 30">`, 'Optional. Shown as buttons under the input.')}</div>
     <div id="ed-opt-wrap" style="${f.type === 'select' ? '' : 'display:none'}">${edRow('Choices', `<input class="form-inp" id="ed-options" value="${esc((f.options || []).join(', '))}" placeholder="Option one, Option two, Option three">`, 'Separated by commas.')}</div>
@@ -879,7 +882,7 @@ function editMetric(m, i) {
     ${edRow('Weight inside the dimension', `<input class="form-inp" id="ed-weight" type="number" step="any" value="${esc(m.weight != null ? m.weight : 1)}">`, 'Built-in metrics use 0.6 to 2.2. 1 is typical.')}
     ${edRow('Stage thresholds', `<div class="tbl-wrap"><table class="ledger"><thead><tr><th>Stage</th><th>Lowest value</th><th>2nd</th><th>3rd</th><th>Highest value</th></tr></thead><tbody>
       ${STAGE_IDS.map(st => `<tr><td>${esc(STAGES.find(x => x.id === st).n)}</td>${[0,1,2,3].map(k => `<td><input class="st-num" type="number" step="any" id="ed-th-${st}-${k}" value="${th[st] ? esc(th[st][k]) : ''}"></td>`).join('')}</tr>`).join('')}</tbody></table></div>
-      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="copyThresholdRow()">Copy the first filled stage to all stages</button>`,
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:4px" data-click="copyThresholdRow">Copy the first filled stage to all stages</button>`,
       'Four values from lowest to highest. Higher is better: they score ' + sx('curve').join(' / ') + '. Lower is better: ' + sx('curve').slice().reverse().join(' / ') + '. The score is interpolated in between. Leave a stage empty to not score the metric there.')}
     ${edRow('Business models', modelBoxes(m.models))}`,
     [{ label:'Save metric', primary:true, onClick:() => {
@@ -1083,7 +1086,7 @@ function discardDraft() {
    ═══════════════════════════════════════════════════════════════ */
 function paneStHome() {
   const d = ST.draft, n = (x) => Array.isArray(x) ? x.length : Object.keys(x || {}).length;
-  const card = (tab, title, desc, count) => `<button class="st-card" onclick="studioTab('${tab}')"><b>${esc(title)}</b><span>${esc(desc)}</span>${count ? `<em>${count} of yours</em>` : ''}</button>`;
+  const card = (tab, title, desc, count) => `<button class="st-card" data-click="studioTab" data-a="${esc(tab)}"><b>${esc(title)}</b><span>${esc(desc)}</span>${count ? `<em>${count} of yours</em>` : ''}</button>`;
   return `<p class="pg-desc">Everything that decides how a company is judged can be changed here, no code. Pick what an investor told you, make the change, preview it, then publish. Only you can publish.</p>
     <div class="block-title">An investor told you…</div>
     <div class="st-cards">
@@ -1129,21 +1132,21 @@ function paneStAnswers() {
     /* Choices added to the input in Built-in details can be scored here too. */
     const added = (((d.meta.fields || {})[field] || {}).addOptions || []).filter(o => !(o in cfg.map));
     return `<div class="ans-card"><div class="ans-h"><b>${esc(label)}</b>${models}<span class="field-hint">${esc(DIM_LABEL[cfg.dim])}</span></div>
-      <table class="ledger"><tbody>${Object.keys(cfg.map).concat(added).map(opt => `<tr><td>${esc(opt)}${opt in cfg.map ? '' : ' <span class="pill amber">added by you</span>'}</td><td style="width:170px;text-align:right"><input class="st-num" type="number" min="0" max="100" step="any" value="${esc(ov[opt] != null ? ov[opt] : (opt in cfg.map ? cfg.map[opt] : ''))}" placeholder="${opt in cfg.map ? '' : 'not scored'}" data-cat="${esc(key)}" data-opt="${esc(opt)}" onchange="setCatScore(this)"> <span class="field-hint">/100${ov[opt] != null && opt in cfg.map ? ` · built-in ${cfg.map[opt]}` : ''}</span></td></tr>`).join('')}
-      <tr><td style="color:var(--t2)">Weight inside ${esc(DIM_LABEL[cfg.dim].toLowerCase())}</td><td style="text-align:right"><input class="st-num" type="number" step="any" min="0" value="${esc(d.metricWeights[wk] != null ? d.metricWeights[wk] : w0)}" onchange="setCatWeight('${key}', this.value)"> <span class="field-hint">built-in ${w0}</span></td></tr></tbody></table>
-      ${d.categorical[key] || d.metricWeights[wk] != null ? `<button class="btn btn-ghost btn-sm" onclick="resetCat('${key}')">Back to the built-in scores</button>` : ''}</div>`;
+      <table class="ledger"><tbody>${Object.keys(cfg.map).concat(added).map(opt => `<tr><td>${esc(opt)}${opt in cfg.map ? '' : ' <span class="pill amber">added by you</span>'}</td><td style="width:170px;text-align:right"><input class="st-num" type="number" min="0" max="100" step="any" value="${esc(ov[opt] != null ? ov[opt] : (opt in cfg.map ? cfg.map[opt] : ''))}" placeholder="${opt in cfg.map ? '' : 'not scored'}" data-cat="${esc(key)}" data-opt="${esc(opt)}" data-change="catScore"> <span class="field-hint">/100${ov[opt] != null && opt in cfg.map ? ` · built-in ${cfg.map[opt]}` : ''}</span></td></tr>`).join('')}
+      <tr><td style="color:var(--t2)">Weight inside ${esc(DIM_LABEL[cfg.dim].toLowerCase())}</td><td style="text-align:right"><input class="st-num" type="number" step="any" min="0" value="${esc(d.metricWeights[wk] != null ? d.metricWeights[wk] : w0)}" data-change="setCatWeight" data-a="${esc(key)}"> <span class="field-hint">built-in ${w0}</span></td></tr></tbody></table>
+      ${d.categorical[key] || d.metricWeights[wk] != null ? `<button class="btn btn-ghost btn-sm" data-click="resetCat" data-a="${esc(key)}">Back to the built-in scores</button>` : ''}</div>`;
   }).join('');
   const boolRows = RUBRIC.booleans.map(b => {
     const k = boolKey(b), f = ALL_FIELDS().find(x => x.id === b.id) || { lbl:b.id }, ov = d.booleans[k];
     const when = b.pts > 0 ? (b.good ? 'Yes' : 'No') : (b.good ? 'No' : 'Yes');
     return `<tr><td>${esc(f.lbl)}<div class="field-hint">${esc(b.note)}${b.models ? ' · ' + esc(b.models.map(m => modelLabel(m)).join(', ')) + ' only' : ''}</div></td><td class="m">${when}</td><td class="m">${b.pts > 0 ? 'adds' : 'removes'}</td>
-      <td style="white-space:nowrap"><input class="st-num" type="number" min="0" max="50" step="any" value="${esc(ov != null ? ov : Math.abs(b.pts))}" data-bool="${esc(k)}" onchange="setBoolPts(this)"> <span class="field-hint">pts in ${esc(DIM_LABEL[b.dim].toLowerCase())}${ov != null ? ` · built-in ${Math.abs(b.pts)}` : ''}</span></td></tr>`;
+      <td style="white-space:nowrap"><input class="st-num" type="number" min="0" max="50" step="any" value="${esc(ov != null ? ov : Math.abs(b.pts))}" data-bool="${esc(k)}" data-change="boolPts"> <span class="field-hint">pts in ${esc(DIM_LABEL[b.dim].toLowerCase())}${ov != null ? ` · built-in ${Math.abs(b.pts)}` : ''}</span></td></tr>`;
   }).join('');
   return `<p class="pg-desc">Some inputs are answers rather than numbers. Here you set how much each answer is worth. A choice earns a score out of 100 inside its dimension; a yes/no answer adds or removes points from its dimension (capped at ±${sx('boolCap')} per dimension). Set points to 0 to make an answer neutral.</p>
     <div class="block-title">Choices</div><div class="ans-grid">${catBlock}</div>
     <div class="block-title" style="margin-top:15px">Yes / no answers</div>
     <div class="tbl-wrap"><table class="ledger"><thead><tr><th>Question</th><th>When the answer is</th><th>It</th><th>Points</th></tr></thead><tbody>${boolRows}</tbody></table></div>
-    ${Object.keys(d.booleans).length ? `<button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="ST.draft.booleans={};saveStudioDraft();renderStudioPane()">Put every yes/no back to the built-in points</button>` : ''}`;
+    ${Object.keys(d.booleans).length ? `<button class="btn btn-ghost btn-sm" style="margin-top:6px" data-click="boolReset">Put every yes/no back to the built-in points</button>` : ''}`;
 }
 function setCatScore(el) {
   const key = el.dataset.cat, opt = el.dataset.opt, v = parseNum(el.value), base = RUBRIC.categorical[key].map[opt];
@@ -1171,7 +1174,7 @@ function setBoolPts(el) {
 function paneStDefaults() {
   const d = ST.draft.defaults || {}, ex = d.exit || {}, dl = d.deal || {}, sm = d.sim || {}, sr = d.stageRange || {}, ev = d.evidence || {};
   const B = BASE;
-  const inp = (path, v, base, extra) => `<input class="st-num" type="number" step="any" value="${v != null ? esc(v) : ''}" placeholder="${esc(base)}" onchange="setDefault('${path}', this.value)" ${extra || ''}>`;
+  const inp = (path, v, base, extra) => `<input class="st-num" type="number" step="any" value="${v != null ? esc(v) : ''}" placeholder="${esc(base)}" data-change="setDefault" data-a="${esc(path)}" ${extra || ''}>`;
   const stageRow = (label, path, obj, baseObj, unit) => `<tr><td>${esc(label)}</td>${STAGE_IDS.map(st => `<td>${inp(path + '.' + st, obj && obj[st], baseObj[st])}</td>`).join('')}<td class="field-hint">${esc(unit)}</td></tr>`;
   const stageHead = `<thead><tr><th></th>${STAGE_IDS.map(st => `<th>${esc(stageName(st))}</th>`).join('')}<th></th></tr></thead>`;
   const probs = st => (ex.probs && ex.probs[st]) || B.exit.probs[st];
@@ -1180,7 +1183,7 @@ function paneStDefaults() {
     <div class="tbl-wrap"><table class="ledger">${stageHead}<tbody>
       ${stageRow('Years to exit', 'exit.years', ex.years, B.exit.years, 'years')}
       ${stageRow('Target annual return (IRR)', 'exit.irr', ex.irr, B.exit.irr, '%')}
-      ${['Downside','Base','Upside'].map((nm, i) => `<tr><td>Probability of the ${nm.toLowerCase()} case</td>${STAGE_IDS.map(st => `<td><input class="st-num" type="number" step="any" min="0" value="${ex.probs && ex.probs[st] ? esc(ex.probs[st][i]) : ''}" placeholder="${B.exit.probs[st][i]}" onchange="setProb('${st}', ${i}, this.value)"></td>`).join('')}<td class="field-hint">% (rescaled to 100)</td></tr>`).join('')}
+      ${['Downside','Base','Upside'].map((nm, i) => `<tr><td>Probability of the ${nm.toLowerCase()} case</td>${STAGE_IDS.map(st => `<td><input class="st-num" type="number" step="any" min="0" value="${ex.probs && ex.probs[st] ? esc(ex.probs[st][i]) : ''}" placeholder="${B.exit.probs[st][i]}" data-change="setProb" data-a="${esc(st)}" data-b="#${i}"></td>`).join('')}<td class="field-hint">% (rescaled to 100)</td></tr>`).join('')}
     </tbody></table></div>
     <div class="st-row"><span>First Chicago discount rate (%)</span>${inp('exit.fcRate', ex.fcRate, B.exit.fcRate)}</div>
     <div class="st-row"><span>Base case: growth slows by this much each year (%)</span>${inp('exit.decayBase', ex.decayBase, Math.round((1 - B.exit.keepBase) * 100))}</div>
@@ -1203,7 +1206,7 @@ function paneStDefaults() {
     <div class="block-title" style="margin-top:15px">How much each source of evidence counts</div>
     <p class="field-hint" style="margin-bottom:4px">0 to 100. Stronger sources narrow the confidence band around the score.</p>
     ${EVIDENCE.map((e, i) => { const k = e.id === '' ? 'unverified' : e.id; return `<div class="st-row"><span>${esc(e.label)}</span>${inp('evidence.' + k, ev[k] != null ? Math.round(ev[k] * 100) : null, Math.round(B.evidence[i] * 100))}</div>`; }).join('')}
-    ${Object.keys(d).length ? `<button class="btn btn-ghost btn-sm" style="margin-top:9px" onclick="if(confirm('Put every default back to the built-in value?')){ST.draft.defaults={};saveStudioDraft();renderStudioPane();}">Put every default back to the built-in value</button>` : ''}`;
+    ${Object.keys(d).length ? `<button class="btn btn-ghost btn-sm" style="margin-top:9px" data-click="defaultsReset">Put every default back to the built-in value</button>` : ''}`;
 }
 function setDefault(path, v) {
   const n = parseNum(v), parts = path.split('.');
@@ -1242,12 +1245,12 @@ function setProb(st, i, v) {
 function paneStTriggers() {
   const d = ST.draft.patternParams;
   return `<p class="pg-desc">The numbers that make each built-in red flag or strength appear. Change one and the flag fires earlier or later for every report. To stop a flag entirely, switch it off in “Switch on or off”.</p>
-    <input class="form-inp" placeholder="Search a red flag…" oninput="filterTrigRows(this.value)" style="max-width:420px;margin-bottom:9px">
+    <input class="form-inp" placeholder="Search a red flag…" data-input="filterTrigRows" style="max-width:420px;margin-bottom:9px">
     <div class="tbl-wrap trig-tbl"><table class="ledger"><thead><tr><th>Red flag or strength</th><th>Fires when…</th><th>Value</th><th></th></tr></thead><tbody>
     ${Object.entries(PATTERN_PARAMS).map(([id, def]) => def.p.map(([k, dv, label, unit], j) => { const ov = d[id] && d[id][k];
       return `<tr data-q="${esc((def.label + ' ' + label).toLowerCase())}">${j === 0 ? `<td rowspan="${def.p.length}"><b>${esc(def.label)}</b>${d[id] ? ' <span class="pill amber">yours</span>' : ''}</td>` : ''}
-        <td class="trig-when">${esc(label)}</td><td style="white-space:nowrap"><input class="st-num" type="number" step="any" value="${ov != null ? esc(ov) : ''}" placeholder="${esc(dv)}" data-pat="${esc(id)}" data-key="${esc(k)}" onchange="setTrigger(this)"> <span class="field-hint">${esc(unit)}${ov != null ? ` · built-in ${dv}` : ''}</span></td>
-        ${j === 0 ? `<td rowspan="${def.p.length}" style="text-align:right">${d[id] ? `<button class="btn btn-ghost btn-sm" onclick="delete ST.draft.patternParams['${id}'];saveStudioDraft();renderStudioPane()">Reset</button>` : ''}</td>` : ''}</tr>`; }).join('')).join('')}
+        <td class="trig-when">${esc(label)}</td><td style="white-space:nowrap"><input class="st-num" type="number" step="any" value="${ov != null ? esc(ov) : ''}" placeholder="${esc(dv)}" data-pat="${esc(id)}" data-key="${esc(k)}" data-change="trigger"> <span class="field-hint">${esc(unit)}${ov != null ? ` · built-in ${dv}` : ''}</span></td>
+        ${j === 0 ? `<td rowspan="${def.p.length}" style="text-align:right">${d[id] ? `<button class="btn btn-ghost btn-sm" data-click="patReset" data-a="${esc(id)}">Reset</button>` : ''}</td>` : ''}</tr>`; }).join('')).join('')}
     </tbody></table></div>`;
 }
 function filterTrigRows(q) { q = String(q || '').trim().toLowerCase(); document.querySelectorAll('.trig-tbl tbody tr').forEach(r => r.style.display = !q || r.dataset.q.includes(q) ? '' : 'none'); if (!q) renderStudioPane(); }
@@ -1263,9 +1266,9 @@ function paneStTolerances() {
   return `<p class="pg-desc">How far a figure the company states can be from the one VCR2 computes before it is flagged: first as a minor inconsistency, then as a material contradiction (which counts towards withholding the score). Leave a box empty to keep the built-in value.</p>
     <div class="tbl-wrap"><table class="ledger"><thead><tr><th>Check</th><th>Minor beyond</th><th>Material beyond</th><th>Unit</th><th></th></tr></thead><tbody>
     ${CHECK_TOLS.map(c => { const o = d[c.id] || {}; return `<tr><td>${esc(c.title)}${d[c.id] ? ' <span class="pill amber">yours</span>' : ''}</td>
-      <td><input class="st-num" type="number" step="any" min="0" value="${o.tol != null ? esc(o.tol) : ''}" placeholder="${c.tol}" data-chk="${c.id}" data-k="tol" onchange="setTol(this)"></td>
-      <td>${c.hard == null ? '<span class="field-hint">single threshold</span>' : `<input class="st-num" type="number" step="any" min="0" value="${o.hard != null ? esc(o.hard) : ''}" placeholder="${c.hard}" data-chk="${c.id}" data-k="hard" onchange="setTol(this)">`}</td>
-      <td class="field-hint">${esc(c.unit)}</td><td style="text-align:right">${d[c.id] ? `<button class="btn btn-ghost btn-sm" onclick="delete ST.draft.checkTol['${c.id}'];saveStudioDraft();renderStudioPane()">Reset</button>` : ''}</td></tr>`; }).join('')}
+      <td><input class="st-num" type="number" step="any" min="0" value="${o.tol != null ? esc(o.tol) : ''}" placeholder="${c.tol}" data-chk="${c.id}" data-k="tol" data-change="tol"></td>
+      <td>${c.hard == null ? '<span class="field-hint">single threshold</span>' : `<input class="st-num" type="number" step="any" min="0" value="${o.hard != null ? esc(o.hard) : ''}" placeholder="${c.hard}" data-chk="${c.id}" data-k="hard" data-change="tol">`}</td>
+      <td class="field-hint">${esc(c.unit)}</td><td style="text-align:right">${d[c.id] ? `<button class="btn btn-ghost btn-sm" data-click="tolReset" data-a="${esc(c.id)}">Reset</button>` : ''}</td></tr>`; }).join('')}
     </tbody></table></div>
     <p class="field-hint" style="margin-top:4px">Your own checks carry their tolerances in the Checks tab. The form-against-ledger comparisons have a tolerance per field in the list above.</p>`;
 }
@@ -1283,7 +1286,7 @@ function setTol(el) {
    DEAL-BREAKERS, BENCHMARK DATA and BUSINESS MODELS
    ═══════════════════════════════════════════════════════════════ */
 function paneStGates() {
-  const L = ST.draft.gates, add = `<button class="btn btn-primary btn-sm" onclick="editItem('gates',-1)">Add a deal-breaker</button>`;
+  const L = ST.draft.gates, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="gates" data-b="#-1">Add a deal-breaker</button>`;
   return `<p class="pg-desc">A deal-breaker stops the assessment: while its condition is true, no score is given and it sits at the top of the report, the memo and the founder email. Use it for anything an investor would never invest past, for example <code>top1_pct &gt; 50</code> or <code>litigation == 1</code>. The built-in ones (IP, cap table, taxes, too many contradictions) are in “Switch on or off”.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Deal-breaker</th><th>When</th><th></th></tr></thead><tbody>
       ${L.map((g, i) => `<tr><td>${esc(g.title)}</td><td class="m">${esc(g.when)}</td>${rowActions('gates', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('deal-breakers of your own', add)}`;
@@ -1309,10 +1312,10 @@ function benchMetricOpts() {
   return out.sort((a, b) => a[1].localeCompare(b[1]));
 }
 function paneStBenchmarks() {
-  const L = ST.draft.benchmarks, add = `<button class="btn btn-primary btn-sm" onclick="editItem('benchmarks',-1)">Add a benchmark</button>`;
+  const L = ST.draft.benchmarks, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="benchmarks" data-b="#-1">Add a benchmark</button>`;
   const lbl = k => (knownIdentifiers(ST.draft).get(k) || {}).label || k;
   return `<p class="pg-desc">Reference data you find (a report’s median NRR at Series A, the top quartile for gross margin) published for everyone. Each report shows where the company sits against it (bottom quartile to top quartile) with your source. To change the bar the score uses, go to Healthy ranges.</p>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${add}<button class="btn btn-ghost btn-sm" onclick="pasteBenchmarks()">Paste many rows at once</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${add}<button class="btn btn-ghost btn-sm" data-click="pasteBenchmarks">Paste many rows at once</button></div>
     ${L.length ? `<div class="tbl-wrap"><table class="ledger"><thead><tr><th>Metric</th><th>Stage</th><th style="text-align:right">25th</th><th style="text-align:right">Median</th><th style="text-align:right">75th</th><th>Source</th><th></th></tr></thead><tbody>
       ${L.map((b, i) => `<tr><td>${esc(lbl(b.metric))}</td><td>${esc(b.stage === 'all' ? 'All stages' : stageName(b.stage))}</td><td class="m" style="text-align:right">${b.p25 == null ? 'n/a' : esc(b.p25)}</td><td class="m" style="text-align:right">${esc(b.median)}</td><td class="m" style="text-align:right">${b.p75 == null ? 'n/a' : esc(b.p75)}</td><td style="color:var(--t2)">${esc(b.source)}${b.year ? ' (' + esc(b.year) + ')' : ''}</td>${rowActions('benchmarks', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('benchmarks', '')}`;
 }
@@ -1353,7 +1356,7 @@ function pasteBenchmarks() {
     } }]);
 }
 function paneStModels() {
-  const L = ST.draft.models, add = `<button class="btn btn-primary btn-sm" onclick="editItem('models',-1)">Add a business model</button>`;
+  const L = ST.draft.models, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="models" data-b="#-1">Add a business model</button>`;
   return `<p class="pg-desc">The setup page offers B2B SaaS, AI application, marketplace and fintech. Add another (hardware, consumer subscription, biotech) and it appears there for everyone. Your inputs and metrics can then be limited to it (the “Business models” boxes in their editors). Built-in metrics that apply to every model still apply.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Model</th><th>Description</th><th>Name in conditions</th><th></th></tr></thead><tbody>
       ${L.map((m, i) => `<tr><td>${esc(m.emoji)} ${esc(m.name)}</td><td style="color:var(--t2)">${esc(m.desc)}</td><td class="m">model == '${esc(m.id)}'</td>${rowActions('models', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('business models of your own', add)}`;
