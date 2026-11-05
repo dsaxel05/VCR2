@@ -2104,7 +2104,7 @@ let derivedShowAll = false;
 function draftPayload() {
   return {
     v:4, name:S.name, stage:S.stage, model:S.model, asof:S.asof, section:S.section,
-    vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov, evid:S.evid, assume:S.assume, notes:S.notes, checklist:S.checklist || {},
+    vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov, evid:S.evid, assume:S.assume, notes:S.notes, checklist:S.checklist || {}, evidFile:S.evidFile || undefined,
     ledger: S.ledger ? { csv:ledgerToCSV(S.ledger) } : null,
     series: S.series ? { csv:seriesToCSV(S.series) } : null,
   };
@@ -2133,7 +2133,7 @@ function restorePayload(d) {
     prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' || v.src === 'extracted')),
     evid:cleanMap(d.evid, v => EVIDENCE.some(e => e.id === v)),
     assume:cleanMap(d.assume, (v, k) => typeof v === 'number' && isFinite(v) && !!ASSUME_RANGE[k]), notes:typeof d.notes === 'string' ? d.notes : '',
-    checklist:cleanMap(d.checklist, v => ['todo','requested','received','reviewed','issue','na'].includes(v)),
+    checklist:cleanMap(d.checklist, v => ['todo','requested','received','reviewed','issue','na'].includes(v)), evidFile:d.evidFile === true,
   });
   /* A number that arrives as text ("1,200,000", "€1.200") is read once, here, with the shared rules. One that cannot be
      read, or could be read two ways, is dropped and listed in S.restoreNotes; it is never read as a different number. */
@@ -2157,9 +2157,9 @@ function restorePayload(d) {
   const a = $id('asof'); if (a) a.value = S.asof;
 }
 /* The draft lives in this browser only. An example (S.example) is kept in memory and never written, so it cannot replace a real draft. */
-let _draftWarned = false, _epoch = 0;
+let _draftWarned = false, _epoch = 0, _erased = false;   /* _erased: after Erase everything, nothing is written again */
 function saveDraft() {
-  if (S.example) return;
+  if (S.example || _erased) return;
   let lost = '';
   try { localStorage.setItem('vcr3-draft', JSON.stringify(draftPayload())); }
   catch (e) {
@@ -2256,12 +2256,23 @@ function modelName(providerId) {
 }
 /* The key goes only in the provider's own header, to the provider's own address: no cookies, no cache, no referrer, no redirect
    to another host, and a time limit. An error from the provider is shown as plain text, without the key or anything shaped like a key. */
-const keyFree = (t, key) => String(t || '').split(key).join('[your key]').replace(/\b(sk-[\w-]{8,}|AIza[\w-]{8,}|gsk_\w{8,}|gh[pousr]_\w{8,}|github_pat_\w{8,})/g, '[a key]').replace(/\s+/g, ' ').slice(0, 180);
-/* A key whose format clearly belongs to another provider is never sent (sk-ant- and sk-or- are read before the plain sk- of OpenAI).
-   Unknown formats pass: providers change formats, and the provider itself still checks the key. */
-const keyOwner = k => ([['anthropic', /^sk-ant-/], ['openrouter', /^sk-or-/], ['openai', /^sk-/], ['groq', /^gsk_/], ['gemini', /^AIza/], ['GitHub', /^(gh[pousr]_|github_pat_)/]]
-  .find(x => x[1].test(String(k).trim())) || [''])[0];
+const keyFree = (t, key) => {
+  t = String(t || '').slice(0, 1e4); const k = String(key || '').slice(0, 400), b = s => { try { return btoa(s); } catch (e) { return ''; } };
+  /* the key as sent, URL-encoded, JSON-escaped and in base64 at each of the three byte offsets (inside a longer base64 text),
+     in any case; then any 10 characters in a row of any of these, also with spaces put in, so a key quoted in part goes as well */
+  const forms = (k.length > 9 ? [k, encodeURIComponent(k), JSON.stringify(k).slice(1, -1), b(k).slice(0, -4), b('x' + k).slice(4, -4), b('xx' + k).slice(4, -4)] : []).filter(f => f.length > 9);
+  const rx = (f, sp) => new RegExp(f.split('').map(c => c.replace(/\W/, '\\$&')).join(sp), 'gi');
+  forms.forEach(f => { t = t.replace(rx(f, ''), '[your key]'); });
+  forms.flatMap(f => Array.from({ length:f.length - 9 }, (_, i) => f.substr(i, 10))).forEach(f => { t = t.replace(rx(f, '\\s*'), '[your key]'); });
+  return t.replace(/\b(sk-[\w-]{8,}|AIza[\w-]{8,}|gsk_\w{8,}|gh[pousr]_\w{8,}|github_pat_\w{8,})/gi, '[a key]').replace(/\s+/g, ' ').slice(0, 180);
+};
+/* A key whose format clearly belongs to another provider is never sent. Its shape is looked for at the start (sk-ant- and sk-or- before
+   the plain sk- of OpenAI), then anywhere, in any case, so "Bearer sk-ant-…" or "KEY=sk-ant-…" is caught too. A key holding a space,
+   a quote or a character no key has (hidden or from another alphabet) is refused. Unknown formats pass: the provider still checks them. */
+const KEY_SHAPES = [['anthropic', 'sk-ant-'], ['openrouter', 'sk-or-'], ['openai', 'sk-'], ['groq', 'gsk_'], ['gemini', 'aiza'], ['GitHub', 'gh[pousr]_|github_pat_']];
+const keyOwner = k => { k = String(k).trim().toLowerCase(); const f = a => (KEY_SHAPES.find(x => new RegExp(a + '(' + x[1] + ')').test(k)) || [''])[0]; return f('^') || f(''); };
 function keyRefusal(id, key) {
+  if (/[^\x21-\x7e]|["'`]/.test(String(key).trim())) return 'The key holds a space, a quote or a character no key has, so it was not sent. Paste the key alone.';
   const o = keyOwner(key), n = (PROVIDERS[o] || { name:o }).name;
   return o && o !== id ? `This looks like a key for ${n}, so it was not sent to ${PROVIDERS[id].name}. Choose ${n} as the provider, or paste a key for ${PROVIDERS[id].name}.` : '';
 }
@@ -2366,6 +2377,9 @@ ${src.slice(0, 28000)}`;
 /* ═══════════════════════════════════════════════════════════════
    VERIFICATION PAGE
    ═══════════════════════════════════════════════════════════════ */
+/* Evidence levels in a shared deal file are kept, but the file set them, not this user: the verification page and the report say so. */
+function markImported() { S.evidFile = Object.keys(S.evid).length > 0 || Object.keys(S.prov).length > 0; }
+const evidFileNote = () => S.evidFile ? '<div class="warnstrip" role="note"><span aria-hidden="true">⚠</span><div>Evidence levels came from the imported file. Check them before relying on the score.</div></div>' : '';
 function goVerify() {
   saveSec();
   const { D } = derive();
@@ -2387,7 +2401,7 @@ function goVerify() {
   setHTML($id('verify-content'), `
     <div class="pg-eyebrow">Step 4 of 4</div>
     <h2 class="pg-title">Verification</h2>
-    <p class="pg-desc">${checkCount()} checks compare what the company states against what the underlying figures produce${LED ? ', and every summary figure against the customer ledger' : ''}. This runs before any score is computed, because a score built on numbers that do not reconcile is worse than no score.</p>
+    <p class="pg-desc">${checkCount()} checks compare what the company states against what the underlying figures produce${LED ? ', and every summary figure against the customer ledger' : ''}. This runs before any score is computed, because a score built on numbers that do not reconcile is worse than no score.</p>${evidFileNote()}
 
     <div class="stat-row" style="margin-bottom:16px">
       <div class="stat"><span class="stat-n" style="color:${majors.length ? 'var(--red)' : 'var(--green)'}">${majors.length}</span><span class="stat-l">Material</span></div>

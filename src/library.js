@@ -53,10 +53,12 @@ function libClean(e) {
 function libLoad() {
   try {
     const raw = JSON.parse(localStorage.getItem(LIB_KEY) || '[]');
-    return (Array.isArray(raw) ? raw : []).slice(0, LIB_MAX).map(libClean).filter(Boolean);
+    const seen = new Set();   /* ids are unique, so a checkbox or a delete always reaches its own row */
+    return (Array.isArray(raw) ? raw : []).slice(0, LIB_MAX).map(libClean).filter(Boolean).map((e, i) => { if (seen.has(e.id)) e.id += '-' + i; seen.add(e.id); return e; });
   } catch (e) { return []; }
 }
 function libSave(list) {
+  if (_erased) return false;
   try { localStorage.setItem(LIB_KEY, JSON.stringify(list)); _calCache = null; return true; }
   catch (e) {
     /* Too big: drop stored ledgers from the oldest entries and retry. */
@@ -319,13 +321,16 @@ function loadSyntheticLibrary() {
 /* ── Library page ── */
 let _libSort = { key:'date', dir:-1 }, _libFilter = '';
 function goLibrary() { renderLibrary(); showPage('library'); }
+const libShown = (x, q) => !q || (x.company || '').toLowerCase().includes(q) || (x.outcome || '').toLowerCase().includes(q);
+const libFlaggable = x => x.source !== 'synthetic';
 function renderLibrary() {
   const lib = libLoad();
   const cal = calibrationStatus();
   const stageN = st => lib.filter(x => x.stage === st).length;
   const syn = lib.filter(x => x.source === 'synthetic').length;
   const q = _libFilter.trim().toLowerCase();
-  const rows = lib.filter(x => !q || (x.company || '').toLowerCase().includes(q) || (x.outcome || '').toLowerCase().includes(q))
+  const flagged = st => lib.filter(x => x.calibrate && libFlaggable(x) && x.stage === st).length;
+  const rows = lib.filter(x => libShown(x, q))
     .sort((a, b) => {
       const k = _libSort.key;
       const av = k === 'company' || k === 'date' || k === 'stage' || k === 'outcome' || k === 'source' ? (a[k] || '') : (a.metrics[k] ?? -Infinity);
@@ -362,7 +367,9 @@ function renderLibrary() {
       </div>
       <div class="calib-used">${cal.used.length
         ? `${cal.on ? 'Active' : 'Available'} for ${cal.used.length} metric-stage pairs: ${cal.used.slice(0, 18).map(u => `<span class="pill">${esc(DLABEL[u.key] || u.key)} · ${esc(STAGES.find(s => s.id === u.stage).n)} (${u.n})</span>`).join(' ')}${cal.used.length > 18 ? ' …' : ''}${cal.on ? ` · rubric ${esc(rubricVersion())}` : ''}`
-        : `Not active: ${lib.filter(x => x.calibrate && x.source !== 'synthetic').length} companies flagged, ${CAL_MIN} needed at a stage for a metric. Default bars apply.`}</div>
+        : 'Not active yet: the default bars apply.'}</div>
+      <div class="field-hint" id="cal-count">${STAGES.map(s => { const n = flagged(s.id); return `${n}${n < CAL_MIN ? ' of ' + CAL_MIN : ''} flagged at ${esc(s.n)}`; }).join(' · ')}. Each metric needs ${CAL_MIN} flagged companies that report it.</div>
+      ${lib.length ? `<div class="lib-actions" style="margin:8px 0 0"><button class="btn btn-ghost btn-sm" data-click="libFlagShown" data-a="#true">Flag all shown</button><button class="btn btn-ghost btn-sm" data-click="libFlagShown" data-a="#false">Unflag all shown</button></div>` : ''}
     </div>
 
     <input class="form-inp" style="margin:10px 0 8px" placeholder="Filter by company or outcome…" value="${esc(_libFilter)}" data-input="libFilter" id="lib-filter" />
@@ -375,15 +382,26 @@ function renderLibraryTable() {
 }
 function libTableHTML(rows, cols, th) {
   if (!rows.length) return `<div class="suppressed">No companies yet. Save a report to the library, import a CSV, or paste comparables in any format and let a model structure them.</div>`;
-  return `<div class="tbl-wrap"><table class="ledger lib-tbl"><thead><tr>${th('company','Company')}${th('stage','Stage')}${cols.map(c => th(c.key, c.label)).join('')}${th('outcome','Outcome')}${th('source','Source')}<th></th></tr></thead>
+  return `<div class="tbl-wrap"><table class="ledger lib-tbl"><thead><tr>${th('company','Company')}${th('stage','Stage')}${cols.map(c => th(c.key, c.label)).join('')}${th('outcome','Outcome')}${th('source','Source')}<th>Use for calibration</th><th></th></tr></thead>
     <tbody>${rows.map(x => `<tr data-id="${esc(x.id)}">
       <td>${x.quote ? `<span data-tip="${tipAttr(esc(x.quote))}">${esc(x.company)}</span>` : esc(x.company)}${x.blocked ? ' <span class="pill red">blocked</span>' : ''}<div class="field-hint">${esc(x.date || '')}</div></td>
       <td class="m">${esc(STAGES.find(s => s.id === x.stage)?.n || x.stage)}</td>
       ${cols.map(c => `<td class="m">${esc(libFmt(c, x.metrics[c.key]))}</td>`).join('')}
       <td><select class="mini-sel" data-change="libSetOutcome" data-a="${esc(x.id)}">${OUTCOMES.map(o => `<option${(x.outcome || '') === o ? ' selected' : ''} value="${esc(o)}">${esc(o || 'n/a')}</option>`).join('')}</select></td>
       <td class="m">${esc(x.source)}</td>
+      <td>${libFlaggable(x) ? `<input type="checkbox" data-change="libSetFlag" data-a="${esc(x.id)}"${x.calibrate ? ' checked' : ''} aria-label="Use ${esc(x.company)} for calibration">` : 'n/a'}</td>
       <td style="white-space:nowrap">${x.payload ? `<button class="btn btn-ghost btn-sm" data-click="libOpen" data-a="${esc(x.id)}">Open</button>` : ''}
         <button class="btn btn-ghost btn-sm" data-click="libDelete" data-a="${esc(x.id)}" aria-label="Delete">×</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+function libSetFlag(id, on) {
+  const l = libLoad(), x = l.find(e => e.id === id); if (!x) return;
+  x.calibrate = on === true; libSave(l); renderLibrary();
+  const b = document.querySelector(`[data-change="libSetFlag"][data-a="${id}"]`); if (b) b.focus();   /* ids are [A-Za-z0-9_.-] (libClean) */
+}
+function libFlagShown(on) {
+  const q = _libFilter.trim().toLowerCase(), l = libLoad();
+  l.forEach(x => { if (libFlaggable(x) && libShown(x, q)) x.calibrate = on === true; });
+  libSave(l); renderLibrary();
 }
 function libSortBy(k) { _libSort = { key:k, dir:_libSort.key === k ? -_libSort.dir : -1 }; renderLibrary(); }
 function libSetOutcome(id, v) { const l = libLoad(); const x = l.find(e => e.id === id); if (x) { x.outcome = v; libSave(l); } }

@@ -105,11 +105,18 @@ async def main():
         check('and unticking removes it again', await pg.evaluate("() => localStorage.getItem('vcr3-key')") is None)
         await pg.click('#api-forget'); await pg.wait_for_timeout(100)
         check('forget clears the field and both stores', await pg.input_value('#api-key') == '' and await pg.evaluate("() => [sessionStorage.getItem('vcr3-key'), localStorage.getItem('vcr3-key')]") == [None, None])
-        # a key saved by an earlier version shows as remembered, so it can be removed
+        # a key saved by an earlier version has no date: it is removed on load (v5.0.15: remembered keys last 7 days)
         await pg.evaluate("() => { localStorage.setItem('vcr3-key', 'sk-old-' + 'Q'.repeat(30)); localStorage.removeItem('vcr3-remember'); sessionStorage.clear(); }")
         await pg.reload(); await pg.wait_for_selector('#api-key', state='attached')
-        check('an older saved key is shown as remembered', await pg.is_checked('#api-remember') and (await pg.input_value('#api-key')).startswith('sk-old-'))
-        await pg.uncheck('#api-remember'); await pg.click('#api-forget')
+        check('an older saved key without a date is removed on load', not await pg.is_checked('#api-remember') and await pg.input_value('#api-key') == '' and await pg.evaluate("() => localStorage.getItem('vcr3-key')") is None)
+        # a key remembered 8 days ago is removed on load; one remembered 6 days ago comes back
+        await pg.evaluate("() => { localStorage.setItem('vcr3-key', 'sk-ant-' + 'Q'.repeat(30)); localStorage.setItem('vcr3-remember', String(Date.now() - 8 * 864e5)); sessionStorage.clear(); }")
+        await pg.reload(); await pg.wait_for_selector('#api-key', state='attached')
+        check('a key remembered 8 days ago is purged on load', await pg.evaluate("() => [localStorage.getItem('vcr3-key'), localStorage.getItem('vcr3-remember'), $id('api-key').value]") == [None, None, ''])
+        await pg.evaluate("() => { localStorage.setItem('vcr3-key', 'sk-ant-' + 'Q'.repeat(30)); localStorage.setItem('vcr3-remember', String(Date.now() - 6 * 864e5)); sessionStorage.clear(); }")
+        await pg.reload(); await pg.wait_for_selector('#api-key', state='attached')
+        check('a key remembered 6 days ago is still there', await pg.is_checked('#api-remember') and (await pg.input_value('#api-key')).startswith('sk-ant-'))
+        await pg.click('#api-forget')
 
         # a whole tour under the policy: nothing blocked, nothing third-party
         await pg.evaluate("() => { loadNorthwind(); }")

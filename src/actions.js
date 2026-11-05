@@ -15,7 +15,7 @@ const CALLS = {
   setCorrMember, removeCorrGroup, filterStdRows, editStandard, sayStandard, setBrand, setLook, setLookColour, setLookView, insertRef, copyThresholdRow, pasteBenchmarks,
   setCatWeight, resetCat, setDefault, setProb, filterTrigRows, setTextReplacement, deleteTextReplacement, startTextEdit, addTextReplacement,
   setConst, setConstArray, resetAllConsts, resetConst, setStageName, setAiModel, setMeta, setMetaModels, filterDetailRows,
-  resetEverything, advCheck, advApply, advReset
+  resetEverything, advCheck, advApply, advReset, libSetFlag, libFlagShown, eraseAsk, eraseAll
 };
 const ACTIONS = {
 setName: el => { S.name = el.value; saveDraft(); }, setAsof: el => { S.asof = el.value; saveDraft(); },

@@ -1,5 +1,23 @@
 # Changelog
 
+## v5.0.15: 2026-11-04
+
+The library controls for calibration, and the remaining privacy items of the security audit. Scoring is unchanged (rubric 5.0.0, same run IDs).
+
+### Library
+- **A "Use for calibration" checkbox on every company** (a plain checkbox, reachable with Tab and Space), with "Flag all shown" and "Unflag all shown" for the rows the filter shows. A counter says how many companies are flagged at each stage ("6 of 8 flagged at Series A"), so it is clear why calibration is not active yet. Synthetic sample companies have no checkbox: they never count.
+- New saved runs, CSV imports and AI imports start unflagged.
+
+### Privacy and security
+- **Erase everything VCR2 stored in this browser.** A new button in the menu removes every VCR2 entry from this browser's storage (library, drafts, settings, a remembered key) and reloads the page. It asks first, inline, says that the library goes too, and offers a library backup before you confirm.
+- **"Remember this key" lasts 7 days**, then the key is removed the next time the page opens. A key remembered by an earlier version has no date and is removed once. The box now says to tick it only on your own computer.
+- **A key the provider echoes back is hidden in any shape**: as typed, URL-encoded, JSON-escaped, in base64, or quoted in part.
+- **Evidence levels in a shared deal file are kept, with a note.** The verification page and the report say "Evidence levels came from the imported file", so a level set by someone else is not taken for your own check.
+- The browser's built-in translation is turned off for the form, the verification page, the report and the library (`translate="no"`), so it never sends deal content to a translation service. The rest of the page can still be translated.
+- The AI key hint now says: use a dedicated key with a low spending limit, and revoke it after use.
+- **Fixes from a third independent re-test.** The key check now reads the whole key, in any case: a key pasted with "Bearer" in front, in quotes, in capitals or with a hidden character was still sent to the wrong provider. A key that holds a space, a quote or a character no key has is now refused, with a message. An echoed key is also removed when it comes back in lower case or with spaces put in, and very long replies are cut before they are cleaned, so they cannot freeze the page. After "Erase everything", an import that finishes late can no longer write a draft or the library back. Two library entries that share an id (only possible by editing storage by hand) are told apart, so each checkbox reaches its own row. The counter says that each metric needs 8 flagged companies that report it.
+- Known limit: if the site owner publishes a look (theme, accent or text size), the page stores that look again on the first load after an erase. It holds no deal data.
+
 ## v5.0.14: 2026-11-04
 
 Calibration now uses only the companies you choose, and a key can no longer go to the wrong provider. Default scoring is unchanged (rubric 5.0.0, same run IDs without calibration).

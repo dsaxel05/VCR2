@@ -62,18 +62,21 @@ function updateProviderUI() {
   mod.placeholder = p.needsKey ? `Model (default ${p.model})` : '';
   $id('memo-toggle').parentNode.style.display = p.needsKey ? '' : 'none';
   $id('api-hint').textContent = p.needsKey
-    ? `Key stored in this browser only and sent only to ${p.name}. Used for extraction, AI import and the memo draft, never for scoring. Get one at ${p.hint}. Use a restricted, low-spend key.`
+    ? `Key stored in this browser only and sent only to ${p.name}. Used for extraction, AI import and the memo draft, never for scoring. Get one at ${p.hint}. Use a dedicated key with a low spending limit, and revoke it after use.`
     : p.hint;
   updateKeyStatus(inp.value.trim());
   const ai = document.querySelector('.sb-ai'); if (ai && p.needsKey) ai.open = true;   /* a chosen provider keeps its settings in view */
   const warn = $id('intake-warn');
   if (warn) warn.style.display = p.needsKey ? '' : 'none';
 }
+/* A remembered key is kept 7 days from the tick, then purged on load. One saved without a date (before v5.0.15) is purged too. */
+const remOn = () => { try { const a = Date.now() - localStorage.getItem('vcr3-remember'); return a >= 0 && a < 6048e5; } catch (e) { return false; } };
+function purgeOldKey() { if (!remOn()) try { localStorage.removeItem('vcr3-key'); localStorage.removeItem('vcr3-remember'); } catch (e) {} }
 /* Where the AI key is kept: this tab (sessionStorage) by default, this computer (localStorage) only when asked. */
 function storeApiKey(k) {
   try {
     if (k) sessionStorage.setItem('vcr3-key', k); else sessionStorage.removeItem('vcr3-key');
-    const rem = localStorage.getItem('vcr3-remember') === '1';
+    const rem = remOn();
     if (rem && k) localStorage.setItem('vcr3-key', k); else localStorage.removeItem('vcr3-key');
   } catch (err) {}
 }
@@ -185,6 +188,15 @@ function introStats() {
   set('st-patterns', live('patterns', BUILTIN.patterns.map(x => x[0])) + ((CFG && CFG.patterns) ? CFG.patterns.length : 0));
 }
 
+/* Two steps, inline: the first click only opens the confirmation. */
+function eraseAsk() { const b = $id('erase-box'), open = b.style.display === 'none'; b.style.display = open ? '' : 'none'; $id('erase-btn').setAttribute('aria-expanded', open); }
+function eraseAll() {
+  [localStorage, sessionStorage].forEach(st => { try { for (let i = st.length; i--;) { const k = st.key(i); if (/^vcr/i.test(k)) st.removeItem(k); } } catch (e) {} });
+  S = blankState(); _erased = true;   /* nothing is written again before the page reloads, even by an import still running */
+  if (typeof ST !== 'undefined') ST.token = null;
+  $id('api-key').value = '';
+  location.reload();
+}
 (function init() {
   applyConfig(effectiveConfig());
   buildNav(); buildStages(); buildTypes();
@@ -192,14 +204,11 @@ function introStats() {
   try {
     const pv = localStorage.getItem('vcr3-provider') || 'local';
     $id('api-provider').value = PROVIDERS[pv] ? pv : 'local';
-    /* The key lives in this tab only unless the visitor ticks "Remember this key on this computer". A key an earlier version
-       saved is shown as remembered, so it can be unticked and removed. */
-    const remembered = localStorage.getItem('vcr3-key');
-    if (remembered && localStorage.getItem('vcr3-remember') == null) localStorage.setItem('vcr3-remember', '1');
-    const rem = localStorage.getItem('vcr3-remember') === '1';
+    /* The key lives in this tab only unless the visitor ticks "Remember this key on this computer" (7 days). */
+    purgeOldKey();
+    const rem = remOn();
     $id('api-remember').checked = rem;
-    $id('api-key').value = sessionStorage.getItem('vcr3-key') || (rem ? remembered || '' : '');
-    if (!rem && remembered) localStorage.removeItem('vcr3-key');
+    $id('api-key').value = sessionStorage.getItem('vcr3-key') || (rem ? localStorage.getItem('vcr3-key') || '' : '');
     $id('api-model').value = localStorage.getItem('vcr4-model') || '';
     try { localStorage.removeItem('vcr4-memo'); } catch (err) {}   /* an earlier version remembered this choice; sending data is decided per session now */
   } catch (e) {}
@@ -214,9 +223,9 @@ function introStats() {
     updateKeyStatus(k);
   });
   $id('api-remember').addEventListener('change', e => {
-    try { localStorage.setItem('vcr3-remember', e.target.checked ? '1' : '0'); } catch (err) {}
+    try { localStorage.setItem('vcr3-remember', e.target.checked ? String(Date.now()) : '0'); } catch (err) {}
     storeApiKey($id('api-key').value.trim());
-    toast(e.target.checked ? 'The key is remembered on this computer.' : 'The key is no longer saved on this computer.');
+    toast(e.target.checked ? 'The key is remembered on this computer for 7 days.' : 'The key is no longer saved on this computer.');
   });
   $id('api-forget').addEventListener('click', () => {
     $id('api-key').value = ''; $id('api-key').type = 'password'; $id('api-remember').checked = false;

@@ -110,8 +110,8 @@
         <input class="api-inp" id="api-key" type="password" placeholder="No key needed" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-bwignore aria-label="API key" />
         <button class="api-eye" id="api-eye" type="button" title="Show or hide the key" aria-label="Show or hide the key">ICON:eye</button>
       </div>
-      <label class="api-check"><input type="checkbox" id="api-remember" /> Remember this key on this computer</label>
-      <div class="api-hint" id="api-remember-hint">Off: the key is kept in this tab only and forgotten when you close it. It is never saved in a deal, a draft, an export or the library.</div>
+      <label class="api-check"><input type="checkbox" id="api-remember" /> Remember this key on this computer for 7 days</label>
+      <div class="api-hint" id="api-remember-hint">Tick it only on your own computer. Off: the key is kept in this tab only and forgotten when you close it. It is never saved in a deal, a draft, an export or the library.</div>
       <button type="button" class="btn btn-ghost btn-sm" id="api-forget" style="margin:4px 0 8px">Forget the key</button>
       <input class="api-inp" id="api-model" type="text" placeholder="Model name (optional override)" autocomplete="off" spellcheck="false" style="width:100%;margin-bottom:5px" aria-label="Model name override" />
       <label class="api-check"><input type="checkbox" id="memo-toggle" /> Also send the company name and the computed figures to this provider to draft a memo narrative</label>
@@ -120,6 +120,9 @@
       <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere.</div>
       </details>
       <button type="button" class="nav-item lib-link sb-reset" data-click="resetApp"><span class="nav-dot"></span><span class="nav-label">Reset all inputs</span></button>
+      <button type="button" class="nav-item lib-link sb-reset" id="erase-btn" data-click="eraseAsk" aria-expanded="false" aria-controls="erase-box"><span class="nav-dot"></span><span class="nav-label">Erase everything VCR2 stored in this browser</span></button>
+      <div class="api-hint" id="erase-box" role="group" aria-label="Confirm erase" style="display:none;padding:0 10px 8px">This also deletes your Library, drafts, settings and any remembered key, and cannot be undone. Export a library backup first if you may want it.
+        <div class="lib-actions" style="margin:6px 0 0"><button type="button" class="btn btn-ghost btn-sm" data-click="libExport">Export library backup</button><button type="button" class="btn btn-primary btn-sm" data-click="eraseAll">Erase now</button><button type="button" class="btn btn-ghost btn-sm" data-click="eraseAsk">Cancel</button></div></div>
     </div>
   </aside>
 
@@ -254,7 +257,7 @@
     </div>
 
     <!-- ── INTAKE ── -->
-    <div class="page" id="page-intake">
+    <div class="page" id="page-intake" translate="no">
       <div class="content-wrap wide">
         <div class="pg-eyebrow">Step 2 of 4</div>
         <h2 class="pg-title">Give it the source material</h2>
@@ -317,12 +320,12 @@
     </div>
 
     <!-- ── SECTIONS ── -->
-    <div class="page" id="page-section">
+    <div class="page" id="page-section" translate="no">
       <div class="section-wrap" id="section-content" tabindex="0"></div>
     </div>
 
     <!-- ── VERIFY ── -->
-    <div class="page" id="page-verify">
+    <div class="page" id="page-verify" translate="no">
       <div class="content-wrap" id="verify-content"></div>
     </div>
 
@@ -349,12 +352,12 @@
     </div>
 
     <!-- ── RESULT ── -->
-    <div class="page" id="page-result">
+    <div class="page" id="page-result" translate="no">
       <div class="result-wrap" id="result-content"></div>
     </div>
 
     <!-- ── LIBRARY ── -->
-    <div class="page" id="page-library">
+    <div class="page" id="page-library" translate="no">
       <div class="result-wrap" id="library-content"></div>
     </div>
 

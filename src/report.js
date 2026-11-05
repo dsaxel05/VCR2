@@ -33,7 +33,7 @@ function renderResult(R) {
   if (memo) tabs.push(['memo', 'Memo draft']);
   if (!tabs.some(t => t[0] === _rtab)) _rtab = 'overview';
 
-  setHTML($id('result-content'), `
+  setHTML($id('result-content'), `${evidFileNote()}
     <div class="res-hero">
       <div>
         <div class="res-company">${esc(S.name)}</div>

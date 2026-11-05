@@ -369,7 +369,7 @@ async def main():
         await pg2.select_option('#api-provider', 'anthropic'); await pg2.fill('#api-key', key)
         check('not ticked: the key is not in localStorage', await ls(pg2, 'vcr3-key') is None and await ls(pg2, 'vcr3-remember') in (None, '0'))
         await pg2.evaluate("() => { const c = $id('api-remember'); c.checked = true; c.dispatchEvent(new Event('change')); }")
-        check("ticked: the key is in localStorage under 'vcr3-key' and the flag is set", await ls(pg2, 'vcr3-key') == key and await ls(pg2, 'vcr3-remember') == '1')
+        check("ticked: the key is in localStorage under 'vcr3-key' and the flag is set", await ls(pg2, 'vcr3-key') == key and (await ls(pg2, 'vcr3-remember') or '').isdigit() and int(await ls(pg2, 'vcr3-remember')) > 1e12)   # the flag is the time of the tick (7-day expiry)
         await sc2.take(pg2, 'remembered')
         stored_in = sorted({ loc for _, d in sc2.rows for loc, n in d.items() if loc.startswith('localStorage') })
         check("ticked: the key is in localStorage under 'vcr3-key' only", stored_in == ['localStorage:vcr3-key'], stored_in)
