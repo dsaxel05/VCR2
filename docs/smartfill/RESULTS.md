@@ -21,3 +21,26 @@ Measured by `node tests/smartfill/run.mjs --baseline`: the corpus is 138 documen
 | bank | 6 | 6 | 0 (0.0%) | 2 |
 | audited | 3 | 3 | 0 (0.0%) | 1 |
 | **All** | **138** | **1139** | **72 (6.3%)** | **64** |
+
+## Readers (P2), 2026-11-09
+
+Every corpus document read by `sfReadFile` under Node (HTML is read by the browser's DOMParser and is checked in `tests/browser/smartfill_readers_test.py`, 55/55).
+
+| Format | Documents | Read | Producers |
+|---|---|---|---|
+| csv | 13 | 13 | python-csv |
+| docx | 7 | 7 | python-docx, hand-built |
+| eml | 6 | 6 | python-email, hand-built |
+| json | 7 | 7 | python-json, python-json-b |
+| md | 15 | 15 | template, template-b |
+| ods | 9 | 9 | hand-built, odfpy |
+| odt | 6 | 6 | hand-built, odfpy |
+| pdf | 23 | 23 | reportlab, chromium |
+| pptx | 6 | 6 | python-pptx, hand-built |
+| rtf | 6 | 6 | hand-built |
+| tsv | 6 | 6 | python-csv |
+| txt | 7 | 7 | template, template-b |
+| xlsm | 6 | 6 | hand-built |
+| xlsx | 15 | 15 | openpyxl, hand-built |
+
+Time per document: median 1 ms, 95th percentile 6 ms, slowest 21 ms. Hostile files: 32, every one with its expected outcome (tests/smartfill-readers.test.mjs and the browser suite).

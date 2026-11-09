@@ -1,0 +1,43 @@
+From: CEO <ceo@example.com>
+To: investors@example.com
+Subject: Sollum Cloud investor update
+Date: Wed, 30 Sep 2026 09:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============1546633054544244791=="
+
+--===============1546633054544244791==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+SOLLUM CLOUD INVESTOR UPDATE, 2026-06
+
+Hi all, here is our monthly update.
+Cash as of 2026-06-30 - $1,581,000
+Net burn - $145k per month
+Gross burn - $168k per month
+That gives us about 10.9 months of runway at the current pace.
+Team - 4 people
+NRR came in at 126% for the trailing twelve months.
+Our goal for Q4 is $520k in ARR. Last year we were at $217k.
+
+--===============1546633054544244791==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<!doctype html><html><head><meta charset=3D"utf-8"><title>Sollum Cloud invest=
+or update</title><style>.k{font-size:32px;font-weight:700}</style></head><bod=
+y>
+<h2>Sollum Cloud investor update, 2026-06</h2>
+<p>Hi all, here is our monthly update.</p>
+<p><b>Cash as of 2026-06-30:</b> $1,581,000</p>
+<p><b>Net burn:</b> $145k per month</p>
+<p><b>Gross burn:</b> $168k per month</p>
+<p>That gives us about 10.9 months of runway at the current pace.</p>
+<p><b>Team:</b> 4 people</p>
+<p>NRR came in at 126% for the trailing twelve months.</p>
+<p>Our goal for Q4 is $520k in ARR. Last year we were at $217k.</p>
+</body></html>
+
+--===============1546633054544244791==--

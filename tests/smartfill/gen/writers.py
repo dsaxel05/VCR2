@@ -247,7 +247,7 @@ def pptx_lib(doc, variant=0, extra_slides=0):
                 tb = sl.shapes.add_textbox(Inches(0.5), Inches(6.8), Inches(9), Inches(0.4)); tb.text_frame.text = b[1]; tb.text_frame.paragraphs[0].runs[0].font.size = Pt(9)
             elif b[0] in ('p', 'kv', 'note'):
                 tb = sl.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6)); tb.text_frame.text = b[1] if b[0] != 'kv' else f'{b[1]}: {b[2]}'; y += 0.7
-        if si == 1 and variant % 2 == 0:   # chart data cache: the ARR history as a column chart
+        if si == 1 and variant % 4 != 3:   # chart data cache: the ARR history as a column chart
             cd = CategoryChartData(); cd.categories = ['Q1', 'Q2', 'Q3', 'Q4']; cd.add_series('ARR ($M)', (1.1, 1.6, 2.2, 3.0))
             sl.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(1), Inches(3.8), Inches(6), Inches(2.6), cd)
         sl.notes_slide.notes_text_frame.text = 'Speaker notes: walk through the numbers; do not share the forecast.'
@@ -340,3 +340,114 @@ EXT = {'xlsx_raw': 'xlsx', 'docx_raw': 'docx', 'pdf_chrome': 'pdf'}
 PRODUCER = {'tsv': 'python-csv', 'xlsm': 'hand-built', 'htm': 'template', 'xlsx': 'openpyxl', 'xlsx_raw': 'hand-built', 'docx': 'python-docx', 'docx_raw': 'hand-built', 'pdf': 'reportlab', 'pdf_chrome': 'chromium',
             'pptx': 'python-pptx', 'ods': 'hand-built', 'odt': 'hand-built', 'eml': 'python-email', 'rtf': 'hand-built', 'md': 'template', 'txt': 'template',
             'html': 'template', 'csv': 'python-csv', 'json': 'python-json'}
+
+
+# ── second producers (P2): hand-built PPTX, hand-built MIME, odfpy for ODT and ODS, a second style for the plain formats ──
+def pptx_raw(doc, variant=0):
+    """A minimal PresentationML package written by hand: title and text shapes with positions, one table, no notes."""
+    slides = doc.get('slides') or [text_blocks(doc)]
+    def sp(i, x, y, paras, title=False):
+        ph = '<p:nvPr><p:ph type="title"/></p:nvPr>' if title else '<p:nvPr/>'
+        body = ''.join(f'<a:p><a:r><a:rPr lang="en-US" sz="{3200 if k == 0 and not title and len(paras) == 2 else 1400}"/><a:t>{X(t)}</a:t></a:r></a:p>' for k, t in enumerate(paras))
+        return (f'<p:sp><p:nvSpPr><p:cNvPr id="{i}" name="Shape {i}"/><p:cNvSpPr/>{ph}</p:nvSpPr><p:spPr><a:xfrm><a:off x="{x}" y="{y}"/><a:ext cx="2000000" cy="900000"/></a:xfrm></p:spPr>'
+                f'<p:txBody><a:bodyPr/>{body}</p:txBody></p:sp>')
+    NS = 'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
+    xml = []
+    for s in slides:
+        shapes, k, x, y = [], 2, 400000, 1600000
+        for b in s:
+            if b[0] == 'h': shapes.append(sp(k, 400000, 300000, [b[1]], True))
+            elif b[0] == 'tile': shapes.append(sp(k, x, 2000000, [b[2], b[1]])); x += 2200000
+            elif b[0] in ('p', 'note', 'foot'): shapes.append(sp(k, 400000, y + 2400000, [b[1]])); y += 500000
+            elif b[0] == 'kv': shapes.append(sp(k, 400000, y + 2400000, [f'{b[1]}: {b[2]}'])); y += 500000
+            elif b[0] == 'table':
+                rows = ''.join('<a:tr h="300000">' + ''.join(f'<a:tc><a:txBody><a:bodyPr/><a:p><a:r><a:t>{X(str(c))}</a:t></a:r></a:p></a:txBody></a:tc>' for c in r) + '</a:tr>' for r in b[1])
+                shapes.append(f'<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="{k}" name="Table"/><p:cNvGraphicFramePr/><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="400000" y="{y + 2400000}"/><a:ext cx="8000000" cy="2000000"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl>{rows}</a:tbl></a:graphicData></a:graphic></p:graphicFrame>')
+            k += 1
+        xml.append(f'<?xml version="1.0" encoding="UTF-8"?><p:sld {NS}><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>{"".join(shapes)}</p:spTree></p:cSld></p:sld>')
+    z = io.BytesIO()
+    with zipfile.ZipFile(z, 'w', zipfile.ZIP_DEFLATED) as f:
+        f.writestr('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'
+                   + ''.join(f'<Override PartName="/ppt/slides/slide{i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>' for i in range(len(xml))) + '</Types>')
+        f.writestr('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>')
+        f.writestr('ppt/presentation.xml', f'<?xml version="1.0" encoding="UTF-8"?><p:presentation {NS}><p:sldIdLst>' + ''.join(f'<p:sldId id="{256 + i}" r:id="rId{i + 1}"/>' for i in range(len(xml))) + '</p:sldIdLst></p:presentation>')
+        f.writestr('ppt/_rels/presentation.xml.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + ''.join(f'<Relationship Id="rId{i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide{i + 1}.xml"/>' for i in range(len(xml))) + '</Relationships>')
+        for i, s in enumerate(xml): f.writestr(f'ppt/slides/slide{i + 1}.xml', s)
+    return z.getvalue()
+
+
+def eml_raw(doc, variant=0):
+    """MIME written by hand: multipart/mixed with a base64 text part in Windows-1252 and a CSV attachment."""
+    import base64
+    body = txt(doc, variant).decode('utf-8')
+    b64 = base64.encodebytes(body.encode('cp1252', 'replace')).decode('ascii')
+    att = base64.encodebytes(csv_bytes(doc) if 'sheets' in doc else b'Metric,Value\nNote,see body\n').decode('ascii')
+    return ('From: "CFO" <cfo@example.com>\r\nTo: board@example.com\r\nSubject: =?utf-8?q?' + doc['title'].replace(' ', '_') + '?=\r\nDate: Wed, 30 Sep 2026 18:00:00 +0200\r\nMIME-Version: 1.0\r\n'
+            'Content-Type: multipart/mixed; boundary="==b1=="\r\n\r\nThis is a multi-part message.\r\n--==b1==\r\nContent-Type: text/plain; charset=windows-1252\r\nContent-Transfer-Encoding: base64\r\n\r\n'
+            + b64.replace('\n', '\r\n') + '\r\n--==b1==\r\nContent-Type: text/csv; name="kpis.csv"\r\nContent-Disposition: attachment; filename="kpis.csv"\r\nContent-Transfer-Encoding: base64\r\n\r\n'
+            + att.replace('\n', '\r\n') + '\r\n--==b1==--\r\n').encode('ascii')
+
+
+def odt_odfpy(doc, variant=0):
+    from odf.opendocument import OpenDocumentText
+    from odf.text import P, H
+    from odf.table import Table, TableRow, TableCell
+    d = OpenDocumentText()
+    for b in text_blocks(doc):
+        if b[0] == 'h': d.text.addElement(H(outlinelevel=2, text=b[1]))
+        elif b[0] in ('p', 'note', 'foot'): d.text.addElement(P(text=b[1]))
+        elif b[0] == 'kv': d.text.addElement(P(text=f'{b[1]}: {b[2]}'))
+        elif b[0] == 'tile': d.text.addElement(P(text=b[2])); d.text.addElement(P(text=b[1]))
+        elif b[0] == 'table':
+            t = Table()
+            for r in b[1]:
+                tr = TableRow()
+                for c in r: tc = TableCell(); tc.addElement(P(text=str(c))); tr.addElement(tc)
+                t.addElement(tr)
+            d.text.addElement(t)
+    o = io.BytesIO(); d.save(o); return o.getvalue()
+
+
+def ods_odfpy(doc, variant=0):
+    from odf.opendocument import OpenDocumentSpreadsheet
+    from odf.table import Table, TableRow, TableCell
+    from odf.text import P
+    d = OpenDocumentSpreadsheet()
+    for sh in doc['sheets']:
+        t = Table(name=sh['name'][:31])
+        for r in sh['rows']:
+            tr = TableRow()
+            for c in r:
+                v = _num(c)
+                tc = TableCell(valuetype='float', value=v) if isinstance(v, (int, float)) and c != '' else TableCell(valuetype='string')
+                tc.addElement(P(text=str(c))); tr.addElement(tc)
+            t.addElement(tr)
+        d.spreadsheet.addElement(t)
+    o = io.BytesIO(); d.save(o); return o.getvalue()
+
+
+def md_b(doc, variant=0):   # a second plain-text style: setext headings, '*' bullets, label and value on two lines
+    L = []
+    for b in text_blocks(doc):
+        if b[0] == 'h': L += ['', b[1], '=' * len(b[1]), '']
+        elif b[0] in ('p', 'note', 'foot'): L.append(b[1])
+        elif b[0] == 'kv': L.append(f'* {b[1]}: {b[2]}')
+        elif b[0] == 'tile': L.append(f'* {b[1]}: {b[2]}')
+        elif b[0] == 'table': L += ['  '.join(str(c) for c in r) for r in b[1]] + ['']
+        elif b[0] == 'slide': L.append('')
+    return ('\n'.join(L).strip() + '\n').encode('utf-8')
+
+
+def html_b(doc, variant=0):   # a second HTML style: div grids instead of tables, label and value in spans
+    P = ['<html><body>']
+    for b in text_blocks(doc):
+        if b[0] == 'h': P.append(f'<div class="title"><strong>{X(b[1])}</strong></div>')
+        elif b[0] in ('p', 'note', 'foot'): P.append(f'<div>{X(b[1])}</div>')
+        elif b[0] in ('kv', 'tile'): P.append(f'<div><span>{X(b[1])}</span>: <span>{X(b[2])}</span></div>')
+        elif b[0] == 'table': P.append('<table>' + ''.join('<tr>' + ''.join(f'<td>{X(str(c))}</td>' for c in r) + '</tr>' for r in b[1]) + '</table>')
+    return ('\n'.join(P) + '</body></html>').encode('utf-8')
+
+
+WRITERS.update({'pptx_raw': pptx_raw, 'eml_raw': eml_raw, 'odt_b': odt_odfpy, 'ods_b': ods_odfpy, 'md_b': md_b, 'txt_b': md_b, 'html_b': html_b, 'json_b': lambda d, v=0: json.dumps(d['json'], indent='\t', sort_keys=True).encode('utf-8')})
+EXT.update({'pptx_raw': 'pptx', 'eml_raw': 'eml', 'odt_b': 'odt', 'ods_b': 'ods', 'md_b': 'md', 'txt_b': 'txt', 'html_b': 'html', 'json_b': 'json'})
+PRODUCER.update({'pptx_raw': 'hand-built', 'eml_raw': 'hand-built', 'odt_b': 'odfpy', 'ods_b': 'odfpy', 'md_b': 'template-b', 'txt_b': 'template-b', 'html_b': 'template-b', 'json_b': 'python-json-b'})

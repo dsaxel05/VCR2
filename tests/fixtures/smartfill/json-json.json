@@ -1,0 +1,15 @@
+{
+  "company": "Lumkal Grid",
+  "as_of": "2026-09-30",
+  "currency": "USD",
+  "metrics": {
+    "arr": 1987000.0,
+    "arr_12_months_ago": 962000.0,
+    "active_customers": 97,
+    "gross_margin": 0.748,
+    "logos_churned_ltm": 5
+  },
+  "targets": {
+    "arr": 3974000.0
+  }
+}

@@ -11,11 +11,11 @@ import argparse, json, pathlib, random, sys, collections, shutil
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from gen import companies as CO, docs as D, writers as W, adversarial as A
 
-FORMATS = {'deck': ['pptx', 'pdf', 'pdf_chrome', 'md', 'pptx', 'txt', 'html', 'htm'], 'model': ['xlsx', 'xlsx_raw', 'csv', 'pdf', 'ods', 'xlsx', 'pdf_chrome'],
-           'update': ['eml', 'md', 'txt', 'docx', 'eml', 'odt', 'docx_raw', 'eml', 'rtf', 'pdf'], 'captable': ['xlsx', 'csv', 'xlsm', 'ods', 'tsv'],
+FORMATS = {'deck': ['pptx', 'pdf', 'pdf_chrome', 'md', 'pptx_raw', 'txt', 'html', 'htm', 'md_b', 'html_b', 'pptx', 'txt_b'], 'model': ['xlsx', 'xlsx_raw', 'csv', 'pdf', 'ods', 'xlsx', 'pdf_chrome', 'ods_b'],
+           'update': ['eml', 'md', 'txt', 'docx', 'eml_raw', 'odt', 'docx_raw', 'eml', 'rtf', 'pdf', 'odt_b', 'eml_raw', 'md_b', 'rtf'], 'captable': ['xlsx', 'csv', 'xlsm', 'ods', 'tsv'],
            'termsheet': ['docx', 'pdf', 'rtf', 'md', 'txt', 'odt', 'pdf_chrome', 'rtf'], 'bank': ['pdf', 'csv', 'pdf_chrome'], 'receivables': ['xlsm', 'csv', 'pdf'],
-           'crm': ['csv', 'tsv', 'xlsx'], 'headcount': ['tsv', 'xlsm', 'ods'], 'security': ['pdf', 'docx', 'odt', 'md', 'html', 'eml'], 'market': ['md', 'docx', 'pdf', 'odt', 'txt'],
-           'json': ['json'], 'audited': ['pdf', 'xlsx_raw'], 'ledger': ['csv', 'xlsx', 'csv']}
+           'crm': ['csv', 'tsv', 'xlsx'], 'headcount': ['tsv', 'xlsm', 'ods'], 'security': ['pdf', 'docx', 'odt', 'md', 'html', 'eml', 'rtf', 'odt_b', 'html_b'], 'market': ['md', 'docx', 'pdf', 'odt', 'txt'],
+           'json': ['json', 'json_b'], 'audited': ['pdf', 'xlsx_raw'], 'ledger': ['csv', 'xlsx', 'csv']}
 FILENAMES = {'deck': ['pitch-deck', 'Investor_Presentation', 'deck-final-v7', 'company-overview'], 'model': ['financial-model', 'FinModel_LTM', 'p-and-l-arr-bridge'],
              'update': ['investor-update', 'Monthly_Update', 'cfo-reply'], 'captable': ['cap-table', 'Capitalization'], 'termsheet': ['term-sheet', 'Series_Term_Sheet'],
              'bank': ['bank-statement', 'Account_Statement'], 'receivables': ['ar-aging', 'Receivables_Report'], 'crm': ['pipeline-export', 'CRM_Opportunities'],
@@ -34,7 +34,7 @@ def plan(i):
     if i % 3 == 0 or i == 1: t.append('security')
     if i % 4 == 3 or i == 2: t.append('market')
     if i % 4 == 1: t.append('ledger')
-    if i % 6 == 4: t.append('json')
+    if i % 6 == 4 or i % 5 == 4: t.append('json')
     if i in (3, 10, 20): t.append('audited')
     for extra in ('security', 'market', 'termsheet', 'captable'):
         if len(t) >= 5: break
@@ -64,7 +64,7 @@ def main():
             fmt = FORMATS[t][used[t] % len(FORMATS[t])]; used[t] += 1
             if fmt == 'pdf_chrome' and browser is None: fmt = 'pdf'
             if 'sheets' not in doc and fmt in ('xlsx', 'xlsx_raw', 'xlsm', 'ods', 'csv', 'tsv') and t != 'json': fmt = 'md'
-            if 'json' in doc: fmt = 'json'
+            if 'json' in doc and not fmt.startswith('json'): fmt = 'json'
             fn = W.WRITERS[fmt]
             data = fn(doc, used[t], browser=browser) if fmt == 'pdf_chrome' else fn(doc, used[t])
             name = f'{rnd.choice(FILENAMES[t])}.{W.EXT.get(fmt, fmt)}'

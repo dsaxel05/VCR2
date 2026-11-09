@@ -37,7 +37,9 @@ const TT = globalThis.trustedTypes && trustedTypes.createPolicy('vcr2', {
 });
 const htmlOf = s => TT ? TT.createHTML(s) : s;
 const setHTML = (el, s, outer) => { if (outer) el.outerHTML = htmlOf(s); else el.innerHTML = htmlOf(s); };
-const parseXML = s => new DOMParser().parseFromString(htmlOf(s), 'application/xml');
+/* the one DOMParser use: XML for workbooks, inert HTML for Smart fill (a parsed document never runs its scripts) */
+const parseDoc = (s, type) => new DOMParser().parseFromString(htmlOf(s), type || 'application/xml');
+const parseXML = s => parseDoc(s);
 const startWorker = src => { const u = URL.createObjectURL(new Blob([src], { type:'text/javascript' })); return new Worker(TT ? TT.createScriptURL(u) : u); };
 
 /* ── FORMATTERS ── */
