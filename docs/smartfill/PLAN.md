@@ -1,0 +1,12 @@
+# Smart fill: plan (P0, 2026-11-08, from edd935b = live v5.0.15)
+Verified today: applyLedgerToForm fills 12 fields (ARR now/12 mo, 4 movements, customers now/12 mo, logos lost, top 1/5/10), never cash or burn; monthly financials fill NO form field (charts and projections only); #dropzone keeps 5 files, 900 KB each, 20,000 chars, accepts .csv .txt .md .tsv .xlsx .xlsm only, feeds S.files which only runExtraction (AI, key needed) reads; readAnyFile reads ONE sheet; no reader for PDF, DOCX, PPTX, HTML, JSON, EML, RTF, cap tables, term sheets, bank or AR. Form: 153 fields in 10 sections (113 number, 28 yes/no, 9 choice, 3 text; 15 stated_*).
+New files, build.py order: after xlsx.js -> smartfill-io.js (sniff, encodings, zip/limits, reusing the xlsx zip reader), smartfill-pdf.js (in-house PDF text), smartfill-readers.js (xlsx all sheets, ods, docx, odt, pptx, html, json, eml, rtf, csv/txt/md), smartfill-dict.js (catalogue built at run time from SECTIONS + Studio), smartfill-engine.js (E2 to E8); after exports.js -> smartfill-ui.js (drop zone, guide, review, apply, undo); after studio-safety.js -> studio-smartfill.js. Heavy reading runs in a Blob Worker (CSP already allows worker-src blob:, Trusted Types policy exists for the simulator worker).
+Tests: tests/smartfill/ (generate.py seeded, gold JSON, run.mjs, heldout/), unit suites in tests/smartfill-*.test.mjs, browser suite in tests/browser/smartfill_test.py.
+Risks:
+1. SIZE: the page has 582 bytes free under its 252 KB gzip budget. Smart fill is estimated at 45 to 70 KB gzip. It cannot ship inside the current budget (decision at STOP A).
+2. Generator needs python-docx, python-pptx, openpyxl, reportlab (not installed). LibreOffice not found (no ODT/ODS/RTF conversions from it; those files will be hand-built).
+3. Quillstone folder on this PC has 7 files, not 24, and no 21-VCR2-input-sheet.md (the gold for 7.6).
+4. PDF: fonts without ToUnicode or Type3 fonts may be undecodable; they will be reported, never guessed.
+5. Overfitting to my own generator: held-out uses separate templates written after the freeze.
+6. Quota: Part A is several sessions of work on Pro; every phase is committed so it can resume.
+Decisions 2026-11-08 (owner: "do what you judge best"): every phase ships live via /vcr2-ship; Smart fill stays switched off on the live site until P6 passes; size budget raised to the measured size, at most 330 KB gzip (one self-contained page kept); Quillstone regression uses the 7-file room and its answer key until the 24-file room is supplied.

@@ -14,7 +14,7 @@ export function appSource() {
   return html.slice(html.lastIndexOf('<script>') + 8, html.lastIndexOf('</script>'));
 }
 
-function installStubs() {
+export function installStubs() {
   const el = () => ({ value:'', checked:false, style:{}, dataset:{}, innerHTML:'', textContent:'', className:'', disabled:false,
     parentNode:{ style:{} }, classList:{ add(){}, remove(){}, toggle(){}, contains(){ return false; } },
     addEventListener(){}, appendChild(){}, removeChild(){}, remove(){}, setAttribute(){}, removeAttribute(){}, getAttribute(){ return null; },
