@@ -1,2 +1,4 @@
 # GitHub Pages runs Jekyll, which skips folders that start with a dot. This serves /.well-known/security.txt.
 include: [".well-known"]
+# The test folder is never served: its fixture files (Markdown decks that start with ---) are test data, not pages.
+exclude: ["tests"]
