@@ -70,6 +70,7 @@
       </button>
       <div class="sb-logo-sub" id="sb-rubric">Evidence engine</div>
     </div>
+    <div class="sb-acct" id="sb-acct" hidden><button type="button" class="btn btn-ghost btn-sm sb-acct-btn" id="sb-acct-btn" data-click="acctOpen">Sign in</button></div>
 
     <div class="sb-progress">
       <div class="sb-progress-row">
@@ -361,6 +362,31 @@
     <!-- ── LIBRARY ── -->
     <div class="page" id="page-sfreview" translate="no">
       <div class="content-wrap wide" id="sfreview-content"></div>
+    </div>
+
+    <div class="page" id="page-mine" translate="no">
+      <div class="result-wrap" id="mine-content"></div>
+    </div>
+
+    <!-- ── TERMS AND PRIVACY for accounts (Part B, A11 and A12) ── -->
+    <div class="page" id="page-terms">
+      <div class="result-wrap prose">
+        <h2 class="pg-title">Terms and privacy for accounts</h2>
+        <p>Accounts are optional. As a guest, VCR2 runs entirely in your browser and nothing you enter leaves it.</p>
+        <h3>What a signed-in account stores</h3>
+        <p>The structured analysis: answers, choices, evidence levels, source lines of up to 160 characters, notes, checklist, assumptions, company name, stage, model, score summary, dates and app version. Also your saved versions, comparables, preferences, email and sign-in method.</p>
+        <p>Never: uploaded documents or their text, customer-level ledger rows or customer names (except encrypted, in Vault mode), AI keys. No analytics, no tracking, no advertising. Your browser keeps only what signing in and saving need.</p>
+        <h3>Where it is, and who can see it</h3>
+        <p>Supabase hosts the data in the region you chose (Europe, Paris, or the United States). Database rules let each account read and write only its own records. The site owner can see that an account exists (email, sign-in method, dates) and how many analyses and megabytes it uses. As administrator of the database, the owner could technically read analyses that are not in Vault mode, and does not look at them. Vault analyses are encrypted in your browser: nobody can read them without your passphrase or recovery key.</p>
+        <h3>Your rights and your responsibility</h3>
+        <p>From the account menu you can download all your data, or delete your account and all its data at once. Questions: the contact on the About page. By saving, you confirm you have the right to store what you enter about third-party companies. Nothing you store is shared with other users or used for anything else. Free accounts are limited (100 analyses, 5 MB) and provided as is.</p>
+        <details lang="fr"><summary>Version française</summary>
+          <p>Les comptes sont facultatifs. En invité, VCR2 fonctionne entièrement dans votre navigateur et rien de ce que vous saisissez n'en sort.</p>
+          <p><strong>Ce qu'un compte conserve.</strong> L'analyse structurée : réponses, choix, niveaux de preuve, lignes de source de 160 caractères au plus, notes, liste de contrôle, hypothèses, nom de l'entreprise, stade, modèle, résumé du score, dates et version de l'application ; vos versions, comparables, préférences, e-mail et méthode de connexion. Jamais : les documents importés ni leur texte, les lignes du registre clients ni les noms de clients (sauf chiffrés, en mode coffre-fort), les clés d'IA. Aucune mesure d'audience, aucun pistage, aucune publicité.</p>
+          <p><strong>Où, et qui peut voir.</strong> Supabase héberge les données dans la région choisie (Europe, Paris, ou États-Unis). Des règles de la base limitent chaque compte à ses propres données. Le propriétaire du site voit qu'un compte existe (e-mail, méthode de connexion, dates) et combien d'analyses et de mégaoctets il utilise. En tant qu'administrateur de la base, il pourrait techniquement lire les analyses hors coffre-fort, et ne les consulte pas. Les analyses du coffre-fort sont chiffrées dans votre navigateur : personne ne peut les lire sans votre phrase de passe ou votre clé de secours.</p>
+          <p><strong>Vos droits et votre responsabilité.</strong> Depuis le menu du compte : télécharger toutes vos données, ou supprimer votre compte et toutes ses données immédiatement. Questions : le contact de la page À propos. En enregistrant, vous confirmez avoir le droit de conserver ce que vous saisissez sur des entreprises tierces. Rien n'est partagé avec d'autres utilisateurs ni utilisé à autre chose. Les comptes gratuits sont limités (100 analyses, 5 Mo) et fournis en l'état.</p>
+        </details>
+      </div>
     </div>
 
     <div class="page" id="page-library" translate="no">

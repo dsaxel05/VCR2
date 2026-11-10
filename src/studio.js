@@ -214,7 +214,7 @@ const STUDIO_GROUPS = [
   ['How companies are judged', [['standards','Healthy ranges'],['answers','Scored answers'],['scoring','Weights & rules'],['constants','Scoring constants'],['defaults','Defaults & assumptions']]],
   ['Add your own', [['fields','Inputs'],['metrics','Metrics'],['checks','Checks'],['gates','Deal-breakers'],['questions','Questions'],['patterns','Red flags & strengths'],['requests','Document requests'],['checklist','Checklist'],['benchmarks','Benchmark data'],['models','Business models'],['dimensions','Scoring dimensions'],['stages','Stages']]],
   ['Built-in items', [['builtins','Switch on or off'],['labels','Rename'],['details','Built-in details'],['triggers','Red-flag triggers'],['tolerances','Check tolerances']]],
-  ['Site', [['smartfill','Smart fill (documents)'],['look','Look & feel'],['texts','Home page texts'],['anytext','Edit any text'],['help','Formula help']]],
+  ['Site', [['accounts','Accounts (sign-in)'],['smartfill','Smart fill (documents)'],['look','Look & feel'],['texts','Home page texts'],['anytext','Edit any text'],['help','Formula help']]],
 ];
 function renderStudio() {
   const t = repoTarget();
@@ -261,7 +261,7 @@ function renderStudioPane() {
   const el = $id('studio-pane'); if (!el) return;
   const R = { home:paneStHome, fields:paneStFields, metrics:paneStMetrics, checks:paneStChecks, gates:paneStGates, questions:paneStQuestions, patterns:paneStPatterns, requests:paneStRequests, checklist:paneStChecklist,
     benchmarks:paneStBenchmarks, models:paneStModels, answers:paneStAnswers, defaults:paneStDefaults, triggers:paneStTriggers, tolerances:paneStTolerances,
-    builtins:paneStBuiltins, labels:paneStLabels, scoring:paneStScoring, standards:paneStStandards, look:paneStLook, texts:paneStTexts, anytext:paneStAnyText, constants:paneStConstants, details:paneStDetails, differs:paneStDiffers, advanced:paneStAdvanced, dimensions:paneStDimensions, stages:paneStStages, help:paneStHelp, smartfill:paneStSmartfill };
+    builtins:paneStBuiltins, labels:paneStLabels, scoring:paneStScoring, standards:paneStStandards, look:paneStLook, accounts:paneStAccounts, texts:paneStTexts, anytext:paneStAnyText, constants:paneStConstants, details:paneStDetails, differs:paneStDiffers, advanced:paneStAdvanced, dimensions:paneStDimensions, stages:paneStStages, help:paneStHelp, smartfill:paneStSmartfill };
   setHTML(el, (R[ST.tab] || paneStHome)());
 }
 const stEmpty = (what, btn) => `<div class="empty-card"><h3>No ${esc(what)} yet</h3><p>Add one and it appears for every visitor once you publish.</p>${btn}</div>`;

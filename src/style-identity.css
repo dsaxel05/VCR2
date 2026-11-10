@@ -706,3 +706,21 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
   .demo-play .ico { width: 1.75rem; height: 1.75rem; }
 }
 
+
+/* Accounts (Part B): sidebar button and sign-in dialog */
+.sb-acct { padding: var(--sp-2) var(--sp-3) 0; }
+.sb-acct-btn { width: 100%; justify-content: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--sp-2); margin: var(--sp-3) 0; }
+.acct-prov { min-height: 44px; }
+.acct-msg { color: var(--warn-text); font-weight: 600; }
+.acct-note { margin-top: 0; }
+.acct-region { border: 1px solid var(--line-2); border-radius: var(--radius-control); margin: var(--sp-2) 0; }
+.acct-region label { margin-right: var(--sp-3); }
+.acct-more summary { cursor: pointer; margin: var(--sp-2) 0; }
+.acct-field { display: block; margin: var(--sp-2) 0; }
+.acct-field input { display: block; width: 100%; min-height: 40px; }
+.acct-keep { display: block; margin-top: var(--sp-3); }
+.mine-tools { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); align-items: end; margin: var(--sp-3) 0; }
+.mine-acts { display: flex; flex-wrap: wrap; gap: 4px; }
+.mine-arch { opacity: .7; }
+.acct-rec { word-break: break-all; }

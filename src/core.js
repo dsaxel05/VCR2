@@ -1668,7 +1668,7 @@ function showPage(id) {
 function updateTopbar(id) {
   const c = $id('tb-company'), s = $id('tb-section');
   c.textContent = S.name || 'New assessment';
-  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report', library:'Library', studio:'Owner Studio', about:'About', sfreview:'Smart fill review' };
+  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report', mine:'My analyses', terms:'Terms and privacy', library:'Library', studio:'Owner Studio', about:'About', sfreview:'Smart fill review' };
   s.textContent = id === 'section' ? (SECTIONS[S.section] ? SECTIONS[S.section].label : 'Evidence') : (map[id] || '');
   /* The page's one h1 (the home page has its own, visible one). */
   const h1 = $id('app-h1');
@@ -2111,6 +2111,7 @@ function draftPayload() {
     vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov, evid:S.evid, assume:S.assume, notes:S.notes, checklist:S.checklist || {}, evidFile:S.evidFile || undefined, requests:S.requests && S.requests.length ? S.requests : undefined,
     ledger: S.ledger ? { csv:ledgerToCSV(S.ledger) } : null,
     series: S.series ? { csv:seriesToCSV(S.series) } : null,
+    ledgerStats: S.ledgerStats || undefined,   /* the ledger's computed figures, from an account copy opened on another device */
   };
 }
 /* Saved drafts, exports and library entries come from files: keep only well-formed values. */
@@ -2139,6 +2140,7 @@ function restorePayload(d) {
     evid:cleanMap(d.evid, v => EVIDENCE.some(e => e.id === v)),
     assume:cleanMap(d.assume, (v, k) => typeof v === 'number' && isFinite(v) && !!ASSUME_RANGE[k]), notes:typeof d.notes === 'string' ? d.notes : '',
     checklist:cleanMap(d.checklist, v => ['todo','requested','received','reviewed','issue','na'].includes(v)), evidFile:d.evidFile === true,
+    ledgerStats:(() => { const o = cleanMap(d.ledgerStats, v => typeof v === 'number' && isFinite(v)); return Object.keys(o).length ? o : undefined; })(),
   });
   /* A number that arrives as text ("1,200,000", "€1.200") is read once, here, with the shared rules. One that cannot be
      read, or could be read two ways, is dropped and listed in S.restoreNotes; it is never read as a different number. */
@@ -2182,12 +2184,15 @@ function saveDraft() {
       : 'Saved in this browser: your answers, notes and assumptions. Not saved: the uploaded ledger, because it is too large for browser storage. Use Export .json on the report to keep everything.', 'err', 10000);
   }
   showSaved(lost, t);
+  if (typeof acctDirty === 'function') acctDirty();   /* accounts: sent to the account a few seconds later (signed in only) */
 }
 /* The quiet "Saved in this browser" line in the top bar and the note shown while an example is open. */
 function showSaved(lost, t) {
   const el = $id('tb-saved'), ex = $id('example-note');
   if (ex) ex.hidden = !S.example;
   if (!el) return;
+  const acct = typeof acctStatusText === 'function' ? acctStatusText() : null;   /* signed in: where the analysis is saved */
+  if (acct) { el.textContent = acct; return; }
   el.textContent = S.example || !t ? '' : lost === 'all' ? 'Not saved' : lost ? 'Saved in this browser, except the ledger'
     : 'Saved in this browser, ' + new Date(t).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
 }
@@ -2226,6 +2231,7 @@ function resetApp() {
   clearPrint();   /* the last printed memo goes too */
   try { ['vcr3-draft', 'vcr3-draft-meta', 'vcr4-memo'].forEach(k => localStorage.removeItem(k)); } catch (e) {}
   S = blankState(); _draftWarned = false;
+  if (typeof acctNewDraft === 'function') { acctNewDraft(); const ds = acctDefaultStage(); if (ds && STAGES.some(s => s.id === ds)) S.stage = ds; }
   document.querySelectorAll('#page-setup input, #page-setup textarea, #page-intake input, #page-intake textarea').forEach(el => {
     if (el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked; else el.value = '';
   });

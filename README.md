@@ -26,7 +26,7 @@
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
   <img alt="Dependencies: 0" src="https://img.shields.io/badge/dependencies-0-0e3b34?style=flat-square">
-  <img alt="Your data never leaves your browser" src="https://img.shields.io/badge/data-never%20leaves%20your%20browser-0e3b34?style=flat-square">
+  <img alt="As a guest, your data never leaves your browser" src="https://img.shields.io/badge/guest%20data-never%20leaves%20your%20browser-0e3b34?style=flat-square">
 </p>
 
 <p align="center">
@@ -82,6 +82,10 @@ No account, no API key. To use your own data, choose **Start an assessment** and
 | **Learns from your deals** | Save each run to a local **Library**, import comparables from CSV, or paste anything (a newsletter, a portfolio update, meeting notes) and let a model you choose structure it for review. VCR2 then ranks each new company against your own data and can **recalibrate its thresholds on your library**. |
 | **An owner Studio** | The owner of the site can change everything that decides how a company is judged (healthy ranges, answer scores, weights, defaults, red-flag triggers, check tolerances), add fields, metrics, checks, deal-breakers, questions, benchmarks, checklist items and business models, and rename or switch off anything built in. Then publish to the live site. No code. [How it works](docs/STUDIO.md) |
 | **Output you can use** | A ranked question list, a ready-to-send founder email, a data-room request list, a print-ready **IC memo (PDF)**, Markdown, and a JSON export anyone can re-open. |
+
+### New in v5.2
+
+- **Optional accounts and a personal library.** Sign in (Google, Microsoft, Apple, Yahoo, GitHub, LinkedIn, X, Facebook, an email link or email and password) to keep every analysis in your own account and reopen it on any device: autosave, versions with a diff, conflicts between devices resolved by you, export, and an optional **Vault mode** that encrypts analyses in your browser. Signing in is never required: as a guest, nothing leaves your browser. Signed in, the structured analysis (never your documents, their text or your customer ledger) is stored in your account. See [docs/ACCOUNTS.md](docs/ACCOUNTS.md) and [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ### New in v5.1
 
@@ -168,7 +172,8 @@ A few of the formulas:
 
 ## Privacy and security
 
-- The ledger, the documents read by Smart fill, the derivations, the checks, the simulation and the score all run **entirely in your browser**. Nothing is uploaded anywhere, and there is no VCR2 server.
+- **As a guest** (the default), the ledger, the documents read by Smart fill, the derivations, the checks, the simulation and the score all run **entirely in your browser**. Nothing is uploaded anywhere.
+- **If you choose to sign in**, the structured analysis (answers, notes, checklist, assumptions, score summary) is stored in your own account (Supabase, Europe or United States, your choice), readable only by you; documents, their text, customer-level ledger rows and AI keys never are. Vault mode encrypts analyses in your browser first. Download or delete everything from the account menu. Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 - The site loads its published configuration (`radar-config.json`) from the same repository. The Owner Studio talks only to `api.github.com`, with the owner's own token.
 - **AI is off by default.** The only other network calls are the optional AI features (extraction, AI import, memo narrative), which send text to the provider **you** choose (Anthropic, OpenAI, Gemini, Groq or OpenRouter) using **your own** key and your own account. Nothing is billed to the site owner. Use a restricted, low-spend key and do not paste confidential data-room material into a provider you have not cleared.
 - Your AI key is kept in the tab only and forgotten when you close it, unless you tick "Remember this key on this computer". It is never in a draft, an export or the library. Your library is stored in your browser's `localStorage`.
@@ -213,6 +218,7 @@ for f in tests/*.test.mjs; do node "$f"; done   # engine, scoring, deal maths, i
 python tests/jsstrip_test.py                    # the build's size reduction
 python tests/css_compact_test.py
 PYTHONUTF8=1 python tests/browser/run_all.py    # browser suites (needs requirements.txt and Chromium)
+node tools/accounts_stack.mjs start             # accounts: local Supabase in Docker, then node tests/accounts/<suite>.test.mjs
 python tools/size_check.py                      # size budget of index.html
 python tools/key_scan.py                        # no key-like string anywhere in the tree or the history
 ```

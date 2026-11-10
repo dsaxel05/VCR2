@@ -1,5 +1,19 @@
 # Changelog
 
+## v5.2.0: not released yet (branch `accounts`)
+
+**Optional accounts and a personal library.** Scoring is unchanged (rubric 5.0.0). Guest mode is unchanged: no request, no account storage, no Sign in button until the owner lists a backend project in `site.json` and switches a sign-in method on in the Studio.
+
+### Accounts
+- **Sign in with many providers** through one registry (Google, Microsoft, Apple, Yahoo, GitHub, LinkedIn, X, Facebook, email link, email and password), each switched on, off and ordered in the Studio. Passkeys are not offered yet (experimental in the backend).
+- **Hand-written, no SDK**: PKCE with WebCrypto, a one-time state, a network gate that stays shut until the click, and one more host in `connect-src` per project.
+- **Isolation on the server**: Postgres row-level security, owner set by the server, payload keys whitelisted by the database (no ledger rows, no document text, no keys), quotas (100 analyses, 5 MB per user).
+- **My analyses**: autosave, search, sort, tags, archive, duplicate, rename, delete with undo, export, compare two, the last 20 versions with restore and diff, comparables and preferences per account.
+- **Offline-first sync**: versioned writes; a newer copy on another device is never overwritten without asking (keep mine, use newer, keep both); offline edits wait and go when back online.
+- **Vault mode** (off by default): AES-GCM in the browser, key wrapped by a passphrase (PBKDF2, 600,000 iterations), downloadable recovery key; the server sees ciphertext and the title only; the customer ledger can be stored only this way.
+- **Data rights**: first sign-in migration with one box per local analysis; download all my data; delete my account (type DELETE); terms accepted once; privacy notice in English and French.
+- **Tests**: isolation 76, sign-in 51, sync 55, Vault, migration and data rights 36, Studio and settings 17, browser 28 plus end to end; all against a local Supabase in Docker, no real account.
+
 ## v5.1.0: 2026-11-09
 
 **Smart fill**: drop the data room and VCR2 proposes the values for the evidence form, offline and without AI. Scoring is unchanged (rubric 5.0.0): Smart fill only fills the form, and only what you accept.

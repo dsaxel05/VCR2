@@ -217,6 +217,7 @@ function eraseAll() {
   loadDraft();
   renderIntakeStatus();
   updateProgress();
+  acctStartUp();   /* accounts: nothing at all for a guest (no request, no storage) */
 
   $id('api-key').addEventListener('input', e => {
     const k = e.target.value.trim();

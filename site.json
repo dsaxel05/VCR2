@@ -1,4 +1,21 @@
 {
   "url": "https://vcr2.app/",
-  "about": "The address the site is published at. The link-preview image (og:image, twitter:image) must be an absolute address, so the build writes it from here. Change it when the site moves to your own domain, then run python build.py."
+  "about": "The address the site is published at. The link-preview image (og:image, twitter:image) must be an absolute address, so the build writes it from here. Change it when the site moves to your own domain, then run python build.py.",
+  "accounts": {
+    "about": "Optional accounts (Part B). One Supabase project per region; paste its Project URL and its public anon key (Supabase dashboard, Project Settings, API), then run python build.py. Both empty: no account code can connect and the Sign in button stays hidden.",
+    "regions": [
+      {
+        "id": "eu",
+        "label": "Europe (Paris)",
+        "url": "",
+        "anonKey": ""
+      },
+      {
+        "id": "us",
+        "label": "United States",
+        "url": "",
+        "anonKey": ""
+      }
+    ]
+  }
 }

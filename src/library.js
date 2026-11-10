@@ -59,7 +59,7 @@ function libLoad() {
 }
 function libSave(list) {
   if (_erased) return false;
-  try { localStorage.setItem(LIB_KEY, JSON.stringify(list)); _calCache = null; return true; }
+  try { localStorage.setItem(LIB_KEY, JSON.stringify(list)); _calCache = null; if (typeof acctLibChanged === 'function') acctLibChanged(); return true; }
   catch (e) {
     /* Too big: drop stored ledgers from the oldest entries and retry. */
     try {
@@ -410,6 +410,7 @@ function libClear() { if (!confirm('Delete every company in the library? Export 
 function libRemoveSynthetic() { libSave(libLoad().filter(x => x.source !== 'synthetic')); renderLibrary(); toast('Synthetic companies removed.'); }
 function libOpen(id) {
   const x = libLoad().find(e => e.id === id); if (!x || !x.payload) return;
+  if (typeof acctNewDraft === 'function') acctNewDraft();
   restorePayload(x.payload); saveDraft(); buildStages(); buildTypes(); renderIntakeStatus(); updateProgress();
   goVerify(); toast(`Opened ${x.company} as of ${x.date}.`);
 }

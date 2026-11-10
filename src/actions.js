@@ -17,6 +17,10 @@ const CALLS = {
   setConst, setConstArray, resetAllConsts, resetConst, setStageName, setAiModel, setMeta, setMetaModels, filterDetailRows,
   resetEverything, advCheck, advApply, advReset, libSetFlag, libFlagShown, eraseAsk, eraseAll,
   sfRead, sfCancel, sfReview, sfUndoClick, sfForget, sfRemove, sfReadAs, sfTag, sfView, sfTickRow, sfOverwrite, sfAlso, sfEdit, sfAlt, sfRate, sfPickConflict, sfMove, sfAssign, sfAccept, sfCancelReview,
+  acctGoMine, acctMineOpen, acctMineHistory, acctMineDup, acctMineRename, acctMineTags, acctMineArchive, acctMineDelete, acctMineUndo, acctMineExport, acctMineCompare,
+  acctMineSearch, acctMineStage, acctMineSort, acctMineArch, acctMineTick, acctVerTick, acctVerRestore, acctSaveVersionGo, acctForgetGo, acctPrefsSave,
+  stAcctOn, stAcctMove, stAcctNotice, stAcctLim, stAcctCopy, stAcctUsage, stAcctReset,
+  acctTermsPage, acctOpen, acctPick, acctLinkGo, acctPassGo, acctSignUpGo, acctRegionPick, acctKeepPick,
   sfChecklist, sfAddRequests, sfStSwitch, sfStThreshold, sfStList, sfStRange, sfStResetField, sfStType, sfStWords, sfStLocale, sfStReset
 };
 const ACTIONS = {

@@ -142,6 +142,7 @@ function importAssessment() {
       const j = parseJSONLimited(text);
       const p = j.payload || j;
       if (!p || (!p.vals && !p.name)) throw new Error('not an assessment');
+      if (typeof acctNewDraft === 'function') acctNewDraft();
       restorePayload(p); markImported(); saveDraft(); buildStages(); buildTypes(); renderIntakeStatus(); updateProgress();
       goVerify(); toast(`Opened ${S.name || 'assessment'}.`);
     } catch (e) { toast(e.limit ? e.message : 'That file is not a VCR2 assessment export.', 'err'); }

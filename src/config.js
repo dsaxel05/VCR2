@@ -108,6 +108,7 @@ function normalizeConfig(c) {
   if (st.correlationCap != null && st.correlationCap !== '' && isFinite(+st.correlationCap)) out.settings.correlationCap = Math.min(10, Math.max(0, +st.correlationCap));
   SETTING_DEFS.forEach(d => { const v = cleanSetting(d, st[d.id]); if (v !== undefined) out.settings[d.id] = v; });
   /* The model name each AI provider is called with (the web address of a provider is not a setting). */
+  if (isObj(st.accounts)) { const v = cleanAccounts(st.accounts); if (Object.keys(v).length) out.settings.accounts = v; }
   if (isObj(st.smartfill)) { const v = cleanSmartfill(st.smartfill); if (Object.keys(v).length) out.settings.smartfill = v; }
   if (isObj(st.aiModels)) { const am = {}; Object.entries(st.aiModels).forEach(([p, m]) => { if (/^[a-z]{3,20}$/.test(p) && typeof m === 'string' && /^[A-Za-z0-9._:\/-]{2,80}$/.test(m.trim()) && !KEY_RX.test(m)) am[p] = m.trim(); }); if (Object.keys(am).length) out.settings.aiModels = am; }
   /* Metrics measured together: group name -> metric keys. Absent means the built-in groups; {} means no groups. A metric is in one group
@@ -725,6 +726,24 @@ function configuredThresholds() {
 }
 /* A short signature of everything in the config that changes scores — part of the rubric version. */
 /* Smart fill settings from a published configuration: words, numbers and switches only, each one bounded (S9) */
+/* Accounts (Part B): which sign-in methods are offered and in what order. No URL or key here: those are fixed at build time (site.json). */
+function cleanAccounts(a) {
+  const o = {}, prov = {}, id = /^[a-z][a-z0-9_]{0,30}$/;
+  if (a.providers && typeof a.providers === 'object' && !Array.isArray(a.providers)) Object.entries(a.providers).slice(0, 40).forEach(([k, v]) => {
+    if (!id.test(k) || !v || typeof v !== 'object') return;
+    const p = {};
+    if (typeof v.enabled === 'boolean') p.enabled = v.enabled;
+    if (isFinite(v.order) && v.order !== null && v.order !== '') p.order = Math.max(0, Math.min(99, Math.round(+v.order)));
+    if (typeof v.gotrue === 'string' && /^([a-z][a-z0-9_]{0,30}|custom:[a-z0-9][a-z0-9_-]{1,40})$/.test(v.gotrue)) p.gotrue = v.gotrue;
+    if (typeof v.scopes === 'string' && /^[\w:./ -]{0,200}$/.test(v.scopes)) p.scopes = v.scopes;
+    if (Object.keys(p).length) prov[k] = p;
+  });
+  if (Object.keys(prov).length) o.providers = prov;
+  if (typeof a.notice === 'string' && a.notice.trim()) o.notice = a.notice.slice(0, 600);
+  if (Array.isArray(a.extra)) { const ex = a.extra.filter(p => p && id.test(p.id) && /^custom:[a-z0-9][a-z0-9_-]{1,40}$/.test(p.gotrue || '')).slice(0, 10)
+    .map(p => ({ id:p.id, label:String(p.label || p.id).slice(0, 40), gotrue:p.gotrue })); if (ex.length) o.extra = ex; }
+  return o;
+}
 function cleanSmartfill(sf) {
   const o = {}, words = a => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).slice(0, 60).map(x => x.trim().slice(0, 80)) : [];
   ['enabled', 'excludeRestricted', 'allowComputed'].forEach(k => { if (typeof sf[k] === 'boolean') o[k] = sf[k]; });
@@ -750,7 +769,7 @@ function cleanSmartfill(sf) {
 }
 function configSignature() {
   const tNoNotes = {}; Object.entries(CFG.thresholds).forEach(([k, o]) => { const c = Object.assign({}, o); delete c.note; tNoNotes[k] = c; });
-  const stSig = Object.assign({}, CFG.settings); delete stSig.aiModels; delete stSig.smartfill;   /* a model name or Smart fill's dictionary changes no score */
+  const stSig = Object.assign({}, CFG.settings); delete stSig.aiModels; delete stSig.smartfill; delete stSig.accounts;   /* a model name or Smart fill's dictionary changes no score */
   ['displayStrong', 'displayMixed', 'earlyReadBelow', 'currency', 'salesEffFlag', 'churnMixFlag', 'nextRoundMultiple'].forEach(k => delete stSig[k]);   /* how a figure is worded or shown changes no score and must not reseed the simulation */
   const s = { fo:CFG.formulas, sx:stSig, un:CFG.labels.units,
     dm:CFG.dimensions.map(d => d.id), mf:CFG.models.map(m => [m.id, m.from || '']), sg:CFG.stages.map(x => [x.id, x.like, x.lo, x.hi]),
