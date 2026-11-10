@@ -142,7 +142,7 @@ async function sfReadPdf(u8, file) {
     const runs = [];
     const run = async (content, res, ctm0, depth) => {
       const fontsDict = res && get(res.get('Font')), xobj = res && get(res.get('XObject'));
-      let i = 0, ops = [], ctm = ctm0.slice(), stack = [], tm = [1, 0, 0, 1, 0, 0], tlm = tm.slice(), font = null, size = 0, lead = 0, cs = 0, ws = 0, th = 1, rise = 0, n = 0;
+      let i = 0, ops = [], ctm = ctm0.slice(), stack = [], tm = [1, 0, 0, 1, 0, 0], tlm = tm.slice(), font = null, size = 0, lead = 0, cs = 0, ws = 0, th = 1, rise = 0, n = 0, placed = true;
       const mul = (a, b) => [a[0] * b[0] + a[1] * b[2], a[0] * b[1] + a[1] * b[3], a[2] * b[0] + a[3] * b[2], a[2] * b[1] + a[3] * b[3], a[4] * b[0] + a[5] * b[2] + b[4], a[4] * b[1] + a[5] * b[3] + b[5]];
       const show = str => {
         if (!font) return;
@@ -154,7 +154,7 @@ async function sfReadPdf(u8, file) {
           const w = (font.width(c) / 1000) * size + cs + (c === 32 && codes.unit === 1 ? ws : 0);
           adv += w * th;
         }
-        runs.push({ x:m2[4], y:m2[5], w:adv * Math.hypot(tm[0], tm[1]) * (Math.hypot(ctm[0], ctm[1]) || 1), text, size:fs });
+        runs.push({ x:m2[4], y:m2[5], w:adv * Math.hypot(tm[0], tm[1]) * (Math.hypot(ctm[0], ctm[1]) || 1), text, size:fs, placed }); placed = false;
         tm = mul([1, 0, 0, 1, adv, 0], tm);
       };
       while (i < content.length) {
@@ -165,10 +165,10 @@ async function sfReadPdf(u8, file) {
         if (o === 'BI') { const e = content.indexOf('EI', i); i = e < 0 ? content.length : e + 2; continue; }
         if (o === 'q') stack.push(ctm.slice()); else if (o === 'Q') ctm = stack.pop() || ctm;
         else if (o === 'cm' && a.length >= 6) ctm = mul(a.slice(-6), ctm);
-        else if (o === 'BT') { tm = [1, 0, 0, 1, 0, 0]; tlm = tm.slice(); }
+        else if (o === 'BT') { tm = [1, 0, 0, 1, 0, 0]; tlm = tm.slice(); placed = true; }
         else if (o === 'Tf') { const fr = fontsDict && fontsDict.get(a[0] && a[0].name); font = fr ? await fontOf(fr, get(fr)) : null; size = +a[1] || 0; }
-        else if (o === 'Td' || o === 'TD') { if (o === 'TD') lead = -a[1]; tlm = mul([1, 0, 0, 1, +a[0] || 0, +a[1] || 0], tlm); tm = tlm.slice(); }
-        else if (o === 'Tm' && a.length >= 6) { tlm = a.slice(-6).map(Number); tm = tlm.slice(); }
+        else if (o === 'Td' || o === 'TD') { placed = true; if (o === 'TD') lead = -a[1]; tlm = mul([1, 0, 0, 1, +a[0] || 0, +a[1] || 0], tlm); tm = tlm.slice(); }
+        else if (o === 'Tm' && a.length >= 6) { tlm = a.slice(-6).map(Number); tm = tlm.slice(); placed = true; }
         else if (o === 'T*') { tlm = mul([1, 0, 0, 1, 0, -lead], tlm); tm = tlm.slice(); }
         else if (o === 'TL') lead = +a[0] || 0; else if (o === 'Tc') cs = +a[0] || 0; else if (o === 'Tw') ws = +a[0] || 0; else if (o === 'Tz') th = (+a[0] || 100) / 100; else if (o === 'Ts') rise = +a[0] || 0;
         else if (o === 'Tj' && a[0] && a[0].str != null) show(a[0].str);
@@ -250,8 +250,15 @@ async function sfPdfFont(f, get, name, decode) {
       if (c >= 128 && c < 160) { const u = SF_WINANSI[c - 128]; return u === '�' ? null : u; }
       return String.fromCharCode(c === 160 ? 32 : c);
     },
-    width:c => two ? (cidW.get(c) != null ? cidW.get(c) : dw) : (widths[c - first] != null ? +get(widths[c - first]) || 500 : 500),
+    width:c => two ? (cidW.get(c) != null ? cidW.get(c) : dw) : (widths[c - first] != null ? +get(widths[c - first]) || 500 : sfStdWidth(c)),
   };
+}
+/* approximate glyph widths (thousandths of an em) when a standard font gives none: by character class, close to Helvetica */
+function sfStdWidth(c) {
+  const ch = String.fromCharCode(c);
+  if (ch === ' ') return 278; if (/[il.,:;'!|]/.test(ch)) return 250; if (/[fjrt()\[\]\/\-]/.test(ch)) return 333;
+  if (/[0-9$]/.test(ch)) return 556; if (/[mw]/.test(ch)) return 833; if (/[MW%@]/.test(ch)) return 889; if (ch === 'I') return 278;
+  if (/[A-Z&]/.test(ch)) return 667; return 500;
 }
 /* runs to lines: same baseline within 40% of the font size; inside a line a gap of more than 1.2 em starts a new cell */
 function sfPdfLines(runs, H) {
@@ -262,13 +269,21 @@ function sfPdfLines(runs, H) {
     const l = lines[lines.length - 1];
     if (l && Math.abs(l.y - r.y) <= Math.min(l.size, r.size) * 0.4) l.runs.push(r); else lines.push({ y:r.y, size:r.size, runs:[r] });
   }
+  /* a column stop: an x where separately placed runs start on three or more lines (a printed table's cells can sit 3 pt apart) */
+  const stops = new Map();
+  lines.forEach((l, i) => l.runs.forEach(r => { if (r.placed) { const x = Math.round(r.x); stops.set(x, (stops.get(x) || new Set()).add(i)); } }));
+  const isStop = x => { const s = new Set(); for (let d = -1; d <= 1; d++) (stops.get(Math.round(x) + d) || []).forEach(i => s.add(i)); return s.size >= 3; };
   return lines.map(l => {
     l.runs.sort((a, b) => a.x - b.x);
-    const cells = [{ x:l.runs[0].x, end:l.runs[0].x, text:'' }]; let end = l.runs[0].x;
+    const cells = [{ x:l.runs[0].x, end:l.runs[0].x, text:'', parts:[] }]; let end = l.runs[0].x;
     l.runs.forEach((r, k) => {
       const gap = r.x - end, em = r.size || 10;
-      if (k && gap > em * 1.2) cells.push({ x:r.x, end:r.x, text:r.text.replace(/^\s+/, '') });
-      else cells[cells.length - 1].text += (k && gap > em * 0.18 && !/\s$/.test(cells[cells.length - 1].text) && !/^\s/.test(r.text) ? ' ' : '') + r.text;
+      const stop = k && r.placed && gap > em * 0.12 && !/\s$/.test(l.runs[k - 1].text) && !/^\s/.test(r.text) && isStop(r.x);
+      if (k && (gap > em * (r.placed ? 0.6 : 1.2) || stop)) cells.push({ x:r.x, end:r.x, text:r.text.replace(/^\s+/, ''), parts:[{ x:r.x, end:r.x + r.w, text:r.text, cut:false }] });
+      else {
+        const add = (k && gap > em * 0.18 && !/\s$/.test(cells[cells.length - 1].text) && !/^\s/.test(r.text) ? ' ' : '') + r.text;
+        cells[cells.length - 1].text += add; cells[cells.length - 1].parts.push({ x:r.x, end:r.x + r.w, text:add, cut:k > 0 && r.placed && gap > em * 0.15 });
+      }
       end = Math.max(end, r.x + r.w); cells[cells.length - 1].end = end;
     });
     cells.forEach(c => { c.text = sfClean(c.text); });
@@ -289,6 +304,11 @@ function sfPdfBlocks(lines, doc, loc, H) {
       else doc.blocks.push({ type:'kv', text:`${l.cells[0].text}: ${l.cells.slice(1).map(c => c.text).join(' ')}`, rows:[l.cells.map(c => c.text)], loc, hints:{ pdf:true } });
       i = j; continue;
     }
+    /* a label line with its value alone on the next line (definition lists, forms) is a label and a value */
+    const nx = lines[i + 1], VALUE = /^[~≈(]?[-−]?\s?(US\$|\$|€|£)?\s?\d[\d,.\u00a0\u202f ]*\s?(%|x|[kKmMbB]n?|M€|k€|M\$|\$|€|£|days|months|mos|mois|jours)?\)?(\s?\/\s?(month|mois|mo))?$|^\d{4}-\d\d-\d\d( to \d{4}-\d\d-\d\d)?$/;
+    if (nx && l.cells.length === 1 && nx.cells.length === 1 && l.text.length <= 70 && !/[.!?]$/.test(l.text) && !VALUE.test(l.text) && VALUE.test(nx.text) && l.y - nx.y < l.size * 2.2 && l.size <= body * 1.25 && nx.size <= l.size * 1.15 && !(i && VALUE.test(lines[i - 1].text) && lines[i - 1].size > l.size * 1.3)) {
+      flush(); doc.blocks.push({ type:'kv', text:`${l.text}: ${nx.text}`, rows:[[l.text, nx.text]], loc, hints:{ pdf:true, stacked:true } }); i += 2; continue;
+    }
     if (l.size > body * 1.25 && l.text.length < 120) { flush(); doc.blocks.push({ type:'heading', text:l.text, loc, hints:{ size:l.size } }); i++; continue; }
     const gapAbove = i ? lines[i - 1].y - l.y : 0;
     if (para && gapAbove < l.size * 1.9 && !/[.!?:]$/.test(para.text) && para.text.length < 600) para.text += (/\w-$/.test(para.text) && /^[a-z]/.test(l.text) ? '' : ' ') + l.text;
@@ -302,6 +322,17 @@ function sfPdfBlocks(lines, doc, loc, H) {
    or else the one whose left edge (text) or right edge (numbers, which are right-aligned) is nearest */
 function sfPdfGrid(lines) {
   const ref = lines.reduce((a, b) => b.cells.length > a.cells.length ? b : a), cols = ref.cells.map(c => ({ x:c.x, end:c.end }));
+  /* cells that almost touch (a printed HTML table) merge into one; when that cell runs over several columns, cut it where a
+     separately placed run starts past the end of a column */
+  const colOf = x => { let k = 0; while (k < cols.length - 1 && x > cols[k].end + 1) k++; return k; };
+  lines = lines.map(l => l.cells.length >= cols.length ? l : { ...l, cells:l.cells.flatMap(c => {
+    const out = [];
+    (c.parts || []).forEach(p => {
+      const last = out[out.length - 1], k = colOf(p.x);
+      if (last && !(p.cut && k > last.k)) { last.text += p.text; last.end = p.end; } else out.push({ x:p.x, end:p.end, text:p.text, k });
+    });
+    return out.length > 1 ? out.map(o => ({ x:o.x, end:o.end, text:sfClean(o.text) })) : [c];
+  }) });
   return lines.map(l => {
     const row = cols.map(() => '');
     l.cells.forEach(c => {

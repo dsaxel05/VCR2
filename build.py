@@ -9,9 +9,11 @@ src = root/'src' if (root/'src'/'shell.html').exists() else root
 shell = (src/'shell.html').read_text(encoding='utf-8')
 css_files = ['style-tokens.css', 'style.css', 'style-v4.css', 'style-studio.css', 'style-identity.css']
 js_files = ['core.js', 'provenance.js', 'util.js', 'ledger.js', 'series.js', 'deal.js', 'sim.js', 'sim-async.js', 'patterns.js', 'checklist.js',
-            'library.js', 'config.js', 'owner.js', 'owner-settings.js', 'owner-diff.js', 'theme.js', 'icons.js', 'charts.js', 'report.js', 'exports.js', 'xlsx.js', 'smartfill-io.js', 'smartfill-pdf.js', 'smartfill-readers.js', 'studio.js', 'studio2.js', 'studio-details.js', 'studio-safety.js', 'demo.js', 'motion.js', 'actions.js', 'boot.js']
+            'library.js', 'config.js', 'owner.js', 'owner-settings.js', 'owner-diff.js', 'theme.js', 'icons.js', 'charts.js', 'report.js', 'exports.js', 'sfw-begin', 'xlsx.js', 'smartfill-io.js', 'smartfill-pdf.js', 'smartfill-readers.js', 'smartfill-dict.js', 'smartfill-engine.js', 'smartfill-resolve.js', 'sfw-end', 'smartfill-worker.js', 'smartfill-ui.js', 'studio.js', 'studio2.js', 'studio-details.js', 'studio-safety.js', 'studio-smartfill.js', 'demo.js', 'motion.js', 'actions.js', 'boot.js']
 css = '\n'.join((src/f).read_text(encoding='utf-8') for f in css_files if (src/f).exists())
-js = '\n'.join((src/f).read_text(encoding='utf-8') for f in js_files if (src/f).exists())
+# the Smart fill reader and engine also run in a background thread, built at run time from the text between these two markers
+SFW = {'sfw-begin': "void 'SFW{';", 'sfw-end': "void '}SFW';"}
+js = '\n'.join(SFW[f] if f in SFW else (src/f).read_text(encoding='utf-8') for f in js_files if f in SFW or (src/f).exists())
 if not (len(sys.argv) > 1 and sys.argv[1] == '--readable'):
     css = strip_css(css); js = strip_js(js, html=True, tight=True)
     # The copyright notice is a comment, so stripping would drop it from the shipped page: put it back.

@@ -1,0 +1,20 @@
+{
+ "about": "Gold for the Quillstone Health practice data room (7-file version), written by reading the documents: only values stated explicitly, routed as Smart fill must route them (S6: a deck or an update fills the 'as stated' fields; a model fills the evidence fields). The 24-file room with 21-VCR2-input-sheet.md was not available on 2026-11-09; when it is, its Round 1 and Round 2 tables replace this file.",
+ "docs": [
+  { "file": "01-pitch-deck.md", "fields": {
+      "stated_arr": 15600000, "stated_growth": 91, "stated_customers": 262, "stated_nrr": 128, "stated_grr": 96, "stated_burn_multiple": 1.4,
+      "stated_cac_payback": 9, "stated_ltv_cac": 5.1, "round_size": 30000000, "round_pre_money": 120000000, "new_liq_pref": 1, "new_participating": false },
+    "must_not_fill": ["arr_now", "customers_now"],
+    "must_not_value": [19800000, 38000000, 71000000, 19000000000, 13500000, 6000000] },
+  { "file": "02-financial-model-summary.md", "fields": {
+      "arr_now": 15600000, "gross_margin": 82, "sm_spend_l12": 7570000, "cash_on_hand": 9400000, "round_size": 30000000, "round_pre_money": 120000000, "headcount_now": 141 },
+    "must_not_fill": [],
+    "must_not_value": [19800000, 38000000, 71000000, 28800000, 54600000, 15200000, 22000000] },
+  { "file": "03-investor-update-2026-09.md", "fields": {
+      "stated_arr": 15600000, "stated_customers": 262, "stated_nrr": 128, "stated_burn_multiple": 1.4, "cash_on_hand": 9400000, "net_burn": 900000, "headcount_now": 141 },
+    "must_not_fill": ["arr_now", "customers_now"],
+    "must_not_value": [13400000, 246, 990000, 138] },
+  { "file": "04-customer-ledger.csv", "ledger": true },
+  { "file": "05-monthly-financials.csv", "series": true }
+ ]
+}

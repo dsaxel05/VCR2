@@ -5,7 +5,7 @@
    that cannot be read gets a plain reason and a fix, never a crash.
    Pure functions: they also run in a Worker and under Node (tests).
    ═══════════════════════════════════════════════════════════════ */
-const SF_LIMIT = { file:25 * 1048576, files:40, zipTotal:150 * 1048576, zipRatio:100, zipDepth:2, pdfPages:400, ms:8000, xmlChars:60 * 1048576, cells:2e6 };
+const SF_LIMIT = { file:25 * 1048576, files:40, zipTotal:150 * 1048576, zipRatio:100, zipDepth:2, pdfPages:400, ms:8000, tableRows:2000, tableHead:1000, tableTail:200, xmlChars:60 * 1048576, cells:2e6 };
 class SfError extends Error { constructor(code, detail) { super(code); this.code = code; this.detail = detail || ''; } }
 /* code -> [what happened, how to fix it] */
 const SF_WHY = {

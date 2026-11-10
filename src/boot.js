@@ -116,6 +116,7 @@ function loadSeriesText(text, name) {
   toast(`Monthly financials loaded: ${S.series.months.length} months.`);
 }
 function renderIntakeStatus() {
+  if (typeof renderSfIntake === 'function') renderSfIntake();
   const ls = $id('ledger-status'), ss = $id('series-status');
   const bad = (what, e) => e ? `<div class="warnstrip" role="alert"><span>⚠</span><div><b>${what} not loaded.</b> ${esc(e)}</div></div>` : '';
   if (ls) {

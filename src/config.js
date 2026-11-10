@@ -108,6 +108,7 @@ function normalizeConfig(c) {
   if (st.correlationCap != null && st.correlationCap !== '' && isFinite(+st.correlationCap)) out.settings.correlationCap = Math.min(10, Math.max(0, +st.correlationCap));
   SETTING_DEFS.forEach(d => { const v = cleanSetting(d, st[d.id]); if (v !== undefined) out.settings[d.id] = v; });
   /* The model name each AI provider is called with (the web address of a provider is not a setting). */
+  if (isObj(st.smartfill)) { const v = cleanSmartfill(st.smartfill); if (Object.keys(v).length) out.settings.smartfill = v; }
   if (isObj(st.aiModels)) { const am = {}; Object.entries(st.aiModels).forEach(([p, m]) => { if (/^[a-z]{3,20}$/.test(p) && typeof m === 'string' && /^[A-Za-z0-9._:\/-]{2,80}$/.test(m.trim()) && !KEY_RX.test(m)) am[p] = m.trim(); }); if (Object.keys(am).length) out.settings.aiModels = am; }
   /* Metrics measured together: group name -> metric keys. Absent means the built-in groups; {} means no groups. A metric is in one group
      (the first that names it) and a group needs two members to mean anything. */
@@ -723,9 +724,33 @@ function configuredThresholds() {
   return th;
 }
 /* A short signature of everything in the config that changes scores — part of the rubric version. */
+/* Smart fill settings from a published configuration: words, numbers and switches only, each one bounded (S9) */
+function cleanSmartfill(sf) {
+  const o = {}, words = a => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).slice(0, 60).map(x => x.trim().slice(0, 80)) : [];
+  ['enabled', 'excludeRestricted', 'allowComputed'].forEach(k => { if (typeof sf[k] === 'boolean') o[k] = sf[k]; });
+  if (sf.locale === 'en' || sf.locale === 'eu') o.locale = sf.locale;
+  if (sf.thresholds && typeof sf.thresholds === 'object') { const t = {}; ['high', 'medium', 'low'].forEach(k => { const n = +sf.thresholds[k]; if (isFinite(n) && n >= 0 && n <= 1) t[k] = n; }); if (Object.keys(t).length) o.thresholds = t; }
+  const fw = words(sf.forecastWords); if (fw.length) o.forecastWords = fw;
+  if (sf.fields && typeof sf.fields === 'object' && !Array.isArray(sf.fields)) {
+    const f = {}; Object.entries(sf.fields).slice(0, 400).forEach(([id, e]) => {
+      if (!ID_RE.test(id) || !e || typeof e !== 'object') return; const x = {};
+      ['syn', 'neg', 'removeSyn', 'must'].forEach(k => { const w = words(e[k]); if (w.length) x[k] = w; });
+      if (Array.isArray(e.range) && e.range.length === 2 && e.range.every(n => typeof n === 'number' && isFinite(n)) && e.range[0] < e.range[1]) x.range = e.range.slice();
+      if (Object.keys(x).length) f[id] = x;
+    }); if (Object.keys(f).length) o.fields = f;
+  }
+  if (sf.docTypes && typeof sf.docTypes === 'object' && !Array.isArray(sf.docTypes)) {
+    const d = {}; Object.entries(sf.docTypes).slice(0, 40).forEach(([id, e]) => {
+      if (!/^[a-z]{2,20}$/.test(id) || !e || typeof e !== 'object') return; const x = {};
+      if (typeof e.name === 'string' && e.name.trim()) x.name = e.name.trim().slice(0, 60); const w = words(e.words); if (w.length) x.words = w;
+      if (Object.keys(x).length) d[id] = x;
+    }); if (Object.keys(d).length) o.docTypes = d;
+  }
+  return o;
+}
 function configSignature() {
   const tNoNotes = {}; Object.entries(CFG.thresholds).forEach(([k, o]) => { const c = Object.assign({}, o); delete c.note; tNoNotes[k] = c; });
-  const stSig = Object.assign({}, CFG.settings); delete stSig.aiModels;   /* a model name changes no score */
+  const stSig = Object.assign({}, CFG.settings); delete stSig.aiModels; delete stSig.smartfill;   /* a model name or Smart fill's dictionary changes no score */
   ['displayStrong', 'displayMixed', 'earlyReadBelow', 'currency', 'salesEffFlag', 'churnMixFlag', 'nextRoundMultiple'].forEach(k => delete stSig[k]);   /* how a figure is worded or shown changes no score and must not reseed the simulation */
   const s = { fo:CFG.formulas, sx:stSig, un:CFG.labels.units,
     dm:CFG.dimensions.map(d => d.id), mf:CFG.models.map(m => [m.id, m.from || '']), sg:CFG.stages.map(x => [x.id, x.like, x.lo, x.hi]),

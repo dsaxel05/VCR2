@@ -9,7 +9,7 @@ expected tier and must_not_fill. Seeded: the same seed gives the same files (Chr
 so their bytes can differ; their text does not). Every company and number is invented."""
 import argparse, json, pathlib, random, sys, collections, shutil
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from gen import companies as CO, docs as D, writers as W, adversarial as A
+from gen import companies as CO, docs as D, writers as W, adversarial as A, mutate as MU
 
 FORMATS = {'deck': ['pptx', 'pdf', 'pdf_chrome', 'md', 'pptx_raw', 'txt', 'html', 'htm', 'md_b', 'html_b', 'pptx', 'txt_b'], 'model': ['xlsx', 'xlsx_raw', 'csv', 'pdf', 'ods', 'xlsx', 'pdf_chrome', 'ods_b'],
            'update': ['eml', 'md', 'txt', 'docx', 'eml_raw', 'odt', 'docx_raw', 'eml', 'rtf', 'pdf', 'odt_b', 'eml_raw', 'md_b', 'rtf'], 'captable': ['xlsx', 'csv', 'xlsm', 'ods', 'tsv'],
@@ -42,6 +42,20 @@ def plan(i):
     return t[:9]
 
 
+def _write(out, cdir, c, t, kind, doc, g, must, notv, rnd, used, browser, gold):
+    fmt = FORMATS[t][used[t] % len(FORMATS[t])]; used[t] += 1
+    if fmt == 'pdf_chrome' and browser is None: fmt = 'pdf'
+    if 'sheets' not in doc and fmt in ('xlsx', 'xlsx_raw', 'xlsm', 'ods', 'csv', 'tsv') and t != 'json': fmt = 'md'
+    if 'json' in doc and not fmt.startswith('json'): fmt = 'json'
+    fn = W.WRITERS[fmt]
+    data = fn(doc, used[t], browser=browser) if fmt == 'pdf_chrome' else fn(doc, used[t])
+    name = f'{rnd.choice(FILENAMES[t])}{"-" + kind if kind else ""}.{W.EXT.get(fmt, fmt)}'
+    (cdir / name).write_bytes(data)
+    gold['docs'].append({'file': f'{cdir.name}/{name}', 'company': c['i'], 'model': c['model'], 'stage': c['stage'], 'ccy': c['ccy'], 'lang': 'fr' if c['french'] and t in ('deck', 'update') else 'en',
+                         'type': t, 'role': doc['role'], 'format': W.EXT.get(fmt, fmt), 'producer': W.PRODUCER[fmt], 'mutation': kind,
+                         'fields': {k: {'value': v, 'tier': tier, 'loc': loc} for k, (v, tier, loc) in g.items()}, 'must_not_fill': must, 'must_not_value': notv})
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--seed', type=int, default=7); ap.add_argument('--set', default='dev'); ap.add_argument('--no-chrome', action='store_true')
     a = ap.parse_args()
@@ -56,22 +70,20 @@ def main():
         except Exception as e: print('Chromium not available, its PDFs are replaced by reportlab ones:', e)
     used = collections.Counter(); gold = {'set': a.set, 'seed': a.seed, 'docs': [], 'adversarial': []}
     cos = CO.companies(a.seed)
+    TPL = D.TEMPLATES
+    if a.set == 'heldout':   # other wording and layouts, written after the engine was frozen (never used for tuning)
+        from heldout import templates as HT
+        TPL = HT.TEMPLATES
     for c in cos:
         cdir = out / f'c{c["i"]:02d}-{c["name"].lower().replace(" ", "-")}'; cdir.mkdir()
         rnd = random.Random(a.seed * 1000 + c['i'])
         for t in plan(c['i']):
-            doc, g, must = D.TEMPLATES[t](c, rnd)
-            fmt = FORMATS[t][used[t] % len(FORMATS[t])]; used[t] += 1
-            if fmt == 'pdf_chrome' and browser is None: fmt = 'pdf'
-            if 'sheets' not in doc and fmt in ('xlsx', 'xlsx_raw', 'xlsm', 'ods', 'csv', 'tsv') and t != 'json': fmt = 'md'
-            if 'json' in doc and not fmt.startswith('json'): fmt = 'json'
-            fn = W.WRITERS[fmt]
-            data = fn(doc, used[t], browser=browser) if fmt == 'pdf_chrome' else fn(doc, used[t])
-            name = f'{rnd.choice(FILENAMES[t])}.{W.EXT.get(fmt, fmt)}'
-            (cdir / name).write_bytes(data)
-            gold['docs'].append({'file': f'{cdir.name}/{name}', 'company': c['i'], 'model': c['model'], 'stage': c['stage'], 'ccy': c['ccy'], 'lang': 'fr' if c['french'] and t in ('deck', 'update') else 'en',
-                                 'type': t, 'role': doc['role'], 'format': W.EXT.get(fmt, fmt), 'producer': W.PRODUCER[fmt],
-                                 'fields': {k: {'value': v, 'tier': tier, 'loc': loc} for k, (v, tier, loc) in g.items()}, 'must_not_fill': must})
+            doc, g, must = TPL[t](c, rnd)
+            variants = [('', doc, g, must, [])]
+            if a.set == 'fuzz' and t not in ('json', 'ledger'):
+                variants = [(k, *MU.mutate(doc, g, must, k, random.Random(a.seed * 7919 + c['i'] * 31 + len(k)))) for k in ('shuffle', 'locale', 'unseen')]
+            for kind, doc, g, must, notv in variants:
+                _write(out, cdir, c, t, kind, doc, g, must, notv, rnd, used, browser, gold)
     sample = random.Random(a.seed)
     c0 = cos[0]
     for name, data, meta in A.files([D.deck(c0, sample)[0], D.model_doc(c0, sample)[0], D.update(c0, sample)[0]]):

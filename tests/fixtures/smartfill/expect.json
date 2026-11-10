@@ -1132,7 +1132,7 @@
   },
   {
    "file": "adv-encrypted.pdf",
-   "size": 2393,
+   "size": 2426,
    "expect": "refuse",
    "reason": "encrypted"
   },
@@ -1164,7 +1164,7 @@
   },
   {
    "file": "adv-eighty-slides.pptx",
-   "size": 107290,
+   "size": 107291,
    "expect": "read",
    "perf": true
   },

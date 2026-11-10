@@ -1,3 +1,4 @@
+ARR bridge
 All figures in USD
 Metric,FY2025 (actual),LTM 2026-06-30 (actual),FY2027 (forecast),FY2027 plan
 Opening ARR,,143000,499796,
@@ -8,6 +9,7 @@ Contraction ARR,,"(4,000)","(4,000)",
 Closing ARR,143000,287000,933115,1004514
 Net new ARR,,144000,,
 
+P&L
 All figures in USD
 Metric,FY2025 (actual),LTM 2026-06-30 (actual),FY2027 (forecast),FY2027 plan
 Gross margin (incl. customer success),,58.4%,78%,80%

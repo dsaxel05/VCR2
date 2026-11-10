@@ -1,5 +1,29 @@
 # Changelog
 
+## v5.1.0: 2026-11-09
+
+**Smart fill**: drop the data room and VCR2 proposes the values for the evidence form, offline and without AI. Scoring is unchanged (rubric 5.0.0): Smart fill only fills the form, and only what you accept.
+
+### Smart fill
+- **Reads what companies send.** Excel (every visible sheet, saved values only), CSV and TSV, PDF with a text layer (an in-house reader: no library), Word, PowerPoint (including chart data), OpenDocument, e-mails with their attachments, JSON, HTML, RTF, Markdown and text, a folder or a .zip of the data room, or pasted text. A file is recognised by its content, not its extension. Scanned PDFs, pictures, old .xls/.doc/.ppt, password-protected files, Apple formats and web links are refused, each with a plain fix. [What you can drop](docs/DOCUMENTS.md)
+- **Finds the values with rules.** A number grammar (currencies, scales, brackets, ranges, "about"), a label dictionary of about 150 fields in English and French with veto terms ("ARR per employee" is not ARR), a period resolver (the latest actual, never a forecast or budget column) and dedicated rules for cap tables, term sheets, bank letters and receivables. Same files, same result, in any order.
+- **A review screen before anything is written.** High-confidence values are ticked, medium ones unticked, low ones only suggested. Each row shows the file, the cell, page, slide or line, the quoted text and the score. Edit a value, pick another candidate, or move it to another field (the label is remembered). Every empty field says why it stayed empty.
+- **Claims stay claims.** A figure from a deck or founder update fills the "as stated" field, so the consistency checks still compare the claim with the evidence; tick "also use as evidence" to use it in both places. A bank record beats a model, which beats a deck. Two good sources that disagree are shown as a conflict, not averaged.
+- **Safe by default.** A value you typed is never replaced unless you tick "overwrite"; figures from the ledger or the monthly financials are never replaced. **Undo last Smart fill** puts the form back. **Forget documents** drops the documents from memory. Only the file name, the place and a quote of 160 characters or fewer are kept with a value.
+- **A guide next to the drop zone**: what each document type fills, its state, a coverage bar per section, the best next document for each gap, a printable "Documents to bring" list and a button that adds the missing ones to the request list.
+- **Big files no longer freeze the page.** Reading runs in a background thread built from the page's own code (HTML is read on the page). If the thread cannot start, the page reads the files itself, with the same results.
+- **The owner controls it** in the Studio (Site > Smart fill): show or hide it, labels and veto terms per field, plausibility ranges, confidence thresholds with a what-if on a pasted sample, document types, forecast words, decimal separator, restricted cash and computed values, and a label tester. Each setting shows the built-in value and can be reset.
+
+### Measured (details in docs/smartfill/RESULTS.md)
+- Development set (140 documents): every High and Medium value correct, 98.7% of the values found. Held-out set written with new wording: every High and Medium value correct, 80.4% found. The gap is wording the dictionary has never seen; a miss leaves the field empty.
+- 26 hostile or odd files (encrypted, password-protected, truncated, scanned, a picture, a web link, wrong extensions, planted instructions): no crash, each with its message. axe-core: no accessibility violation on either Smart fill screen, light and dark, desktop and phone.
+
+### Fixes
+- A table of about 150,000 rows stopped the reading of every file (the browser ran out of stack). It is read now, and one file that fails can no longer stop the others.
+
+### Under the hood
+- New sources `src/smartfill-*.js`, tests `tests/smartfill-*.test.mjs`, `tests/browser/smartfill_*_test.py` and the seeded corpus generator `tests/smartfill/`. Docs: [SMART-FILL.md](docs/SMART-FILL.md) (method and rules S1 to S14) and [DOCUMENTS.md](docs/DOCUMENTS.md).
+
 ## v5.0.15: 2026-11-04
 
 The library controls for calibration, and the remaining privacy items of the security audit. Scoring is unchanged (rubric 5.0.0, same run IDs).

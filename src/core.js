@@ -525,7 +525,7 @@ const modelLabel = id => (MODELS.find(m => m.id === id) || { n:'Custom model' })
 const blankState = () => ({
   name:'', stage:'seed', model:'saas', asof:'', section:0,
   vals:{}, bools:{}, sel:{}, prov:{}, evid:{}, assume:{}, result:null, files:[],
-  ledger:null, series:null, notes:'', checklist:{}, example:false,
+  ledger:null, series:null, notes:'', checklist:{}, example:false, requests:[],
 });
 let S = blankState();
 /* ═══════════════════════════════════════════════════════════════
@@ -1580,6 +1580,7 @@ function buildDataRequests(D, checks, sc) {
   if (gv('ar_over_90')) add('aged_ar', 'Aged receivables report by customer.');
   if (gs('soc2') !== 'Type II') add('soc2', 'Current SOC 2 report or the auditor engagement letter and target date.');
   checks.filter(c => c.sev === 'major').forEach(c => add('workings', `Supporting workings for ${c.title.toLowerCase()}.`));
+  (S.requests || []).forEach(x => { if (!r.includes(x)) r.push(x); });   /* documents the user added (Smart fill guide) */
   return cfgRequests(r, D);
 }
 
@@ -1667,7 +1668,7 @@ function showPage(id) {
 function updateTopbar(id) {
   const c = $id('tb-company'), s = $id('tb-section');
   c.textContent = S.name || 'New assessment';
-  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report', library:'Library', studio:'Owner Studio', about:'About' };
+  const map = { intro:'Start', setup:'Company', intake:'Source material', section:'Evidence', verify:'Verification', loading:'Computing', result:'Report', library:'Library', studio:'Owner Studio', about:'About', sfreview:'Smart fill review' };
   s.textContent = id === 'section' ? (SECTIONS[S.section] ? SECTIONS[S.section].label : 'Evidence') : (map[id] || '');
   /* The page's one h1 (the home page has its own, visible one). */
   const h1 = $id('app-h1');
@@ -1796,6 +1797,7 @@ function saveSec() {
 function provBadge(id) {
   const p = S.prov[id];
   if (!p) return '';
+  if (p.src === 'smartfill') return `<span class="prov sf" title="${esc(`Smart fill, ${p.conf || ''} confidence: ${p.file} › ${p.loc}: “${p.line}”`)}">Smart fill</span>`;
   return `<span class="prov${p.src === 'ledger' ? ' ledger' : ''}" title="${esc(p.line || '')}">${p.src === 'ledger' ? 'ledger' : 'extracted'}</span>`;
 }
 /* Compact evidence-source picker shown on every evidence field. */
@@ -2106,7 +2108,7 @@ let derivedShowAll = false;
 function draftPayload() {
   return {
     v:4, name:S.name, stage:S.stage, model:S.model, asof:S.asof, section:S.section,
-    vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov, evid:S.evid, assume:S.assume, notes:S.notes, checklist:S.checklist || {}, evidFile:S.evidFile || undefined,
+    vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov, evid:S.evid, assume:S.assume, notes:S.notes, checklist:S.checklist || {}, evidFile:S.evidFile || undefined, requests:S.requests && S.requests.length ? S.requests : undefined,
     ledger: S.ledger ? { csv:ledgerToCSV(S.ledger) } : null,
     series: S.series ? { csv:seriesToCSV(S.series) } : null,
   };
@@ -2132,7 +2134,8 @@ function restorePayload(d) {
     asof:typeof d.asof === 'string' && /^\d{4}-\d{2}$/.test(d.asof) ? d.asof : '',
     section:Number.isInteger(d.section) && d.section >= 0 ? Math.min(d.section, SECTIONS.length - 1) : 0,
     vals:cleanMap(d.vals, okStr), bools:cleanMap(d.bools, v => typeof v === 'boolean'), sel:cleanMap(d.sel, v => typeof v === 'string'),
-    prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' || v.src === 'extracted')),
+    prov:cleanMap(d.prov, v => v && typeof v === 'object' && (v.src === 'ledger' || v.src === 'extracted' || v.src === 'smartfill')),
+    requests:Array.isArray(d.requests) ? d.requests.filter(x => typeof x === 'string').slice(0, 30).map(x => x.slice(0, 120)) : [],
     evid:cleanMap(d.evid, v => EVIDENCE.some(e => e.id === v)),
     assume:cleanMap(d.assume, (v, k) => typeof v === 'number' && isFinite(v) && !!ASSUME_RANGE[k]), notes:typeof d.notes === 'string' ? d.notes : '',
     checklist:cleanMap(d.checklist, v => ['todo','requested','received','reviewed','issue','na'].includes(v)), evidFile:d.evidFile === true,
@@ -2150,6 +2153,9 @@ function restorePayload(d) {
   });
   if (d.ledger && d.ledger.csv) { const r = parseLedger(d.ledger.csv, 'mrr'); if (r.ok) S.ledger = r.ledger; }
   Object.keys(S.assume).forEach(k => { S.assume[k] = clamp(S.assume[k], ASSUME_RANGE[k][0], ASSUME_RANGE[k][1]); });
+  /* a Smart fill source keeps only its file, place, snippet and confidence (never document text), each one bounded */
+  Object.keys(S.prov).forEach(k => { const v = S.prov[k]; if (v.src !== 'smartfill') return; const t = (x, n) => typeof x === 'string' ? x.slice(0, n) : '';
+    S.prov[k] = { src:'smartfill', file:t(v.file, 120), loc:t(v.loc, 80), line:t(v.line, 160), conf:['High', 'Medium', 'Low'].includes(v.conf) ? v.conf : 'Low', why:t(v.why, 160), v:t(v.v, 40) }; });
   /* "from the ledger" is kept only for a field a ledger that parses really fills: a shared file cannot claim ledger-grade evidence */
   const fills = S.ledger ? ledgerPrimitives(ledgerAnalytics(S.ledger)) : {};
   /* ...and only while the figure is the ledger's own (rounded as applyLedgerToForm writes it): a typed value cannot borrow its evidence */

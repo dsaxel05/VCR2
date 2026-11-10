@@ -83,7 +83,9 @@ function sfResolve(base, target) {
 async function sfReadOds(z, file) {
   const doc = { file, kind:'ods', sheets:0, blocks:[], notes:[] }, x = await sfZipText(z, 'content.xml'); if (!x) sfFail('truncated');
   let cells = 0;
-  for (const tb of sfAll(sfXml(x), 'table')) {
+  const root = sfXml(x), hiddenStyles = new Set();   /* LibreOffice hides a sheet through its table style (table:display="false") */
+  for (const st of sfAll(root, 'style')) if (st.a.family === 'table' && [...sfAll(st, 'table-properties')].some(t => t.a.display === 'false')) hiddenStyles.add(st.a.name);
+  for (const tb of sfAll(root, 'table')) {
     const rows = [];
     for (const tr of sfAll(tb, 'table-row')) {
       const rep = Math.min(+tr.a['number-rows-repeated'] || 1, 1000), row = [];
@@ -97,7 +99,7 @@ async function sfReadOds(z, file) {
       if ((cells & 4095) === 0) sfTick();
     }
     doc.sheets++;
-    doc.blocks.push({ type:'table', rows:sfTrim(rows), loc:tb.a.name || 'Sheet', hints:{ sheet:tb.a.name || 'Sheet', hidden:tb.a.display === 'false' } });
+    doc.blocks.push({ type:'table', rows:sfTrim(rows), loc:tb.a.name || 'Sheet', hints:{ sheet:tb.a.name || 'Sheet', hidden:tb.a.display === 'false' || hiddenStyles.has(tb.a['style-name']) } });
   }
   return doc;
 }
@@ -195,8 +197,9 @@ async function sfReadPptx(z, file) {
 }
 
 /* ── HTML: DOMParser only (inert: scripts never run); scripts, styles and hidden elements are dropped ── */
+let _sfNeedsPage = false;   /* set when a reader needs the page's own parser (HTML in a background thread) */
 function sfReadHtml(text, file) {
-  if (typeof DOMParser === 'undefined') sfFail('unknown', 'HTML is read on the page itself');
+  if (typeof DOMParser === 'undefined') { _sfNeedsPage = true; sfFail('unknown', 'HTML is read on the page itself'); }
   const d = parseDoc(String(text), 'text/html'), doc = { file, kind:'html', pages:1, blocks:[], notes:[] };
   d.querySelectorAll('script,style,noscript,template,iframe,object,embed,[hidden],[aria-hidden="true"]').forEach(e => e.remove());
   d.querySelectorAll('[style]').forEach(e => { if (/display\s*:\s*none|visibility\s*:\s*hidden/i.test(e.getAttribute('style'))) e.remove(); });
@@ -208,7 +211,7 @@ function sfReadHtml(text, file) {
       else if (tag === 'table') doc.blocks.push({ type:'table', rows:sfTrim([...c.querySelectorAll('tr')].map(tr => [...tr.children].map(td => sfClean(td.textContent)))), loc, hints:{} });
       else if (tag === 'dl') { const dts = [...c.querySelectorAll('dt')]; dts.forEach(dt => { const dd = dt.nextElementSibling; if (dd && dd.tagName === 'DD') doc.blocks.push({ type:'kv', text:`${sfClean(dt.textContent)}: ${sfClean(dd.textContent)}`, rows:[[sfClean(dt.textContent), sfClean(dd.textContent)]], loc, hints:{} }); }); }
       else if (tag === 'li') doc.blocks.push({ type:'list', text:sfClean(c.textContent), loc, hints:{} });
-      else if (tag === 'p' || (!c.children.length && sfClean(c.textContent))) { const t = sfClean(c.textContent); if (t) doc.blocks.push({ type:'para', text:t, loc, hints:{ bold:!!c.querySelector('b,strong') } }); }
+      else if (tag === 'p' || (!c.children.length && sfClean(c.textContent)) || ([...c.children].every(k => /^(span|b|strong|em|i|a|small|sup|sub|abbr|code|mark|u|br)$/i.test(k.tagName)) && sfClean(c.textContent))) { const t = sfClean(c.textContent); if (t) doc.blocks.push({ type:'para', text:t, loc, hints:{ bold:!!c.querySelector('b,strong') } }); }
       else walk(c);
     }
   };
@@ -343,7 +346,7 @@ function sfTextBlocks(text, doc) {
       flush(); doc.blocks.push({ type:'heading', text:sfClean(m ? m[1] : l).replace(/[*_]/g, ''), loc, hints:{} }); i += m || !(i + 1 < lines.length && /^(=+|-+)\s*$/.test(lines[i + 1].trim())) ? 1 : 2; continue;
     }
     const bullet = /^([-*•·▪◦]|\d{1,2}[.)])\s+/.test(l), body = l.replace(/^([-*•·▪◦]|\d{1,2}[.)])\s+/, '').replace(/\*\*([^*]+)\*\*/g, '$1').replace(/<\/?(sub|sup|b|i|br)\s*\/?>/gi, '');
-    if ((m = /^(.{2,90}?)\s*(?:\.{3,}|:|\s[-–]\s|\t)\s*(\S.*)$/.exec(body)) && !/^https?$/i.test(m[1]) && m[1].split(' ').length <= 12) {
+    if ((m = /^(.{2,90}?)\s*(?:\.{3,}|:|\s[-\u2013]\s|\t)\s*(\S.*)$/.exec(body)) && !/^https?$/i.test(m[1]) && m[1].split(' ').length <= 12) {
       flush(); doc.blocks.push({ type:'kv', text:`${sfClean(m[1])}: ${sfClean(m[2])}`, rows:[[sfClean(m[1]), sfClean(m[2])]], loc, hints:{ bullet } }); i++; continue;
     }
     if (bullet) { flush(); doc.blocks.push({ type:'list', text:sfClean(body), loc, hints:{} }); i++; continue; }

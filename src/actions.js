@@ -15,7 +15,9 @@ const CALLS = {
   setCorrMember, removeCorrGroup, filterStdRows, editStandard, sayStandard, setBrand, setLook, setLookColour, setLookView, insertRef, copyThresholdRow, pasteBenchmarks,
   setCatWeight, resetCat, setDefault, setProb, filterTrigRows, setTextReplacement, deleteTextReplacement, startTextEdit, addTextReplacement,
   setConst, setConstArray, resetAllConsts, resetConst, setStageName, setAiModel, setMeta, setMetaModels, filterDetailRows,
-  resetEverything, advCheck, advApply, advReset, libSetFlag, libFlagShown, eraseAsk, eraseAll
+  resetEverything, advCheck, advApply, advReset, libSetFlag, libFlagShown, eraseAsk, eraseAll,
+  sfRead, sfCancel, sfReview, sfUndoClick, sfForget, sfRemove, sfReadAs, sfTag, sfView, sfTickRow, sfOverwrite, sfAlso, sfEdit, sfAlt, sfRate, sfPickConflict, sfMove, sfAssign, sfAccept, sfCancelReview,
+  sfChecklist, sfAddRequests, sfStSwitch, sfStThreshold, sfStList, sfStRange, sfStResetField, sfStType, sfStWords, sfStLocale, sfStReset
 };
 const ACTIONS = {
 setName: el => { S.name = el.value; saveDraft(); }, setAsof: el => { S.asof = el.value; saveDraft(); },
@@ -53,6 +55,8 @@ setName: el => { S.name = el.value; saveDraft(); }, setAsof: el => { S.asof = el
   patReset: el => { delete ST.draft.patternParams[el.dataset.a]; saveStudioDraft(); renderStudioPane(); },
   tolReset: el => { delete ST.draft.checkTol[el.dataset.a]; saveStudioDraft(); renderStudioPane(); },
   textBackF: () => { stopTextEdit(); goStudio(); }, textLeaveF: () => stopTextEdit(),
+  sfStSample: el => { _sfStSample = el.value; setHTML($id('sf-st-whatif'), sfStWhatIf()); }, sfStLabel: el => { _sfStLabel = el.value; setHTML($id('sf-st-tester'), sfStTester()); },
+  sfStFilter: el => { _sfStFilter = el.value; const pos = el.selectionStart; renderStudioPane(); const n = document.querySelector('[data-input="sfStFilter"]'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } },
   editDerived: el => editDerived(el.dataset.k), resetDiffItem: el => resetDiffItem(el.dataset.area, el.dataset.key), loadVersion: el => loadVersion(el.dataset.sha)
 };
 /* click, change, input and keydown bubble: walk up from the target like an inline handler would, until one stops propagation.

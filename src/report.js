@@ -38,7 +38,7 @@ function renderResult(R) {
       <div>
         <div class="res-company">${esc(S.name)}</div>
         <div class="res-meta">${esc(stageName)} · ${esc(modelName)} · ${esc(date)}${S.asof ? ' · data as of ' + esc(monthLong(S.asof)) : ''}</div>
-        <div class="res-meta" style="margin-top:3px">rubric ${esc(sc.rubric)} · run ${esc(R.hash)}${R.LED ? ' · customer ledger' : ''}${S.series ? ' · monthly financials' : ''}</div>
+        <div class="res-meta" style="margin-top:3px">rubric ${esc(sc.rubric)} · run ${esc(R.hash)}${R.LED ? ' · customer ledger' : ''}${S.series ? ' · monthly financials' : ''}</div>${typeof sfReportLine === 'function' && sfReportLine() ? `<div class="res-meta">${esc(sfReportLine())}</div>` : ''}
         <div class="rule-d" aria-hidden="true"></div>
       </div>
       <div class="score-card">${blocked

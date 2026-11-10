@@ -6,7 +6,7 @@
 axe-core is a dev-only tool and is NOT part of the project: install it somewhere outside the repository (npm install axe-core) and give the path.
 Opens the built index.html from disk with the Studio on a mocked GitHub API and the fake token. Nothing is sent anywhere.
 Exit code 1 if any serious or critical violation is found."""
-import os, argparse, json, pathlib, sys
+import os, argparse, base64, json, pathlib, sys
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -42,6 +42,7 @@ def main():
                     if st.get('js'): pg.evaluate("() => { " + st['js'] + " }")
                     pg.wait_for_timeout(150)
                     run(pg, f"{st['name']} / {scheme} / {vname}", found)
+                smartfill(pg, scheme, vname, found)
                 pg.goto(URL + '#studio'); pg.wait_for_selector('#gh-token'); pg.fill('#gh-token', TOKEN); pg.click('#gh-signin'); pg.wait_for_timeout(600)
                 pg.evaluate("t => { localStorage.setItem('vcr2-theme', t); applyLook(); }", scheme)
                 pg.add_script_tag(content=axe)
@@ -56,6 +57,21 @@ def main():
         print(f"  [{v['impact']}] {v['id']}: {v['help']} — {v['count']} node(s) on {len(v['screens'])} screen(s); e.g. {v['screens'][0]}; {v['sample'][:120]}")
     if a.out: pathlib.Path(a.out).write_text(json.dumps(found, indent=1), encoding='utf-8')
     sys.exit(1 if serious else 0)
+
+
+SF_FILES = ['deck-pptx.pptx', 'model-openpyxl.xlsx', 'update-eml.eml', 'termsheet-chromium.pdf', 'bank-reportlab.pdf', 'adv-encrypted.pdf']
+
+
+def smartfill(pg, scheme, vname, found):
+    """Smart fill (switched on for the scan): the drop zone with six files listed (one unreadable), then the review screen."""
+    fx = ROOT / 'tests' / 'fixtures' / 'smartfill'
+    data = {f: base64.b64encode((fx / f).read_bytes()).decode() for f in SF_FILES if (fx / f).exists()}
+    pg.evaluate("() => { CFG.settings.smartfill = { enabled:true }; _sfDict = null; showPage('intake'); renderIntakeStatus(); }")
+    pg.evaluate("(d) => sfAddFiles(Object.entries(d).map(([n, b]) => new File([Uint8Array.from(atob(b), c => c.charCodeAt(0))], n)))", data)
+    pg.wait_for_timeout(150); run(pg, f"smartfill-intake / {scheme} / {vname}", found)
+    pg.click('#sf-read'); pg.wait_for_selector('#page-sfreview.active', timeout=60000); pg.wait_for_timeout(200)
+    run(pg, f"smartfill-review / {scheme} / {vname}", found)
+    pg.evaluate("() => { SFS.files = []; SFS.resolved = null; CFG.settings.smartfill = { enabled:false }; showPage('intro'); }")
 
 
 def run(pg, name, found):

@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 5.0.13" src="https://img.shields.io/badge/version-5.0.13-0e3b34?style=flat-square"></a>
+  <a href="CHANGELOG.md"><img alt="Version 5.1.0" src="https://img.shields.io/badge/version-5.1.0-0e3b34?style=flat-square"></a>
   <a href="https://vcr2.app/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-7a5a1f?style=flat-square"></a>
   <a href="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml"><img alt="Engine tests" src="https://github.com/dsaxel05/VCR2/actions/workflows/tests.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licence: proprietary" src="https://img.shields.io/badge/licence-proprietary-7a5a1f?style=flat-square"></a>
@@ -68,6 +68,7 @@ No account, no API key. To use your own data, choose **Start an assessment** and
 | | |
 |---|---|
 | **Rebuilds revenue from the ledger** | Upload revenue by customer by month: any billing-system export, wide or long, as CSV or straight from Excel (.xlsx, read in the browser with no library). VCR2 builds the monthly MRR bridge (new, expansion, reactivation, contraction, churn), which closes to the dollar, plus **true cohort NRR and GRR**, logo retention, concentration (top 1/5/10, HHI) and cohort heatmaps. It also shows how far a waterfall-style NRR is inflated by expansion from customers acquired during the year. |
+| **Reads your documents (Smart fill)** | Drop the data room (deck, model, term sheet, cap table, bank letter, e-mails, a whole folder or a .zip) and VCR2 proposes values for the form, each with its file, place and quoted line. Rules only: no AI, nothing leaves the browser. You review every value first. [What you can drop](docs/DOCUMENTS.md) |
 | **Stated vs. computed** | Consistency checks compare what the company states with what the underlying figures and the ledger produce. A **binomial test** flags when the discrepancies all happen to flatter the company: honest errors point both ways. |
 | **Forensics on billing data** | Nine tests, each with its method and its limits: final-month booking spikes before a raise, quarter-end pull-forward, one-month "recurring" customers, near-duplicate logos, one-off charges booked as MRR, reactivations hidden in new business, negative entries, growth smoothness, and a Benford first-digit test with an applicability check. |
 | **Runway odds, not a runway number** | Paul Graham's *default alive* test, plus a **seeded Monte Carlo** (4,000 paths) with decaying growth and the company's own volatility: the probability of reaching the next-stage ARR bar before cash-out, the runway distribution, and the capital needed to get there at 50% and 80% confidence. |
@@ -81,6 +82,10 @@ No account, no API key. To use your own data, choose **Start an assessment** and
 | **Learns from your deals** | Save each run to a local **Library**, import comparables from CSV, or paste anything (a newsletter, a portfolio update, meeting notes) and let a model you choose structure it for review. VCR2 then ranks each new company against your own data and can **recalibrate its thresholds on your library**. |
 | **An owner Studio** | The owner of the site can change everything that decides how a company is judged (healthy ranges, answer scores, weights, defaults, red-flag triggers, check tolerances), add fields, metrics, checks, deal-breakers, questions, benchmarks, checklist items and business models, and rename or switch off anything built in. Then publish to the live site. No code. [How it works](docs/STUDIO.md) |
 | **Output you can use** | A ranked question list, a ready-to-send founder email, a data-room request list, a print-ready **IC memo (PDF)**, Markdown, and a JSON export anyone can re-open. |
+
+### New in v5.1
+
+- **Smart fill.** Drop your documents and VCR2 proposes the values, offline and without AI. Every value shows where it came from, a deck figure goes to "as stated" (not to the evidence), conflicts between documents are shown, and nothing reaches the form until you accept it. [How it works](docs/SMART-FILL.md)
 
 ### New in v5.0
 
@@ -96,11 +101,23 @@ Full history in the [changelog](CHANGELOG.md).
 ## How to use it
 
 1. **What are you looking at?** Company, stage and business model. Stage sets the thresholds and weights; the model selects which metrics are scored.
-2. **Give it the source material.** Drop in the customer revenue ledger and monthly financials as CSV or Excel (parsed locally, no AI). Optionally paste the deck, memo or term sheet and extract figures with a model you choose; every extracted value keeps the line it came from.
+2. **Give it the source material.** Drop in the customer revenue ledger and monthly financials as CSV or Excel (parsed locally, no AI). Drop the rest of the data room into **Drop everything here** and click **Read my documents** (Smart fill, below). Optionally paste the deck, memo or term sheet and extract figures with a model you choose; every extracted value keeps the line it came from.
 3. **Evidence.** Review every field and tag where each number came from. Figures the ledger can supply are filled for you; anything entered by hand is checked against it.
 4. **Verification, then the report.** Contradictions are shown before any score. The report has twelve views: overview (with the risk map), findings, revenue, forensics, runway & odds, deal & returns (with the VC Method, First Chicago and the term-sheet review), benchmarks, scoring (with a sensitivity tornado and "what would need to be true"), questions, all metrics, the consistency ledger and the diligence checklist.
 
 **Your work is kept for you.** Everything you enter is saved in this browser as you type, and only there. The home page then offers a **Continue your assessment** card with the company name, how much of the form is filled and when you last edited it. The two examples are never saved, so opening one cannot replace your own draft. **Reset all inputs** (on the home page and at the bottom of the sidebar) deletes the inputs, the uploaded ledger and financials, the notes and assumptions, the report in progress and the saved draft, and leaves the library, the Studio settings, the theme, the text size and any AI key alone.
+
+## Smart fill
+
+Most of the evidence form is in documents the company has already sent. **Smart fill** reads them in your browser and proposes the values:
+
+- **What it reads.** Excel, CSV, PDF with a text layer, Word, PowerPoint, OpenDocument, e-mails with their attachments, JSON, HTML, RTF, Markdown and text, a folder or a .zip of the data room, or pasted text. Scanned PDFs, pictures, old .xls/.doc/.ppt and password-protected files are refused, each with the fix. Full list: **[DOCUMENTS.md](docs/DOCUMENTS.md)**.
+- **How.** Rules, a number grammar and a label dictionary of about 150 fields in English and French. No AI, no network, the same output for the same files. Big files are read in a background thread, so the page stays responsive.
+- **You decide.** High-confidence values are ticked, medium ones unticked, low ones only suggested. Each row shows the file, the cell, page or line, the quoted text and the score. A value you typed is never replaced unless you say so, and **Undo last Smart fill** puts the form back.
+- **Claims stay claims.** A figure from a deck or a founder update fills the "as stated" field, so VCR2 can still compare the claim with the evidence. Two documents that disagree are shown as a conflict, not averaged.
+- **The owner tunes it** in the Studio: labels and veto terms per field, ranges, confidence thresholds, document types, forecast words, with a label tester.
+
+Rules S1 to S14 and the method: **[SMART-FILL.md](docs/SMART-FILL.md)**. Measured accuracy: [docs/smartfill/RESULTS.md](docs/smartfill/RESULTS.md).
 
 ## Owner Studio
 
@@ -151,7 +168,7 @@ A few of the formulas:
 
 ## Privacy and security
 
-- The ledger, the derivations, the checks, the simulation and the score all run **entirely in your browser**. Nothing is uploaded anywhere, and there is no VCR2 server.
+- The ledger, the documents read by Smart fill, the derivations, the checks, the simulation and the score all run **entirely in your browser**. Nothing is uploaded anywhere, and there is no VCR2 server.
 - The site loads its published configuration (`radar-config.json`) from the same repository. The Owner Studio talks only to `api.github.com`, with the owner's own token.
 - **AI is off by default.** The only other network calls are the optional AI features (extraction, AI import, memo narrative), which send text to the provider **you** choose (Anthropic, OpenAI, Gemini, Groq or OpenRouter) using **your own** key and your own account. Nothing is billed to the site owner. Use a restricted, low-spend key and do not paste confidential data-room material into a provider you have not cleared.
 - Your AI key is kept in the tab only and forgotten when you close it, unless you tick "Remember this key on this computer". It is never in a draft, an export or the library. Your library is stored in your browser's `localStorage`.
@@ -165,6 +182,7 @@ See [SECURITY.md](SECURITY.md).
 - Default thresholds are **editable calibrations, not market statistics**. Recalibrating on your own library makes them yours.
 - Forensic tests are **reasons to look, never proof**. Price lists, annual true-ups and seasonal businesses produce some of the same shapes, and each test says so.
 - The simulation is only as good as its inputs: growth, volatility and spend growth come from the company's own history when available, and every assumption is shown and editable.
+- Smart fill misses wording its dictionary has never seen (on new phrasings, it found 80% of the values instead of 99%) and has no OCR. A miss leaves the field empty; it does not guess.
 - The deal model uses standard conventions (post-money SAFEs, pari passu preferred) and says when it is estimating a missing input.
 
 ## Requirements
@@ -228,9 +246,10 @@ src/                  the source files, concatenated in the order listed in buil
   owner*.js           owner control: text replacements, scoring constants, what differs from built-in
   studio*.js          the owner Studio: panes, details of built-in items, safety (undo, review, history, JSON)
   xlsx.js             dependency-free Excel reader
+  smartfill-*.js      Smart fill: file readers (zip, XML, PDF, Office, e-mail...), label dictionary, engine, resolution, background thread, review screen
 
 tests/                engine, archetype, property, configuration, importer, forensic, deal and browser tests
-docs/                 METHODOLOGY.md, STUDIO.md, EDITING.md, and the media used in this README
+docs/                 METHODOLOGY.md, STUDIO.md, EDITING.md, SMART-FILL.md, DOCUMENTS.md, and the media used in this README
 examples/             sample customer ledgers, monthly financials and a comparables template
 assets/               self-hosted fonts, the logo files, the home page demo video with its captions and poster (assets/video) and the social preview image
 tools/                dev server, size and performance budgets, layout and accessibility scans, key scan
@@ -240,7 +259,7 @@ The engines are also exposed as `window.Radar`: `Radar.assess({...})` runs a ful
 
 ## Roadmap
 
-- [ ] Document import (v5.1): drop several files or a .zip, a figure finder with the source line and page, an import report, column mapping with presets
+- [x] Document import (v5.1, Smart fill): drop several files or a .zip, each value with its source line and page, a review screen
 - [ ] Customer reference-call notes into structured signals (AI-assisted, with quotes)
 - [ ] Side-by-side comparison of companies, scenario lab, evidence trail on every number
 - [ ] Shared team library (optional sync)

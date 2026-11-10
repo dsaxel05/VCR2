@@ -72,8 +72,10 @@ def html(doc, variant=0, hidden_decoy=None):
 def csv_bytes(doc, variant=0):
     s = io.StringIO(); w = csv.writer(s, delimiter=';' if variant % 3 == 2 else ',', lineterminator='\r\n' if variant % 2 else '\n')
     if 'sheets' in doc:
-        for n, sh in enumerate(x for x in doc['sheets'] if not x.get('hidden')):
+        shown = [x for x in doc['sheets'] if not x.get('hidden')]
+        for n, sh in enumerate(shown):
             if n: w.writerow([])
+            if len(shown) > 1: w.writerow([sh['name']])
             for r in sh['rows']: w.writerow(r)
     else:
         for b in text_blocks(doc):
@@ -267,7 +269,12 @@ def pdf_reportlab(doc, variant=0, pages=None, encrypt=None):
         kw['encrypt'] = pdfencrypt.StandardEncryption(encrypt, canPrint=0)
     cv = canvas.Canvas(b, pagesize=letter, **kw); W, Hh = letter
     lines = []
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    fix = lambda t: str(t).replace(' ', ' ')
     for bl in text_blocks(doc):
+        bl = tuple(fix(x) if isinstance(x, str) else x for x in bl)
+        if bl[0] == 'kv' and len(bl[1]) + len(bl[2]) > 70: bl = ('p', f'{bl[1]}: {bl[2]}')
+        if bl[0] == 'table': bl = ('table', [[fix(c) for c in r] for r in bl[1]], {})
         if bl[0] == 'slide': lines.append(('break', ''))
         elif bl[0] == 'h': lines.append(('h', bl[1]))
         elif bl[0] in ('p', 'note', 'foot'):
@@ -276,7 +283,14 @@ def pdf_reportlab(doc, variant=0, pages=None, encrypt=None):
             lines.append(('p', t))
         elif bl[0] == 'kv': lines.append(('kv', bl[1], bl[2]))
         elif bl[0] == 'tile': lines.append(('tile', bl[1], bl[2]))
-        elif bl[0] == 'table': lines += [('row', [str(c) for c in r]) for r in bl[1]] + [('p', '')]
+        elif bl[0] == 'table':
+            rows = [[str(c) for c in r] for r in bl[1]]; nc = max(map(len, rows)); fs = 9
+            while True:
+                w = [max(stringWidth(r[i] if i < len(r) else '', 'Helvetica', fs) for r in rows) for i in range(nc)]
+                if sum(w) + 14 * (nc - 1) <= W - 144 or fs <= 6: break
+                fs -= 1
+            xs = [72]; [xs.append(xs[-1] + w[i] + 14) for i in range(nc - 1)]
+            lines += [('row', r, xs, w, fs) for r in rows] + [('p', '')]
     page = 1; y = Hh - 72
     def furniture():
         cv.setFont('Helvetica', 8); cv.drawString(72, Hh - 40, f'{doc["title"]}  |  Confidential  |  2026'); cv.drawRightString(W - 72, 30, f'Page {page}')
@@ -290,9 +304,11 @@ def pdf_reportlab(doc, variant=0, pages=None, encrypt=None):
         elif ln[0] == 'kv': cv.setFont('Helvetica', 10); cv.drawString(72, y, ln[1]); cv.drawRightString(W - 72, y, ln[2]); y -= 16
         elif ln[0] == 'tile': cv.setFont('Helvetica-Bold', 24); cv.drawString(72, y, ln[2]); cv.setFont('Helvetica', 10); cv.drawString(72, y - 16, ln[1]); y -= 44
         elif ln[0] == 'row':
-            cv.setFont('Helvetica', 9); xs = [72] + [72 + 200 + 90 * i for i in range(len(ln[1]) - 1)]
-            for x0, c in zip(xs, ln[1]): (cv.drawString if x0 == 72 else cv.drawRightString)(x0 if x0 == 72 else x0 + 80, y, c[:40])
-            y -= 13
+            r, xs, w, fs = ln[1], ln[2], ln[3], ln[4]; cv.setFont('Helvetica', fs)
+            for i, c in enumerate(r):
+                if i == 0: cv.drawString(xs[0], y, c)
+                else: cv.drawRightString(xs[i] + w[i], y, c)
+            y -= fs + 4
     cv.save(); return b.getvalue()
 
 
@@ -380,7 +396,7 @@ def eml_raw(doc, variant=0):
     """MIME written by hand: multipart/mixed with a base64 text part in Windows-1252 and a CSV attachment."""
     import base64
     body = txt(doc, variant).decode('utf-8')
-    b64 = base64.encodebytes(body.encode('cp1252', 'replace')).decode('ascii')
+    b64 = base64.encodebytes(body.replace('\u202f', '\u00a0').encode('cp1252', 'replace')).decode('ascii')
     att = base64.encodebytes(csv_bytes(doc) if 'sheets' in doc else b'Metric,Value\nNote,see body\n').decode('ascii')
     return ('From: "CFO" <cfo@example.com>\r\nTo: board@example.com\r\nSubject: =?utf-8?q?' + doc['title'].replace(' ', '_') + '?=\r\nDate: Wed, 30 Sep 2026 18:00:00 +0200\r\nMIME-Version: 1.0\r\n'
             'Content-Type: multipart/mixed; boundary="==b1=="\r\n\r\nThis is a multi-part message.\r\n--==b1==\r\nContent-Type: text/plain; charset=windows-1252\r\nContent-Transfer-Encoding: base64\r\n\r\n'
@@ -412,9 +428,11 @@ def ods_odfpy(doc, variant=0):
     from odf.opendocument import OpenDocumentSpreadsheet
     from odf.table import Table, TableRow, TableCell
     from odf.text import P
+    from odf.style import Style, TableProperties
     d = OpenDocumentSpreadsheet()
+    hid = Style(name='ta_hidden', family='table'); hid.addElement(TableProperties(display=False)); d.automaticstyles.addElement(hid)
     for sh in doc['sheets']:
-        t = Table(name=sh['name'][:31])
+        t = Table(name=sh['name'][:31], stylename=hid) if sh.get('hidden') else Table(name=sh['name'][:31])
         for r in sh['rows']:
             tr = TableRow()
             for c in r:

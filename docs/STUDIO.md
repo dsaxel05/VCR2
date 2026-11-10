@@ -52,6 +52,7 @@ Every change has a way back: switched-off items come back with one tick, every v
 | **Check tolerances** | The minor and material thresholds of every built-in consistency check. |
 | **Rename** | The words your investors use for any built-in field label, field hint, metric, section, dimension, red flag, deal-breaker or checklist item. |
 | **Texts** | App name, home-page headline, introduction and footnote, and the name of the custom section. |
+| **Smart fill** (Site > Smart fill, 5.1) | Show or hide the document reader; for each field, your labels and veto terms (English or French) and its plausible range; the confidence thresholds, with a what-if on a pasted sample; document-type names and identifying words; words that mark a figure as not an actual; the decimal separator; whether restricted cash is left out and whether computed values are allowed. A label tester shows which field any label maps to and why. Visitors' documents are never published. [SMART-FILL.md](SMART-FILL.md) |
 
 ### Added in 5.0: full owner control
 
