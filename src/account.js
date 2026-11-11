@@ -44,12 +44,12 @@ const acctProvider = id => acctProviders().find(p => p.id === id) || null;
 const acctAvailable = () => acctRegions().length > 0 && acctProviders().length > 0;
 
 /* ── storage: the session lives in this tab only when "Don't keep me signed in" is ticked ── */
-const ACCT_K = { session:'vcr2-acct-session', flow:'vcr2-acct-flow', region:'vcr2-acct-region' };
+const ACCT_SESSION = 'vcr2-acct-session', ACCT_FLOW = 'vcr2-acct-flow', ACCT_REGION = 'vcr2-acct-region';
 const acctStore = keep => { try { return keep ? localStorage : sessionStorage; } catch (e) { return null; } };
 const acctGet = (st, k) => { try { return JSON.parse(st.getItem(k) || 'null'); } catch (e) { return null; } };
 const acctDel = k => { [true, false].forEach(keep => { try { acctStore(keep).removeItem(k); } catch (e) {} }); };
-function acctSession() { return acctGet(acctStore(false) || {}, ACCT_K.session) || acctGet(acctStore(true) || {}, ACCT_K.session); }
-const acctRegion = id => { const rs = acctRegions(); let pick = null; try { pick = id || localStorage.getItem(ACCT_K.region); } catch (e) {} return rs.find(r => r.id === pick) || (rs.length === 1 ? rs[0] : null); };
+function acctSession() { return acctGet(acctStore(false) || {}, ACCT_SESSION) || acctGet(acctStore(true) || {}, ACCT_SESSION); }
+const acctRegion = id => { const rs = acctRegions(); let pick = null; try { pick = id || localStorage.getItem(ACCT_REGION); } catch (e) {} return rs.find(r => r.id === pick) || (rs.length === 1 ? rs[0] : null); };
 
 /* ── the network gate (A2) ── */
 let _acctArmed = false;
@@ -80,10 +80,10 @@ const ACCT_FLOW_MS = { oauth:10 * 6e4, email:60 * 6e4 };
 /* A pending sign-in. Kept in localStorage because an email link opens in a new tab; it is taken (read and erased) once. */
 async function acctNewFlow(reg, provider, keep, kind) {
   const { verifier, challenge } = await acctPkce(), state = acctRandom(24);
-  try { localStorage.setItem(ACCT_K.flow, JSON.stringify({ verifier, state, region:reg.id, provider, keep:!!keep, kind, t:Date.now() })); localStorage.setItem(ACCT_K.region, reg.id); } catch (e) {}
+  try { localStorage.setItem(ACCT_FLOW, JSON.stringify({ verifier, state, region:reg.id, provider, keep:!!keep, kind, t:Date.now() })); localStorage.setItem(ACCT_REGION, reg.id); } catch (e) {}
   return { challenge, state, back:acctReturnUrl(state) };
 }
-function acctTakeFlow() { const f = acctGet(localStorage, ACCT_K.flow); acctDel(ACCT_K.flow); return f; }
+function acctTakeFlow() { const f = acctGet(localStorage, ACCT_FLOW); acctDel(ACCT_FLOW); return f; }
 const acctReturnUrl = state => location.origin + location.pathname + '?acct=' + encodeURIComponent(state);
 const acctGo = url => location.assign(url);   /* same tab: no popup to block */
 
@@ -116,7 +116,7 @@ async function acctSignUp(email, password, rid, keep) {
   acctArm();
   const f = await acctNewFlow(reg, 'email_password', keep, 'email');
   const r = await acctFetch(reg, '/auth/v1/signup?redirect_to=' + encodeURIComponent(f.back), { method:'POST', body:{ email, password, code_challenge:f.challenge, code_challenge_method:'s256' } });
-  if (r && r.access_token) { acctDel(ACCT_K.flow); return { session:acctSaveSession(r, reg.id, keep) }; }
+  if (r && r.access_token) { acctDel(ACCT_FLOW); return { session:acctSaveSession(r, reg.id, keep) }; }
   return { confirm:true };   /* email verification is required: the session comes with the link */
 }
 async function acctPasswordSignIn(email, password, rid, keep) {
@@ -158,8 +158,8 @@ function acctSaveSession(r, rid, keep) {
   const s = { region:rid, keep:!!keep, access_token:r.access_token, refresh_token:r.refresh_token,
     expires_at:+r.expires_at || Math.floor(Date.now() / 1000) + (+r.expires_in || 3600),
     user:{ id:String(u.id || ''), email:String(u.email || '').slice(0, 254), provider:String((u.app_metadata && u.app_metadata.provider) || '').slice(0, 40) } };
-  acctDel(ACCT_K.session);
-  try { acctStore(keep).setItem(ACCT_K.session, JSON.stringify(s)); } catch (e) {}
+  acctDel(ACCT_SESSION);
+  try { acctStore(keep).setItem(ACCT_SESSION, JSON.stringify(s)); } catch (e) {}
   return s;
 }
 /* A valid access token, refreshed once when it is about to expire (parallel callers share one refresh). */
@@ -176,12 +176,12 @@ async function acctRefresh(s) {
     const r = await acctFetch(acctRegion(s.region), '/auth/v1/token?grant_type=refresh_token', { method:'POST', body:{ refresh_token:s.refresh_token } });
     return acctSaveSession(r, s.region, s.keep);
   } catch (e) {
-    if (e.code !== 'offline') acctDel(ACCT_K.session);   /* revoked or reused refresh token: signed out here too */
+    if (e.code !== 'offline') acctDel(ACCT_SESSION);   /* revoked or reused refresh token: signed out here too */
     throw e;
   }
 }
 async function acctSignOut() {
-  const s = acctSession(); acctDel(ACCT_K.session); acctDel(ACCT_K.flow);
+  const s = acctSession(); acctDel(ACCT_SESSION); acctDel(ACCT_FLOW);
   if (!s) return;
   acctArm();
   try { await acctFetch(acctRegion(s.region), '/auth/v1/logout?scope=local', { method:'POST', token:s.access_token }); } catch (e) {}

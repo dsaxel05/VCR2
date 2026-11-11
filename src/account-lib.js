@@ -30,8 +30,8 @@ function acctRenderMine() {
     && (!q || [r.title, r.company, r.model, r.band, (r.tags || []).join(' '), r.folder].join(' ').toLowerCase().includes(q)))
     .sort((a, b) => _mine.sort === 'score' ? (b.score ?? -1) - (a.score ?? -1) : _mine.sort === 'title' ? String(a.title).localeCompare(b.title) : String(b.updated_at).localeCompare(a.updated_at));
   const stages = [...new Set(_mine.rows.map(r => r.stage).filter(Boolean))];
-  const act = (n, id, l) => `<button type="button" class="btn btn-ghost btn-sm" data-click="${n}" data-a="${esc(id)}">${l}</button>`;
-  const undo = Object.entries(_mine.gone).map(([id, g]) => `<div class="warnstrip" role="status"><div>Deleted “${esc(g.title)}”. It is removed for good in 30 seconds. ${act('acctMineUndo', id, 'Undo')}</div></div>`).join('');
+  const act = (attr, id, l) => `<button type="button" class="btn btn-ghost btn-sm" ${attr} data-a="${esc(id)}">${l}</button>`;   /* attr is the whole data-click attribute written out, so the dispatcher test can check the name */
+  const undo = Object.entries(_mine.gone).map(([id, g]) => `<div class="warnstrip" role="status"><div>Deleted “${esc(g.title)}”. It is removed for good in 30 seconds. ${act('data-click="acctMineUndo"', id, 'Undo')}</div></div>`).join('');
   setHTML(el, `<h2 class="pg-title">My analyses</h2>
     ${_mine.err ? `<p class="acct-msg" role="alert">${esc(_mine.err)}</p>` : ''}
     ${u ? `<p class="pg-desc">${u.analyses} of ${u.max_analyses} analyses · ${mb(u.bytes)} of ${mb(u.max_bytes)} MB used. Each analysis keeps its last 20 saved versions.</p>` : ''}
@@ -52,7 +52,7 @@ function acctRenderMine() {
         <th scope="row">${esc(r.title)}${m && m.id === r.id ? ' <span class="chip">open</span>' : ''}${r.archived ? ' <span class="chip">archived</span>' : ''}${r.vault ? ' <span class="chip">vault</span>' : ''}</th>
         <td>${esc(r.stage || '')}</td><td>${esc(r.model || '')}</td><td>${esc(acctAgo(Date.parse(r.updated_at)))}</td>
         <td>${r.score == null ? 'n/a' : esc(String(r.score)) + (r.band ? ' ' + esc(r.band) : '')}</td><td>${esc((r.tags || []).join(', '))}</td>
-        <td class="mine-acts">${act('acctMineOpen', r.id, 'Open')}${act('acctMineHistory', r.id, 'Versions')}${act('acctMineDup', r.id, 'Duplicate')}${act('acctMineRename', r.id, 'Rename')}${act('acctMineTags', r.id, 'Tags')}${act('acctMineArchive', r.id, r.archived ? 'Unarchive' : 'Archive')}${act('acctMineDelete', r.id, 'Delete')}</td></tr>`).join('')}
+        <td class="mine-acts">${act('data-click="acctMineOpen"', r.id, 'Open')}${act('data-click="acctMineHistory"', r.id, 'Versions')}${act('data-click="acctMineDup"', r.id, 'Duplicate')}${act('data-click="acctMineRename"', r.id, 'Rename')}${act('data-click="acctMineTags"', r.id, 'Tags')}${act('data-click="acctMineArchive"', r.id, r.archived ? 'Unarchive' : 'Archive')}${act('data-click="acctMineDelete"', r.id, 'Delete')}</td></tr>`).join('')}
     </tbody></table></div>` : `<p>${_mine.rows.length ? 'No analysis matches.' : 'No analysis in your account yet. Your open analysis is saved here automatically.'}</p>`}
     <h3>Preferences</h3>
     <div class="mine-tools">

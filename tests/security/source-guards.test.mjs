@@ -116,10 +116,11 @@ console.log('Source guards');
     'vcr2-edit-texts', 'vcr2-owner', 'vcr2-studio-base', 'vcr2-studio-draft', 'vcr2-studio-preview',   // Owner Studio
     'vcr3-draft', 'vcr3-draft-meta', 'vcr3-key', 'vcr3-provider', 'vcr3-remember', 'vcr4-memo', 'vcr4-model',   // assessment draft, AI key and model, memo
     'vcr2-library', 'vcr2-calibrate',                                           // library and its calibration switch
+    'vcr2-acct-session', 'vcr2-acct-flow', 'vcr2-acct-region', 'vcr2-acct-draft', 'vcr2-acct-stage',   // accounts (signed-in visitors only): session, pending sign-in, region, which record the open draft is, default stage
     'vcr2-sf-aliases',                                                          // Smart fill labels a visitor taught (this browser only, never published)
     'vcr2-theme', 'vcr2-theme-default', 'vcr2-text', 'vcr2-text-default', 'vcr2-look', 'vcr2-look-style', 'vcr2-sidebar',   // theme, text size, look, sidebar
   ]);
-  const OTHER_NAMES = new Set(['vcr2-assessment' /* download file name */, 'vcr2-gh-token' /* only removed: an old Studio token is wiped, never written */, 'vcr2' /* the Trusted Types policy */]);
+  const OTHER_NAMES = new Set(['vcr2-assessment' /* download file name */, 'vcr2-gh-token' /* only removed: an old Studio token is wiped, never written */, 'vcr2' /* the Trusted Types policy */, 'vcr2-vault' /* the Vault check text, encrypted to test a key */]);
   const found = new Map();
   for (const [name, text] of Object.entries(ALL)) {
     for (const [n, l] of codeLines(name, text)) for (const m of l.matchAll(/['"`](vcr\d(?:-[a-z0-9]+)*)['"`]/g)) if (!found.has(m[1])) found.set(m[1], `${name}:${n}`);

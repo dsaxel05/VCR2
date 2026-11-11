@@ -123,7 +123,7 @@ async function acctExportAll() {
 async function acctDeleteAccount(typed) {
   if (typed !== 'DELETE') throw acctErr('not_confirmed');
   await acctRest('rpc/delete_my_account', { method:'POST', body:{} });
-  clearTimeout(_acctTimer); acctSetMeta(null); acctDel(ACCT_K.session); acctDel(ACCT_K.flow); _vault = { cfg:null, key:null }; _acctTermsOk = false;
+  clearTimeout(_acctTimer); acctSetMeta(null); acctDel(ACCT_SESSION); acctDel(ACCT_FLOW); _vault = { cfg:null, key:null }; _acctTermsOk = false;
 }
 
 /* ── A12: the terms are accepted once per account, before anything is saved to it ── */
