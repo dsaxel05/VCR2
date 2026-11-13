@@ -1,6 +1,18 @@
 # Changelog
 
-## v5.3.0: not released yet (branch `accounts`)
+## v5.3.1: not released yet (branch `accounts`)
+
+**The report, read as a VC would read it.** Scoring and every computed figure are unchanged (rubric 5.0.0); only what is shown and how.
+- **Hover cards were unreadable**: their text took the page's ink colour, dark on the dark-green card (light on light in the night theme). Fixed for every chart, the cohort table and the benchmark dots.
+- **Bottom line** at the top of the overview: the numbers (discrepancies, and ARR in the ledger, the financials and the deck side by side), the price (asked against what the target return supports, VC Method and First Chicago, and the multiple on the ledger's ARR), the cash, and the next step.
+- **The verified figure first**: when the customer ledger contradicts the form's ARR, the overview tile shows the ledger's ARR and says what the financials claim; the entry multiple is also given on the ledger's ARR (overview and Deal & returns).
+- **Runway, one story**: "Default alive" is no longer listed as a strength when the simulation, where growth slows, almost never breaks even; it becomes a watch item that says so. The runway tile says "at today's burn".
+- **Cohort heatmap**: blue above 100% (the cohort grew), orange below (it shrank), pale at 100%; before, 167% and 100% looked alike.
+- **MRR bridge hover card**: only the movements that happened, with the number of customers, signed, and the month-end MRR and ARR (no more "Contraction −$0").
+- **Problem counts no longer count up from zero**: the gate heading, the score banner and the Findings and Questions tabs show their true number at once ("0 items must be resolved" flashed on screen before). Headline tiles still count.
+- A minus sign instead of a hyphen in the ledger checks; the new-customers ledger check gets its own tolerance in the Studio.
+
+## v5.3.0: 2026-11-12
 
 **Files fill the form by themselves, and Smart fill reads seven languages.** Scoring is unchanged (rubric 5.0.0). No AI: rules and word lists only, in the browser.
 

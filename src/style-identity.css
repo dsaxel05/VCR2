@@ -158,6 +158,13 @@ a { color: var(--brand-text); }
 .gate li { font-size: 0.875rem; }
 .gate.optim { border-color: var(--warn-line); border-left-color: var(--warn); }
 .gate.optim h3 { color: var(--warn-text); }
+/* The bottom line: the four sentences a partner reads first, at the top of the overview. */
+.bline { border: 1px solid var(--border2); border-left: 4px solid var(--brand); border-radius: var(--radius-control); background: var(--bg1); padding: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-2); }
+.bline-t { font-size: calc(1.062rem * var(--sz-t)); color: var(--t0); margin-bottom: 6px; }
+.bline dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px var(--sp-3); margin: 0; font-size: 0.875rem; line-height: 1.55; }
+.bline dt { font-weight: 600; color: var(--t1); }
+.bline dd { margin: 0; color: var(--t0); }
+@media (max-width: 600px) { .bline dl { grid-template-columns: 1fr; gap: 2px; } .bline dd { margin-bottom: 6px; } }
 
 .rtabs { scrollbar-width: thin; }
 

@@ -69,7 +69,7 @@ async def main():
         end = await pg.evaluate("() => [document.querySelectorAll('.cu-run').length, document.querySelectorAll('[data-cu]').length]")
         check('after about 1.5 s every count has ended and its overlay is gone', end == [0, 0], end)
         same = await pg.evaluate("() => Array.from(document.querySelectorAll('#rp-overview .kpi-v')).map(k => k.textContent)")
-        check('the final values are exactly the computed ones', same == final and same[0] == '$4.20M', same)
+        check('the final values are exactly the computed ones', same == final and same[0] == '$3.94M', same)   # the sample's ledger contradicts the form, so the first tile is the ledger's ARR (v5.3)
         await pg.evaluate("() => renderResult(S.result)"); await pg.wait_for_timeout(250)
         again = await pg.evaluate("() => document.querySelectorAll('#rp-overview .cu-run').length")
         check('a re-render of the same page view does not count again', again == 0, again)

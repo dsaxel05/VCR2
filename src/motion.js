@@ -9,7 +9,9 @@
    3. The marked headline word gets the copy of itself that its shimmer layers need (data-word).
    Under prefers-reduced-motion nothing moves and every figure simply shows.
    ═══════════════════════════════════════════════════════════════ */
-const CU_SEL = '.kpi-v, .stat-n, .spec-v.proven .ev-mark, .band-num, .dv-val, .dim-cell b, .sec-counter, .gate h2, .verdict-pill, #rt-findings, #rt-questions, .nav-count, .sb-progress-row span:last-child';
+/* Counts of problems (the gate heading, the score banner, the Findings and Questions tabs) never count: "0 items must be resolved"
+   on screen for a moment is a false statement, not decoration. */
+const CU_SEL = '.kpi-v, .stat-n, .spec-v.proven .ev-mark, .band-num, .dv-val, .dim-cell b, .sec-counter, .nav-count, .sb-progress-row span:last-child';
 const CU_SIDE = '.sidebar, .topbar';
 const CU_NUM = /([−-]?)(\d[\d,]*(?:\.\d+)?)/;
 const cuState = new Map(), cuLast = new Map();

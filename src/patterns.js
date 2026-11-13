@@ -176,6 +176,13 @@ function detectPatterns(ctx) {
       [da.deadAt ? `cash runs out in month ${da.deadAt}` : 'expenses never cross revenue', da.needed != null ? `${money(da.needed)} more needed to reach breakeven at this growth` : null],
       'At today’s growth and spend, revenue does not overtake expenses before the money runs out. The company depends on this round, and on the next one.',
       'What is the path to default-alive if no further capital were raised after this round?');
+  else if (da && da.alive && sim && sim.pProfitable != null && sim.pProfitable < 0.25)
+    /* Paul Graham's test holds today's growth for ever; when the simulation, where growth slows as it does, rarely breaks
+       even, calling it a strength would contradict the runway figures next to it */
+    add('amber', 'default_alive', 'Default alive only if today’s growth holds',
+      [`at constant growth, revenue overtakes expenses in ${da.months} months`, `with growth slowing, ${fmtProb(sim.pProfitable)} of simulated paths break even within ${sim.H} months`],
+      'The breakeven rests on growth not slowing. Plan on the runway at today’s burn, not on reaching profitability.',
+      'What spend would be cut, and when, if growth slowed by a third over the next year?');
   else if (da && da.alive)
     add('green', 'default_alive', 'Default alive',
       [`revenue overtakes expenses in ${da.months} months at current growth`, `lowest cash ${money(da.low)}`],
@@ -354,7 +361,7 @@ const RISK_TYPES = [['product','Product'],['market','Market & timing'],['executi
 const PATTERN_RISK = {
   optimism:'financial', bought_growth:'execution', leaky_bucket:'product', nrr_definition:'financial', services:'financial',
   fragile_concentration:'market', window_dressing:'financial', runway_cliff:'financial', hiring_ahead:'execution', discount_wins:'market',
-  cycle_mismatch:'execution', ai_margin:'financial', overhang:'deal', default_dead:'financial', sim_low:'financial', sim_mid:'financial',
+  cycle_mismatch:'execution', ai_margin:'financial', overhang:'deal', default_dead:'financial', default_alive:'financial', sim_low:'financial', sim_mid:'financial',
   cohort_decay:'product', fund_math:'deal', founder_risk:'execution', subsidised:'market', loss_growth:'financial', partner_bank:'legal',
   shelfware:'product', stage_mismatch:'deal', offmarket_terms:'deal', investor_rights:'deal', price_return:'deal', weak_pmf:'product',
   nice_to_have:'product', moat_unproven:'market', new_team:'execution', no_tech_founder:'execution', finance_hygiene:'legal', why_now:'market',

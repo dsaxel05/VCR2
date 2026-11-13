@@ -859,6 +859,7 @@ const CHECK_TOLS = [
   { id:'ledger_customers_now', title:'Form vs ledger: customers today', unit:'customers', tol:1, hard:3 },
   { id:'ledger_customers_12mo', title:'Form vs ledger: customers a year ago', unit:'customers', tol:1, hard:3 },
   { id:'ledger_logos_lost_l12', title:'Form vs ledger: customers lost', unit:'customers', tol:1, hard:3 },
+  { id:'ledger_new_customers_l12', title:'Form vs ledger: new customers won', unit:'customers', tol:1, hard:3 },
   { id:'ledger_top1_pct', title:'Form vs ledger: largest customer share', unit:'pts', tol:1.5, hard:4 },
   { id:'ledger_top5_pct', title:'Form vs ledger: top 5 share', unit:'pts', tol:2, hard:5 },
   { id:'ledger_top10_pct', title:'Form vs ledger: top 10 share', unit:'pts', tol:2, hard:6 },
@@ -1065,8 +1066,8 @@ function runChecks(D) {
       const t0 = LEDGER_TOL[k] || { rel:5, hard:12 }, to = tolOf('ledger_' + k, t0.abs != null ? t0.abs : t0.pts != null ? t0.pts : t0.rel, t0.hard);
       const t = t0.abs != null ? { abs:to.tol, hard:to.hard } : t0.pts != null ? { pts:to.tol, hard:to.hard } : { rel:to.tol, hard:to.hard };
       let off, hardOff, deltaTxt;
-      if (t.abs != null) { off = Math.abs(fv - lv) > t.abs; hardOff = Math.abs(fv - lv) > t.hard; deltaTxt = `${fv > lv ? '+' : ''}${Math.round(fv - lv)} vs ledger`; }
-      else if (t.pts != null) { off = Math.abs(fv - lv) > t.pts; hardOff = Math.abs(fv - lv) > t.hard; deltaTxt = `${(fv - lv).toFixed(1)} pts vs ledger`; }
+      if (t.abs != null) { off = Math.abs(fv - lv) > t.abs; hardOff = Math.abs(fv - lv) > t.hard; deltaTxt = `${fv > lv ? '+' : fv < lv ? '−' : ''}${Math.abs(Math.round(fv - lv))} vs ledger`; }
+      else if (t.pts != null) { off = Math.abs(fv - lv) > t.pts; hardOff = Math.abs(fv - lv) > t.hard; deltaTxt = `${fv > lv ? '+' : fv < lv ? '−' : ''}${Math.abs(fv - lv).toFixed(1)} pts vs ledger`; }
       else { const r = lv !== 0 ? Math.abs(fv - lv) / Math.abs(lv) * 100 : (fv === 0 ? 0 : 100); off = r > t.rel; hardOff = r > t.hard; deltaTxt = `${r.toFixed(0)}% ${fv > lv ? 'above' : 'below'} ledger`; }
       if (!off) { agree++; return; }
       const isMoney = /arr/.test(k), fmt = v => isMoney ? money(v) : /pct/.test(k) ? pctv(v) : String(Math.round(v));

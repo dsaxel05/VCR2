@@ -34,7 +34,7 @@ function legend(items) {
 }
 
 /* MRR bridge: positive movements stacked above zero, losses below, net as a dot. */
-function chartBridge(bridge) {
+function chartBridge(bridge, mrrAt) {   /* mrrAt: month → MRR at month end, for the hover card */
   const rows = bridge.slice(-24);
   const W = 760, H = 260, L = 58, R = 12, T = 12, B = 26;
   const pos = r => [r.nw, r.exp, r.react], neg = r => [r.con, r.churn];
@@ -52,7 +52,12 @@ function chartBridge(bridge) {
     acc = 0;
     neg(r).forEach((v, k) => { if (v <= 0) return; const y0 = y(-acc), y1 = y(-acc - v); marks += `<rect x="${x(i) - bw / 2}" y="${y0 + 1}" width="${bw}" height="${Math.max(0.5, y1 - y0 - 2)}" fill="${CN[k]}"/>`; acc += v; });
     marks += `<circle cx="${x(i)}" cy="${y(r.net)}" r="3.5" class="netdot"/>`;
-    const tip = `<b>${esc(monthLabel(r.month))}</b><br>New ${money(r.nw)} (${r.nNew})<br>Expansion ${money(r.exp)}<br>Reactivation ${money(r.react)}<br>Contraction −${money(r.con)}<br>Churn −${money(r.churn)} (${r.nChurn})<br><b>Net ${money(r.net)}</b>`;
+    /* only the movements that happened that month, with the number of customers behind them, then the month-end MRR */
+    const ln = (l, v, n, neg) => v > 0 ? `<br>${l} ${neg ? '−' : '+'}${money(v)}${n ? ` (${n} customer${n === 1 ? '' : 's'})` : ''}` : '';
+    const end = mrrAt && mrrAt.get(r.month);
+    const tip = `<b>${esc(monthLabel(r.month))}</b>` + ln('New logos', r.nw, r.nNew) + ln('Expansion', r.exp) + ln('Reactivation', r.react, r.nReact)
+      + ln('Contraction', r.con, 0, true) + ln('Churn', r.churn, r.nChurn, true) + `<br><b>Net ${r.net > 0 ? '+' : r.net < 0 ? '−' : ''}${money(Math.abs(r.net))}</b>`
+      + (end != null ? `<br>MRR at month end ${money(end)} (ARR ${money(end * 12)})` : '');
     marks += `<rect class="hit" x="${L + band * i}" y="${T}" width="${band}" height="${H - T - B}" data-tip="${tipAttr(tip)}"/>`;
   });
   const inner = yAxis(ticks, y, L, W - R, axisMoney) + marks + xLabels(rows.map(r => monthLabel(r.month)), x, H - 8, rows.length > 14 ? 3 : 2);
@@ -140,10 +145,10 @@ function chartPayoff(curve, series, opts = {}) {
     + legend(series.map(s => ({ c:s.c, l:s.l, line:true })));
 }
 
-/* Cohort heatmap (HTML table): sequential single hue, brighter = retained more. */
-function heatInk(p) {
+/* Cohort heatmap (HTML table): two hues around 100% (grew, shrank), deeper further from 100. */
+function heatInk(p, hue) {
   try {
-    const cs = getComputedStyle(document.documentElement), a = hexRgb((cs.getPropertyValue('--c-new') || '').trim()), b = hexRgb((cs.getPropertyValue('--bg1') || '').trim());
+    const cs = getComputedStyle(document.documentElement), a = hexRgb((cs.getPropertyValue(hue || '--c-new') || '').trim()), b = hexRgb((cs.getPropertyValue('--bg1') || '').trim());
     if (a && b) {
       const m = '#' + [0, 1, 2].map(i => Math.round(a[i] * p + b[i] * (1 - p)).toString(16).padStart(2, '0')).join('');
       /* white or black, whichever reads better: at the worst mid-tone that is still 4.58:1 */
@@ -158,10 +163,12 @@ function cohortHeatmap(LED, mode) {
     if (!c) return '<td class="hm-empty"></td>';
     const v = mode === 'logo' ? c.logo : c.dollar;
     if (v == null) return '<td class="hm-empty"></td>';
-    const t = clamp(v / 120, 0, 1), pct = Math.round(12 + t * 78);
-    const bg = `color-mix(in srgb, var(--c-new) ${pct}%, var(--bg1))`;
+    /* Two hues around 100%: blue as the cohort grows past its start, orange as it shrinks (a pair colour-blind readers tell
+       apart); 100% itself stays pale, so expansion and decay stand out instead of every cell looking alike. */
+    const hue = v >= 100 ? '--c-new' : '--c-churn', t = clamp(Math.abs(v - 100) / 60, 0, 1), pct = Math.round(8 + t * 72);
+    const bg = `color-mix(in srgb, var(${hue}) ${pct}%, var(--bg1))`;
     /* The ink is chosen from the colour the cell really has, so it reads in the light and in the night theme. */
-    const ink = heatInk(pct / 100);
+    const ink = heatInk(pct / 100, hue);
     return `<td style="background:${bg};color:${ink}${c.partial ? ';background-image:repeating-linear-gradient(135deg,transparent 0 5px,rgba(127,127,127,.28) 5px 7px)' : ''}" data-tip="${tipAttr(`${fmtPct(v, 0)} ${mode === 'logo' ? 'of logos' : 'of starting MRR'}<br>${c.n} customers${c.partial ? '<br>partial: not every member is this old yet' : ''}`)}">${Math.round(v)}</td>`;
   };
   const avg = LED.avgCurve;
