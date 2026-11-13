@@ -1,7 +1,7 @@
 /* ── ACCOUNTS: the personal library and the background sync (rules A3, A8, A9) ──
    The draft on this device stays the working copy. When signed in, each local save is sent a few seconds later.
    Every write names the version it started from; if another device wrote in between, the person chooses (never silent). */
-const VCR2_VERSION = '5.2.0';
+const VCR2_VERSION = '5.3.0';
 const ACCT_META = 'vcr2-acct-draft';
 let _acctTimer = 0, _acctBusy = null, _acctEdits = 0, _acctEpoch = 0, _acctApplying = false, _acctState = { k:'' };
 let acctDelay = 3000;

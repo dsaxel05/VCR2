@@ -4,6 +4,10 @@ Smart fill reads the documents you already have (a deck, a financial model, a te
 
 Where: **Give it the source material** page, box **Drop everything here**. Drop files, a whole folder or a `.zip` of the data room, or paste text. Then click **Read my documents**.
 
+**Languages:** English, French, Spanish, German, Italian, Portuguese and Dutch, with their number formats ("15,6 Mio. $", "US$ 2,4 milhões", "3.120") and month names. Amounts in another currency than the dollar are shown but left unticked: VCR2 does not convert currencies, so check them yourself. Other alphabets (Chinese, Japanese, Arabic, Russian) are not read.
+
+**A customer ledger or monthly financials** dropped here also goes into its own box above, and fills the empty form fields at once (the same as dropping it in that box).
+
 ## Formats
 
 | | Formats |

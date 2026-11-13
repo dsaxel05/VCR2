@@ -40,7 +40,7 @@ await A.edit("S.ledger = { id:'L1' }; S.prov.arr_now = { src:'extracted', line:'
   ok('the customer ledger is never sent (no customer name on the server)', row.payload.ledger === null && !txt.includes('SecretCustomerCo'));
   eq('its computed figures are sent instead', row.payload.ledgerStats.top1, 60.12);
   eq('provenance lines are cut to 160 characters', row.payload.prov.arr_now.line.length, 160);
-  ok('index fields and app version are filled', row.title === 'Acme' && row.stage === 'seed' && row.app_version === '5.2.0', row.app_version); }
+  ok('index fields and app version are filled', row.title === 'Acme' && row.stage === 'seed' && row.app_version === '5.3.0', row.app_version); }
 
 /* ── a second device ── */
 const id = A.meta().id;

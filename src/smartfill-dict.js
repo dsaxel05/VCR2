@@ -163,7 +163,7 @@ prob_base|base probability||||x
 prob_up|upside probability||||x`;
 
 /* words that mark a value as not an actual (forecast, plan, someone else's figure) */
-const SF_NOT_ACTUAL = /\b(forecast|plan|budget|target|goal|objective|projected|projection|pro forma|proforma|expected|we expect|estimate|outlook|guidance|next year|by end of|by the end of|competitor|competitors|market|industry|benchmark|peer|peers|category|objectif|prévision|prévu|budget|concurrent|marché|set|fill|ignore|replace|pretend|assume|assumptions?|should be|would be|could be|could|if|hypothetical|scenario|example)\b|\b(fy|q[1-4])\s?'?\d{2,4}\s?(e|f|p|est|fcst)\b|\b20\d\d\s?(e|f|p)\b/i;
+const SF_NOT_ACTUAL = /\b(forecast|plan|budget|target|goal|objective|projected|projection|pro forma|proforma|expected|we expect|estimate|outlook|guidance|next year|by end of|by the end of|competitor|competitors|market|industry|benchmark|peer|peers|category|objectif|prévision|prévu|prevu|budget|concurrent|marché|marche|set|fill|ignore|replace|pretend|assume|assumptions?|should be|would be|could be|could|if|hypothetical|scenario|example)\b|\b(fy|q[1-4])\s?'?\d{2,4}\s?(e|f|p|est|fcst)\b|\b20\d\d\s?(e|f|p)\b/i;
 const SF_ACTUAL = /\b(actual|actuals|as of|as at|ltm|ttm|trailing|audited|closing|ending|current|today|réel|au \d)/i;
 
 /* label text in one form (lower case, no accents, single spaces); remembered, because the same labels come back thousands of times */
@@ -173,7 +173,7 @@ function sfNorm(s) {
   v = sfNorm0(k); if (_sfNormMemo.size > 50000) _sfNormMemo.clear(); _sfNormMemo.set(k, v); return v;
 }
 function sfNorm0(s) {
-  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[¹²³⁴*†‡]|\[\d+\]/g, ' ')
+  return String(s || '').replace(/ß/g, 'ss').replace(/[øØ]/g, 'o').replace(/[æÆ]/g, 'ae').replace(/[œŒ]/g, 'oe').replace(/[łŁ]/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[¹²³⁴*†‡]|\[\d+\]/g, ' ')
     .replace(/([a-z])[._]([a-z0-9])/g, '$1 $2').replace(/\b([a-z]{1,8})-(\d)\b/g, '$1$2').replace(/['’`]/g, ' ').replace(/[^a-z0-9%$€£+:/.-]+/g, ' ').replace(/\s[.:-]+\s|[.:]+$|^[.:-]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 let _sfDict = null;
@@ -181,16 +181,17 @@ function sfDict() {
   if (_sfDict) return _sfDict;
   const own = (typeof CFG !== 'undefined' && CFG && CFG.settings && CFG.settings.smartfill) || {}, ownF = own.fields || {};
   let taught = {}; try { const a = JSON.parse(localStorage.getItem('vcr2-sf-aliases') || '{}'); if (a && typeof a === 'object' && !Array.isArray(a)) taught = a; } catch (e) {}
-  const d = new Map();
+  const d = new Map(), intl = new Map();
+  SF_DICT_INTL.split('\n').forEach(line => { const [id, syn, neg, must] = line.split('|'); intl.set(id, { syn:(syn || '').split(';'), neg:(neg || '').split(';'), must:(must || '').split(';') }); });
   SF_DICT_SRC.split('\n').forEach(line => {
     const [id, en, fr, neg, range, flags] = line.split('|'), f = { id, syn:[], neg:[], lo:-Infinity, hi:Infinity, claim:'', prior:'', narrative:false, must:[], skip:false };
-    const o = ownF[id] || {};
-    f.syn = [...new Set([...(en || '').split(';'), ...(fr || '').split(';'), ...(o.syn || []), ...(Array.isArray(taught[id]) ? taught[id].slice(0, 60).map(String) : [])].map(sfNorm).filter(Boolean))].filter(s => !(o.removeSyn || []).map(sfNorm).includes(s));
-    f.neg = [...new Set([...(neg || '').split(';'), ...(o.neg || [])].map(sfNorm).filter(Boolean))];
+    const o = ownF[id] || {}, xl = intl.get(id) || { syn:[], neg:[], must:[] };
+    f.syn = [...new Set([...(en || '').split(';'), ...(fr || '').split(';'), ...xl.syn, ...(o.syn || []), ...(Array.isArray(taught[id]) ? taught[id].slice(0, 60).map(String) : [])].map(sfNorm).filter(Boolean))].filter(s => !(o.removeSyn || []).map(sfNorm).includes(s));
+    f.neg = [...new Set([...(neg || '').split(';'), ...xl.neg, ...(o.neg || [])].map(sfNorm).filter(Boolean))];
     const [lo, hi] = (range || '').split(','); if (lo !== '' && lo != null) f.lo = +lo; if (hi) f.hi = +hi;
     if (o.range && o.range.length === 2) { f.lo = +o.range[0]; f.hi = +o.range[1]; }
     const [head, must] = (flags || '').split('m=');   /* the "must" list is always last: everything after m= */
-    if (must != null) f.must = must.split(';').map(sfNorm).filter(Boolean);
+    if (must != null) f.must = [...new Set(must.split(';').concat(xl.must).map(sfNorm).filter(Boolean))];
     head.split(';').forEach(fl => { const [k, v] = fl.split('='); if (k === 'c') f.claim = v; else if (k === 'p') f.prior = v; else if (k === 'n') f.narrative = true; else if (k === 'x') f.skip = true; else if (k === 'a') f.abs = true; });
     if (o.must) f.must = o.must.map(sfNorm);
     d.set(id, f);
@@ -199,17 +200,27 @@ function sfDict() {
 }
 
 /* ── numbers: every number in a text, with its unit, currency, scale, sign, approximation and range ── */
-const SF_MULT = { k:1e3, thousand:1e3, thousands:1e3, mille:1e3, m:1e6, mm:1e6, mn:1e6, mio:1e6, million:1e6, millions:1e6, b:1e9, bn:1e9, billion:1e9, billions:1e9, md:1e9, mds:1e9, milliard:1e9, milliards:1e9 };
-const SF_NUM_RE = /(~|≈|[<>≤≥]=?\s?|\bat (?:least|most)\s+|\bc\.\s?|\bca\.\s?|\b(?:about|approx\.?|approximately|roughly|around|nearly|almost|over|under|up to|more than|less than|above|below|environ|près de|plus de|moins de)\s+)?(US\$|USD|EUR|GBP|CHF|\$|€|£)?\s?([-−\u2013]|\()?\s?(\d{1,3}(?:(?:[,.  ' ])\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?|[.,]\d+)(?:\s?(?:-|\u2013|to|à)\s?(?:US\$|\$|€|£)?(\d+(?:[.,]\d+)?))?\s?(bn|billions?|billion|milliards?|mds|md|mm|mn|mio|millions?|million|thousands?|mille|[kKmMbB](?![a-z]))?\s?(€|£|\$|USD|EUR|GBP)?(\))?\s?(%|percent|per cent|pct|pts|points|bps|x(?![a-z])|×|months?|mos?\.?(?![a-z])|mois|days?|jours|years?|yrs?|ans)?([¹²³⁴*†‡]|\[\d\])?/gi;
+const SF_MULT = { k:1e3, thousand:1e3, thousands:1e3, mille:1e3, tausend:1e3, tsd:1e3, duizend:1e3, mila:1e3, m:1e6, mm:1e6, mn:1e6, mln:1e6, mio:1e6, million:1e6, millions:1e6, millones:1e6, millon:1e6, mill:1e6, millionen:1e6, milioni:1e6, milione:1e6, milhoes:1e6, milhao:1e6, miljoen:1e6, miljoenen:1e6, mi:1e6,
+  b:1e9, bn:1e9, billion:1e9, billions:1e9, md:1e9, mds:1e9, milliard:1e9, milliards:1e9, milliarden:1e9, miliardi:1e9, miliardo:1e9, miljard:1e9, miljarden:1e9, bilhoes:1e9, bilhao:1e9, mrd:1e9, mld:1e9, mia:1e9, bi:1e9 };
+let _sfLangNow = 'en';   /* the language of the document being read (sfLang), set by the engine */
+const SF_NUM_RE = /(~|≈|[<>≤≥]=?\s?|\bat (?:least|most)\s+|\bc\.\s?|\bca\.\s?|\b(?:about|approx\.?|approximately|roughly|around|nearly|almost|over|under|up to|more than|less than|above|below|environ|près de|plus de|moins de|aproximadamente|aprox\.?|alrededor de|cerca de|casi|más de|mas de|menos de|hasta|etwa|rund|ungefähr|knapp|mehr als|weniger als|bis zu|circa|quasi|oltre|più di|piu di|meno di|fino a|quase|mais de|até|ongeveer|bijna|ruim|meer dan|minder dan)\s+|über\s+)?(US\$|USD|EUR|GBP|CHF|\$|€|£)?\s?([-−\u2013]|\()?\s?(\d{1,3}(?:(?:[,.  ' ])\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?|[.,]\d+)(?:\s?(?:-|\u2013|to|à)\s?(?:US\$|\$|€|£)?(\d+(?:[.,]\d+)?))?\s?(?:(bn|billions?|billion|milliards?|milliarden|miliardi|miliardo|miljarden|miljard|bilhões|bilhoes|bilhão|bilhao|mrd|mld|mds|md|millones|millón|millon|millionen|milioni|milione|milhões|milhoes|milhão|milhao|miljoenen|miljoen|mill(?![a-z])|mm|mn|mln|mio|millions?|million|thousands?|mille|tausend|tsd|duizend|mila(?![a-z])|mil(?![a-z])|mia(?![a-z])|mi(?![a-z])|bi(?![a-z])|[kKmMbB](?![a-z]))(?:\.(?=\s?(?:€|£|\$|USD|EUR|GBP|CHF)))?)?\s?(€|£|\$|USD|EUR|GBP)?(\))?\s?(%|percent|per cent|pct|por ciento|prozent|per cento|por cento|procent|pts|points|bps|x(?![a-z])|×|months?|mos?\.?(?![a-z])|mois|meses|mes(?![a-z])|monaten|monate|monat|mesi|mese|maanden|maand|mnd|days?|jours|días|dias|tagen|tage|giorni|dagen|years?|yrs?|ans|años|anos|jahren|jahre|anni|jaren|jaar)?([¹²³⁴*†‡]|\[\d\])?/gi;
 function sfLocale(text) {   /* "en" (1,234.5) or "eu" (1.234,5 / 1 234,5), decided per document */
   const t = String(text).slice(0, 200000);
   const eu = (t.match(/\d,\d{1,2}(?!\d)\s?(%|€|M€|k€|M\b)|\d{1,3}\.\d{3}\.\d{3}|\d \d{3},\d|\d \d{3}/g) || []).length;
   const en = (t.match(/\d\.\d{1,2}(?!\d)\s?(%|M\b|k\b|m\b|x\b)|\d{1,3},\d{3},\d{3}/g) || []).length;
-  return eu > en ? 'eu' : 'en';
+  if (eu !== en) return eu > en ? 'eu' : 'en';
+  /* no clear sign: weaker ones ("4,2 millones", "6.480", "1,250"), then the language of the document */
+  const eu2 = (t.match(/\d,\d{1,2}(?!\d)|\b\d{1,3}(?:\.\d{3})+(?!\d)/g) || []).length, en2 = (t.match(/\d\.\d{1,2}(?!\d)|\b\d{1,3}(?:,\d{3})+(?!\d)/g) || []).length;
+  if (eu2 !== en2) return eu2 > en2 ? 'eu' : 'en';
+  return /^(es|de|it|pt|nl|fr)$/.test(sfLang(t)) ? 'eu' : 'en';
+}
+/* dates are not figures: blanked out (same length, so positions hold) before numbers and their labels are read */
+function sfBlankDates(text) {
+  return String(text == null ? '' : text).replace(/\b(19|20)\d\d-\d\d(-\d\d)?\b|\b\d{1,2}\/\d{1,2}\/(19|20)?\d\d\b|\b(?:au|as of|on|le|al|am|el|il|em|op|per|zum)\s\d{1,2}\/\d{1,2}\b|\b(19|20)\d\d\/\d\d(\/\d\d)?\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?[ -]\d{1,2}(,? (19|20)\d\d)?\b|\b\d{1,2}(?:er|\.)?\s(?:de\s)?(?:jan|feb|f[eé]v|m[aä]r|mrz|mrt|apr|avr|abr|ma[iy]|mag|mei|ju[nli]|giu|lug|aug|ago|ao[uû]|se[pt]|o[ck]t|ott|out|nov|d[eé]c|dez|dic|ene|gen)[a-zà-ÿ]*\.?\s(?:de\s)?(19|20)\d\d\b|\b(q[1-4]|t[1-4]|[1-4]t|h[12]|s[12]|fy|gj|ej)\s?'?(19|20)?\d\d\b|\b(?:in|by|since|until|en|fin|end of|im|seit|bis|ende|nel|dal|desde|hasta|em|sinds|eind|depuis)\s(?:19|20)\d\d\b(?![.,]\d)(?!\s?(?:[%kKmMbB$€£]|bn\b|million))|\bsoc\s?[12]\b|\biso\s?\d{4,5}\b|\bsev(erity)?[- ]?[0-4]\b|\bp[0-4]\b/gi, x => ' '.repeat(x.length)).replace(SF_DAY_MONTH, x => ' '.repeat(x.length));
 }
 function sfNumbers(text, ctx) {
   ctx = ctx || {}; const out = [];
-  const s = String(text == null ? '' : text).replace(/\b(19|20)\d\d-\d\d(-\d\d)?\b|\b\d{1,2}\/\d{1,2}\/(19|20)?\d\d\b|\b(?:au|as of|on|le)\s\d{1,2}\/\d{1,2}\b|\b(19|20)\d\d\/\d\d(\/\d\d)?\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?[ -]\d{1,2}(,? (19|20)\d\d)?\b|\b\d{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* (19|20)\d\d\b|\b(q[1-4]|h[12]|fy)\s?'?(19|20)?\d\d\b|\b(?:in|by|since|until|en|fin|end of)\s(?:19|20)\d\d\b(?![.,]\d)(?!\s?(?:[%kKmMbB$€£]|bn\b|million))|\bsoc\s?[12]\b|\biso\s?\d{4,5}\b|\bsev(erity)?[- ]?[0-4]\b|\bp[0-4]\b/gi, x => ' '.repeat(x.length));
+  const s = sfBlankDates(text);
   SF_NUM_RE.lastIndex = 0; let m;
   while ((m = SF_NUM_RE.exec(s))) {
     if (m[0].trim() === '' || !/\d/.test(m[4])) { if (!m[0]) SF_NUM_RE.lastIndex++; continue; }
@@ -220,18 +231,19 @@ function sfNumbers(text, ctx) {
     const v = sfToNum(m[4], ctx.locale); if (v == null) continue;
     let unit = '', mult = 1, ccy = (m[2] || m[7] || '').toUpperCase().replace('US$', '$');
     ccy = ccy === '$' || ccy === 'USD' ? 'USD' : ccy === '€' || ccy === 'EUR' ? 'EUR' : ccy === '£' || ccy === 'GBP' ? 'GBP' : ccy === 'CHF' ? 'CHF' : '';
-    const mw = (m[6] || '').toLowerCase(), u = (m[9] || '').toLowerCase();
+    const mw = sfFold(m[6] || '').replace(/\.$/, ''), u = sfFold(m[9] || '');
     if (mw) {
       if (mw === 'm' && !ccy && /^mo/.test(s.slice(SF_NUM_RE.lastIndex - 1, SF_NUM_RE.lastIndex + 2))) unit = 'months';
+      else if (mw === 'mil') mult = /^(es|pt)$/.test(ctx.lang || _sfLangNow) || ctx.locale === 'eu' ? 1e3 : 1e6;   /* "500 mil" is 500 thousand in Spanish and Portuguese */
       else mult = SF_MULT[mw] || 1;
     }
-    if (u === '%' || u === 'percent' || u === 'per cent' || u === 'pct' || u === 'pts' || u === 'points') unit = '%';
+    if (/^(%|percent|per cent|pct|pts|points|por ciento|prozent|per cento|por cento|procent)$/.test(u)) unit = '%';
     else if (u === 'bps') { unit = '%'; mult = 0.01; }
     else if (u === 'x' || u === '×') unit = 'x';
-    else if (/^(months?|mos?\.?|mois)$/.test(u)) unit = 'months';
-    else if (/^(days?|jours)$/.test(u)) unit = 'days';
-    else if (/^(years?|yrs?|ans)$/.test(u)) unit = 'years';
-    if (/^(million|millions|billion|billions|bn|milliard|milliards|mds|md|mm|mn|mio)$/.test(mw) || ccy) unit = unit || '$';
+    else if (/^(months?|mos?\.?|mois|meses|mes|monaten?|monat|mesi|mese|maanden|maand|mnd)$/.test(u)) unit = 'months';
+    else if (/^(days?|jours|dias|tagen?|giorni|dagen)$/.test(u)) unit = 'days';
+    else if (/^(years?|yrs?|ans|anos|jahren?|anni|jaren|jaar)$/.test(u)) unit = 'years';
+    if ((mw.length > 1 && mult >= 1e6) || ccy) unit = unit || '$';
     const neg = !!m[3] && (m[3] !== '(' || !!m[8]);
     let value = v * mult * (neg ? -1 : 1);
     const hi = m[5] != null ? sfToNum(m[5], ctx.locale) * mult : null;

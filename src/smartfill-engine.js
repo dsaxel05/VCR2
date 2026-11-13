@@ -26,9 +26,10 @@ function sfClassify(doc) {
   const text = sfDocText(doc).slice(0, 60000), name = doc.file || '';
   const sheets = doc.blocks.filter(b => b.hints && b.hints.sheet).map(b => b.hints.sheet).join(' ');
   const ranked = SF_TYPES.map(t => {
-    let s = t.name.test(name) ? 3 : 0;
-    if (sheets && t.name.test(sheets)) s += 2;
-    t.words.forEach(w => { const n = (text.match(new RegExp(w.source, 'gi')) || []).length; s += Math.min(4, n) * 0.6; });
+    const xl = SF_TYPES_INTL[t.id] || [];
+    let s = t.name.test(name) || (xl[0] && xl[0].test(name)) ? 3 : 0;
+    if (sheets && (t.name.test(sheets) || (xl[0] && xl[0].test(sheets)))) s += 2;
+    t.words.concat(xl.slice(1)).forEach(w => { const n = (text.match(new RegExp(w.source, 'gi')) || []).length; s += Math.min(4, n) * 0.6; });
     const own = ((sfOwn().docTypes || {})[t.id] || {}).words || [], low = text.toLowerCase();
     own.forEach(w => { const k = String(w).toLowerCase(); if (k && low.includes(k)) s += 1.2; });
     if (doc.kind === 'json' && t.id === 'metrics') s += 3;
@@ -43,31 +44,36 @@ function sfClassify(doc) {
 const sfDocText = doc => doc.blocks.map(b => b.text || (b.rows || []).slice(0, 200).map(r => r.join(' ')).join('\n')).join('\n');
 /* a customer ledger: one row per customer, six or more month columns */
 function sfLedgerTable(doc) {
-  return doc.blocks.some(b => b.type === 'table' && b.rows.length >= 4 && (b.rows[0] || []).filter(c => /^(20\d\d[-/]\d{1,2}|[A-Z][a-z]{2}[- ]?\d{2,4}|\d{1,2}\/20\d\d)$/.test(c)).length >= 6);
+  return doc.blocks.some(b => b.type === 'table' && b.rows.length >= 4 && (b.rows[0] || []).filter(c => /^(20\d\d[-/.]\d{1,2}|\d{1,2}[/.]20\d\d)$/.test(c) || SF_MON_RX.test(sfFold(c))).length >= 6);
 }
 
 /* ── label matching: exact > synonym inside the label > shared words; a veto term rules the field out ── */
 let _sfNA = null;
 function sfNA() {   /* the built-in words plus the owner's (Studio) */
   const w = (sfOwn().forecastWords || []).map(x => sfNorm(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).filter(Boolean), key = w.join('|');
-  if (!_sfNA || _sfNA.key !== key) _sfNA = { key, re:w.length ? new RegExp(SF_NOT_ACTUAL.source + '|\\b(' + key + ')\\b', 'i') : SF_NOT_ACTUAL };
+  if (!_sfNA || _sfNA.key !== key) { const re = new RegExp(SF_NOT_ACTUAL.source + '|\\b(' + SF_L.notActual + ')\\b' + (w.length ? '|\\b(' + key + ')\\b' : ''), 'i'); _sfNA = { key, re:{ test:s => re.test(sfFold(s)) } }; }
   return _sfNA.re;
 }
+const SF_MON_FREE = new RegExp('\\b(janv|fevr?|mars|avr|mai|juin|juil|aout|sept|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|' + Object.keys(SF_MON).filter(k => k.length > 4).join('|') + ')[a-z]*\\.?\\b');
+const SF_MON_NEXT = new RegExp('\\b(' + SF_MON_SHY + ')[a-z]*\\.?[ \'/-]?((?:19|20)?\\d\\d)\\b');
+const SF_ONE_MONTH = new RegExp('\\b(' + SF_L.oneMonth + ')\\b|\\b(?:en|im|in|a|em|nel|dans)\\s+(?:el\\s+mes\\s+de\\s+)?(' + Object.keys(SF_MON).filter(k => k.length > 4).join('|') + ')\\b');
+const SF_CONJ = new RegExp('^.*\\s(' + SF_L.conj + ')\\s', 'i');
+const SF_GREET = new RegExp('^(' + SF_L.greet + ')\\b'), SF_UP = new RegExp('\\b(' + SF_L.up + ')\\s*(en|um|di|em|met|del|de)?\\s*(un\\s)?$'), SF_YOY = new RegExp('^\\s*(' + SF_L.yoy + ')');
 /* the point in time a header or row label names (2025, FY26, Q3 2026, Sep-26, September, 2026-09), as a number of years; 0 when none */
 function sfPeriodT(h) {
   h = String(h || '').trim(); if (!h || h.length > 40) return 0;
-  const MON = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12, janv:1, fev:2, fevr:2, mars:3, avr:4, mai:5, juin:6, juil:7, aout:8, sept:9 };
   const n = h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   let y = +((/(?:^|\D)((?:19|20)\d\d)(?!\d)/.exec(n) || [])[1] || 0);
   if (!y) { const m2 = /(?:fy|cy|q[1-4]|h[12]|[a-z]{3,9})\s?[-'.]?\s?(\d\d)(?![0-9])/.exec(n); if (m2) y = 2000 + +m2[1]; }
-  const q = /\bq([1-4])\b/.exec(n), mi = /^((?:19|20)\d\d)-(\d\d)/.exec(n), mo = /\b(janv|fevr?|mars|avr|mai|juin|juil|aout|sept|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\b/.exec(n);
-  const sub = mi ? +mi[2] / 12 : q ? +q[1] / 4 : mo ? MON[mo[1]] / 12 : y ? 0.99 : 0;
+  const q = /\b[qt]([1-4])\b/.exec(n), mi = /^((?:19|20)\d\d)-(\d\d)/.exec(n);
+  let mo = SF_MON_FREE.exec(n); if (!mo) { mo = SF_MON_NEXT.exec(n); if (mo && !y) y = 2000 + +mo[2] % 100; }
+  const sub = mi ? +mi[2] / 12 : q ? +q[1] / 4 : mo ? (SF_MON[mo[1]] || SF_MON[mo[1].slice(0, 3)] || 12) / 12 : y ? 0.99 : 0;
   if (!y && !mo) return 0;
   return (y || 1) + sub;
 }
 const sfNotActual = (text, f) => { const t = f.syn.reduce((x, s) => s.length > 2 ? x.split(s).join(' ') : x, sfNorm(text)).replace(/\bactual\b/g, ''); return sfNA().test(t); };
 const _sfTokMemo = new Map(), sfToks = s => { let v = _sfTokMemo.get(s); if (!v) { v = sfToks0(s); if (_sfTokMemo.size > 50000) _sfTokMemo.clear(); _sfTokMemo.set(s, v); } return v; };
-const sfToks0 = s => s.split(' ').filter(w => w && !/^(the|of|our|a|an|in|for|and|at|as|to|de|la|le|les|du|des|en|total|current|monthly|annual|actual)$/.test(w)).map(w => w.length > 5 ? w.replace(/(ing|ed|es|s)$/, '') : w.length > 4 ? w.replace(/s$/, '') : w);
+const sfToks0 = s => s.split(' ').filter(w => w && !/^(the|of|our|a|an|in|for|and|at|as|to|de|la|le|les|du|des|en|total|current|monthly|annual|actual|el|los|las|del|y|al|por|con|der|die|das|dem|den|und|im|am|zum|zur|von|vom|il|lo|gli|di|della|dello|dei|delle|e|o|os|do|da|dos|em|no|na|het|van|een|op|totale|totaal|gesamt|insgesamt|actual|aktuell|attuale|atual|huidig)$/.test(w)).map(w => w.length > 5 ? w.replace(/(ing|ed|es|s)$/, '') : w.length > 4 ? w.replace(/s$/, '') : w);
 function sfEdit1(a, b) { if (Math.abs(a.length - b.length) > 1) return false; let i = 0, j = 0, e = 0; while (i < a.length && j < b.length) { if (a[i] === b[j]) { i++; j++; continue; } if (++e > 1) return false; if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; } } return e + (a.length - i) + (b.length - j) <= 1; }
 const sfHas = (hay, needle) => (' ' + hay + ' ').includes(' ' + needle + ' ') || (/[^a-z0-9 ]/.test(needle) && hay.includes(needle));
 /* a label prepared once for scoring against many fields: its text, its text with "excluding X" removed (for vetoes), its words */
@@ -111,7 +117,9 @@ function sfSynIndex(fields) {
   fields.forEach((f, i) => {
     let any = false;
     for (const sy of f.syn) {
-      const st = sfToks(sy); if (!st.length || /[^a-z0-9 ]/.test(sy)) { any = true; continue; }
+      let st = sfToks(sy); if (!st.length) { any = true; continue; }
+      /* "pre-money", "gross margin %", "ggü. vorjahr": indexed by their words of three letters or more (the lookup splits labels the same way) */
+      if (/[^a-z0-9 ]/.test(sy)) { st = sfToks(sy.replace(/[^a-z0-9]+/g, ' ')).filter(t => t.length >= 3); if (!st.length) { any = true; continue; } }
       for (const t of st) { put(exact, t, i); if (t.length >= 6) { put(del, t, i); for (const v of sfDels(t)) put(del, v, i); } }
     }
     if (any) always.push(i);
@@ -121,7 +129,8 @@ function sfSynIndex(fields) {
 function sfCandidateFields(ix, label, fields) {
   const L = sfNorm(label); if (!L || L.length > 160) return [];
   const hit = new Set(ix.always), add = a => { if (a) for (const i of a) hit.add(i); };
-  for (const u of sfToks(L)) {
+  const toks = sfToks(L), parts = /[^a-z0-9 ]/.test(L) ? sfToks(L.replace(/[^a-z0-9]+/g, ' ')).filter(t => t.length >= 3) : [];
+  for (const u of parts.length ? [...new Set(toks.concat(parts))] : toks) {
     add(ix.exact.get(u));
     if (u.length >= 5) { add(ix.del.get(u)); for (const v of sfDels(u)) { add(ix.del.get(v)); if (v.length >= 6) add(ix.exact.get(v)); } }
   }
@@ -137,6 +146,9 @@ function sfMatch(label, fields, ctx) {
     best = null;
     const P = sfLabelPrep(label, ctx);
     if (P) for (const f of sfCandidateFields(memo.ix, label, fields)) { const s = sfLabelScoreP(P, f); if (s > 0.5 && (!best || s > best.s)) best = { f, s }; }
+    /* a hyphenated label ("Netto-Burn", "CAC-Amortisation") is also read with the hyphen as a space */
+    const lab2 = /[A-Za-zÀ-ÿ]-[A-Za-zÀ-ÿ]/.test(label) ? String(label).replace(/([A-Za-zÀ-ÿ])-(?=[A-Za-zÀ-ÿ])/g, '$1 ') : null, P2 = lab2 && sfLabelPrep(lab2, ctx);
+    if (P2) for (const f of sfCandidateFields(memo.ix, lab2, fields)) { const s = sfLabelScoreP(P2, f); if (s > 0.5 && (!best || s > best.s)) best = { f, s }; }
     if (memo.size > 20000) memo.clear();   /* the index (memo.ix) stays; only remembered answers are dropped */
     memo.set(key, best);
   }
@@ -166,7 +178,8 @@ function sfFit(n, fld, ctx) {
 
 /* ── candidates from one document ── */
 function sfCandidates(doc, cls, fields, opts) {
-  const out = [], rejects = [], notes = [], text = sfDocText(doc), locale = sfOwn().locale || sfLocale(text);
+  const out = [], rejects = [], notes = [], text = sfDocText(doc), locale = sfOwn().locale || (doc.kind === 'json' ? 'en' : sfLocale(text));   /* JSON numbers always use a dot */
+  _sfLangNow = sfLang(text);
   const reject = (f, why, snippet) => { if (f && rejects.length < 500) rejects.push({ field:f.id, why, snippet:String(snippet || '').slice(0, 120) }); };
   const ccyDoc = (/all figures in (eur|gbp|chf)|en (euros|livres)/i.exec(text) || [])[1];
   const counts = { USD:(text.match(/\$|USD/g) || []).length, EUR:(text.match(/€|EUR/g) || []).length, GBP:(text.match(/£|GBP/g) || []).length };
@@ -174,12 +187,12 @@ function sfCandidates(doc, cls, fields, opts) {
   const docCcy = counts[ccy] ? ccy : 'USD';
   const byId = new Map(fields.map(f => [f.id, f]));
   const head0 = doc.blocks.slice(0, 6).map(b => b.text || '').join(' ');
-  const docScale = /\$\s?in millions|in \$?\s?millions|\(\$\s?m(illions)?\)|en millions/i.test(head0) ? 1e6 : /\$\s?in thousands|in \$?\s?thousands|en milliers/i.test(head0) ? 1e3 : 1;
+  const head0f = sfFold(head0), docScale = /\$\s?in millions|in \$?\s?millions|\(\$\s?m(illions)?\)|en millions/i.test(head0) || sfLRaw('millions').test(head0f) ? 1e6 : /\$\s?in thousands|in \$?\s?thousands|en milliers/i.test(head0) || sfLRaw('thousands').test(head0f) ? 1e3 : 1;
   let curHead = '';
   const add = (fld, value, c) => {
     if (!fld || fld.d.skip) return;
     /* a number under a definitions, footnotes, appendix or assumptions heading explains a figure; it is not the figure (Low at most) */
-    if (/definition|footnote|appendix|glossary|methodolog|assumption|basis of preparation/i.test(curHead)) { c = Object.assign({}, c, { struct:(c.struct || 1) * 0.6, notes:(c.notes || []).concat([`under "${curHead.slice(0, 40)}"`]) }); }
+    if (/definition|footnote|appendix|glossary|methodolog|assumption|basis of preparation/i.test(curHead) || sfLRe('defs').test(sfFold(curHead))) { c = Object.assign({}, c, { struct:(c.struct || 1) * 0.6, notes:(c.notes || []).concat([`under "${curHead.slice(0, 40)}"`]) }); }
     out.push(Object.assign({ field:fld.id, value, file:doc.file, role:cls.role, type:cls.type }, c));
   };
   /* a label and its value (kv blocks, "Label: value" paragraphs) */
@@ -197,10 +210,10 @@ function sfCandidates(doc, cls, fields, opts) {
   const tableCands = (b, bi) => {
     const rows = b.rows; if (!rows.length) return;
     const all = rows.map(r => r.join(' ')).join(' '), scaleText = (doc.blocks[bi - 1] && doc.blocks[bi - 1].text || '') + ' ' + rows.slice(0, 4).map(r => r.join(' ')).join(' ') + ' ' + (b.hints.sheet || '');
-    const scale = /in thousands|\(000s?\)|\$ ?000|\$k\b|en milliers|k€|€k|thousands\)/i.test(scaleText) ? 1e3 : /in millions|\(\$m\)|\$mm|en millions/i.test(scaleText) ? 1e6 : docScale;
+    const scaleF = sfFold(scaleText), scale = /in thousands|\(000s?\)|\$ ?000|\$k\b|en milliers|k€|€k|thousands\)/i.test(scaleText) || sfLRaw('thousands').test(scaleF) ? 1e3 : /in millions|\(\$m\)|\$mm|en millions/i.test(scaleText) || sfLRaw('millions').test(scaleF) ? 1e6 : docScale;
     if (b.hints.hidden) return;
-    const isNum = c => sfNumbers(c, { locale }).length === 1 && /^[^A-Za-z]*\d[^A-Za-z]*(%|x|k|m|bn|mm|days|months)?[^A-Za-z]*$/i.test(c);
-    const isPeriod = c => /^((fy|cy)\s?'?\d{2,4}[a-z]?|(19|20)\d\d([a-z]| ?\(?[a-z ]+\)?)?|q[1-4]\s?'?\d{2,4}|h[12]\s?'?\d{2,4}|[a-z]{3,9}[- ]?'?\d{2,4}|ltm.*|ttm.*|actual.*|forecast.*|budget.*|plan.*)$/i.test(String(c).trim());
+    const isNum = c => sfNumbers(c, { locale }).length === 1 && (/^[^A-Za-z]*\d[^A-Za-z]*(%|x|k|m|bn|mm|days|months)?[^A-Za-z]*$/i.test(c) || SF_NUM_CELL.test(sfFold(c)));
+    const isPeriod = c => /^((fy|cy)\s?'?\d{2,4}[a-z]?|(19|20)\d\d([a-z]| ?\(?[a-z ]+\)?)?|[qt][1-4]\s?'?\d{2,4}|[1-4]t\s?'?\d{2,4}|h[12]\s?'?\d{2,4}|[a-zà-ÿ]{3,10}\.?[- ]?'?\d{2,4}|ltm.*|ttm.*|actual.*|forecast.*|budget.*|plan.*|real.*|ist.*|presupuesto.*|previsi.*|prognose.*|or[cç]amento.*|begroting.*|consuntivo.*)$/i.test(String(c).trim());
     const hi = rows.findIndex((r, ri) => ri < 6 && r.filter(Boolean).length >= 2 && r.filter(c => c && (!isNum(c) || isPeriod(c))).length === r.filter(Boolean).length && r.slice(1).some(c => c));
     let hi2 = hi; if (hi2 >= 0) { const m1 = sfMatch(rows[hi2][0] || '', fields, b.hints.sheet || ''); if (m1 && m1.s >= 0.8 && rows[hi2].filter(Boolean).length === 2) hi2 = -1; }
     const header = hi2 >= 0 && hi2 < 5 ? rows[hi2] : null, w = rows.reduce((m, r) => Math.max(m, r.length), 0);
@@ -210,7 +223,8 @@ function sfCandidates(doc, cls, fields, opts) {
       const h = header ? header[k] || '' : '';
       const year = +((/(20\d\d)/.exec(h) || /(?:fy|cy|q[1-4]|h[12]|[a-z]{3})\s?[-']?\s?(\d\d)(?![0-9])/i.exec(h) || [])[1] || 0); const y = year && year < 100 ? 2000 + year : year;
       const t = sfPeriodT(h);
-      return { h, notActual:sfNA().test(h) && !/actual/i.test(h), actual:SF_ACTUAL.test(h), t, prior:/prior|last year|12 months ago|year ago|previous/i.test(h) };
+      const hf = sfFold(h);
+      return { h, notActual:sfNA().test(h) && !/actual|\breal\b|\bist\b|consuntivo/.test(hf), actual:SF_ACTUAL.test(h) || sfLRe('actual').test(hf), t, prior:/prior|last year|12 months ago|year ago|previous/i.test(h) || sfLRe('prior').test(hf) };
     });
     const numericCols = colInfo.map((c, k) => k).filter(k => rows.slice(header ? hi2 + 1 : 0).some(r => isNum(r[k] || '')));
     const usable = numericCols.filter(k => !colInfo[k].notActual);
@@ -270,7 +284,7 @@ function sfCandidates(doc, cls, fields, opts) {
     if (m.f.t === 'select' || m.f.t === 'bool' || m.f.t === 'txt') return;
     let nums = sfNumbers(raw, c.ctx || { locale });
     if (nums.length > 1) nums = sfNumbers(String(raw).replace(/\([^)]*\)|\[[^\]]*\]/g, ' '), c.ctx || { locale });
-    if (nums.length > 1) { const fitting = nums.filter(n => (m.f.unit === '$' ? n.unit === '$' : m.f.unit === '%' ? n.unit === '%' : m.f.unit === 'x' ? n.unit === 'x' : false)); if (fitting.length) { nums = [fitting[0]]; c.struct = Math.min(c.struct, 0.92); } }
+    if (nums.length > 1) { const fitting = nums.filter(n => (m.f.unit === '$' ? n.unit === '$' : m.f.unit === '%' ? n.unit === '%' : m.f.unit === 'x' ? n.unit === 'x' : false)); if (fitting.length) { nums = [/→|->|⇒|➔/.test(String(raw)) ? fitting[fitting.length - 1] : fitting[0]]; c.struct = Math.min(c.struct, 0.92); } }   /* "X → Y": Y is the figure now */
     if (nums.length !== 1) return;
     const n = nums[0], fit = sfFit(n, m.f, Object.assign({ fraction:doc.kind === 'json' || /^0?\.\d+$/.test(String(raw).trim()) }, c.ctx || {}));
     if (!fit) { reject(m.f, n.range ? 'a range, not a single figure' : 'the unit or the size does not fit this field', c.snippet); return; }
@@ -279,29 +293,33 @@ function sfCandidates(doc, cls, fields, opts) {
     add(m.f, fit.value, { via:c.via || 'table', raw:String(raw).trim(), loc:c.loc, snippet:String(c.snippet).slice(0, 160), label:m.s, struct:c.struct, approx:n.approx, foot:n.foot || c.foot, computed:false,
       ccy:money ? (n.ccy || docCcy) : '', foreign, bound:n.bound, converted:fit.converted, notes:fit.note.concat(c.why ? [c.why] : []), scaled:n.scaled });
   };
-  /* sentences: the words before a number (or after it) name the field; "from X to Y" keeps Y */
+/* sentences: the words before a number (or after it) name the field; "from X to Y" keeps Y */
   const sentenceCands = (b, text) => {
     const nums = sfNumbers(text, { locale });
+    text = sfBlankDates(text);   /* "zum 30. Juni": the dot of a date is not the end of a sentence */
     nums.forEach((n, i) => {
-      const prevEnd = i ? nums[i - 1].end : 0, before = text.slice(Math.max(prevEnd, n.start - 90), n.start), after = ((n.unitWord ? n.unitWord + ' ' : '') + text.slice(n.end, n.end + 60)).split(/[.;,]|\band\b|\bfrom\b/)[0];
+      const prevEnd = i ? nums[i - 1].end : 0, before = text.slice(Math.max(prevEnd, n.start - 90), n.start), after = ((n.unitWord ? n.unitWord + ' ' : '') + text.slice(n.end, Math.min(n.end + 60, nums[i + 1] ? nums[i + 1].start : Infinity))).split(/[.;,]|\band\b|\bfrom\b/)[0];
       let cs = 0; text.slice(0, n.start).replace(/[.!?](?=\s)/g, (x, o) => { cs = o + 1; return x; });
-      const clause = text.slice(cs, n.end + 60);
+      const ce = text.slice(n.end, n.end + 60).search(/[.!?](\s|$)/), clause = text.slice(cs, ce < 0 ? n.end + 60 : n.end + ce + 1);   /* the next sentence ("Our goal is…") is not this figure's clause */
       if (/\bfrom\s*$/i.test(before.slice(-8)) && nums[i + 1] && /^\s*to\s/i.test(text.slice(n.end, nums[i + 1].start))) return;   /* X in "from X to Y" is the earlier value */
       let m = null, struct = 0.9, label = '';
-      const bw0 = before.replace(/.*[.;!?]\s/, '').replace(/^.*\b(and|while|but|et)\b/i, ''), seg = bw0.split(',').pop(), bw = /[a-z]{2}/i.test(seg) ? seg : bw0;
-      const a1 = sfMatch(bw, fields, clause), a2 = after.trim() ? (sfMatch(after.trim().split(/\s+/).slice(0, 3).join(' '), fields, clause) || sfMatch(after.trim().split(/\s+/).slice(0, 6).join(' '), fields, clause)) : null;
+      const bw0 = before.replace(/.*[.;!?]\s/, '').replace(/^.*\b(and|while|but|et)\b/i, '').replace(SF_CONJ, ''), seg = bw0.split(',').pop(), bw = /[a-z]{2}/i.test(seg) ? seg : bw0;
+      /* "sales and marketing", "ventas y marketing": when the words cut at "and" name nothing, the whole phrase is tried */
+      const bwAll = i && prevEnd >= n.start - 90 && !/[.;!?]\s/.test(before) ? bw : before.replace(/.*[.;!?]\s/, '').split(',').pop();   /* not the words that follow the previous figure */
+      const a1 = sfMatch(bw, fields, clause) || (bwAll !== bw && /[a-z]{2}/i.test(bwAll) ? sfMatch(bwAll, fields, clause) : null), a2 = after.trim() && !/^(with|at|con|mit|bei|com|met|avec|à|al)\s/i.test(after.trim()) ? (sfMatch(after.trim().split(/\s+/).slice(0, 3).join(' '), fields, clause) || sfMatch(after.trim().split(/\s+/).slice(0, 6).join(' '), fields, clause)) : null;
       if (a1 && (!a2 || a1.s >= a2.s)) { m = a1; label = bw; } else if (a2) { m = a2; label = after; struct = 0.88; }
       /* "up 239% on the prior year", "grew 80% year over year": the percentage is the growth, whatever grew */
-      const yoy = n.unit === '%' && /\b(up|grew|grown|growth of|increase of|increased|rose|higher)\s*(by\s*)?$/i.test(text.slice(Math.max(0, n.start - 20), n.start))
-        && /^\s*(?:(?:on|over|vs\.?|versus|compared (?:to|with)|from)\s+(?:the\s+)?(?:prior|previous|last)\s+year|year[- ](?:on|over)[- ]year|yoy)\b/i.test(text.slice(n.end, n.end + 40));
+      const pre = text.slice(Math.max(0, n.start - 30), n.start), post = text.slice(n.end, n.end + 45);
+      const yoy = n.unit === '%' && (/\b(up|grew|grown|growth of|increase of|increased|rose|higher)\s*(by\s*)?$/i.test(pre.slice(-20)) || SF_UP.test(sfFold(pre)) || (/\+\s*$/.test(pre) && SF_YOY.test(sfFold(post))))
+        && (/^\s*(?:(?:on|over|vs\.?|versus|compared (?:to|with)|from)\s+(?:the\s+)?(?:prior|previous|last)\s+year|year[- ](?:on|over)[- ]year|yoy)\b/i.test(post) || SF_YOY.test(sfFold(post)));
       if (yoy && (!m || !/growth/.test(m.f.id))) { const g = sfMatch('year over year growth', fields, ''); if (g) { m = g; label = 'growth on the prior year'; struct = 0.85; } }
       if (!m) return;
       const cl2 = m.f.syn.reduce((t, s) => t.split(s).join(' '), sfNorm(clause)).replace(/\bactual\b/g, '');   /* the field's own words never veto it (TAM says "market") */
       if (sfNA().test(cl2) && !(m.f.d.narrative && /market/.test(cls.type))) { reject(m.f, 'a target, forecast, competitor or market figure', clause); return; }
-      const per = /\b(\d{1,3})\s*(?:months|mos|mois)\b/i.exec(text.slice(n.end, n.end + 40));
+      const per = /\b(\d{1,3})\s*(?:months|mos|mois|meses|monaten|monate|mesi|maanden)\b/i.exec(text.slice(n.end, n.end + 40));
       if (/_l12$/.test(m.f.id) && per && +per[1] !== 12) { reject(m.f, `a ${per[1]}-month figure, not 12 months`, clause); return; }
-      if (/_l12$/.test(m.f.id) && /\b(in|during|for)\s+(january|february|march|april|may|june|july|august|september|october|november|december|the (month|quarter)|q[1-4])\b|\b(this|last) (month|quarter)\b|\bper (month|quarter)\b/i.test(text.slice(n.end, n.end + 50))) { reject(m.f, 'a one-month or one-quarter figure, not 12 months', clause); return; }
-      if (!yoy && /\b(last year|a year ago|12 months ago|prior year|il y a)\b/i.test(bw + ' ' + text.slice(n.end, n.end + 25).split(/\d/)[0])) { const pf = m.f.d.prior && byId.get(m.f.d.prior); if (!pf) return; m = { f:pf, s:m.s }; }
+      if (/_l12$/.test(m.f.id) && (/\b(in|during|for)\s+(january|february|march|april|may|june|july|august|september|october|november|december|the (month|quarter)|q[1-4])\b|\b(this|last) (month|quarter)\b|\bper (month|quarter)\b/i.test(text.slice(n.end, n.end + 50)) || SF_ONE_MONTH.test(sfFold(text.slice(n.end, n.end + 50))))) { reject(m.f, 'a one-month or one-quarter figure, not 12 months', clause); return; }
+      if (!yoy && (/\b(last year|a year ago|12 months ago|prior year|il y a)\b/i.test(bw + ' ' + text.slice(n.end, n.end + 25).split(/\d/)[0]) || sfLRe('prior').test(sfFold(bw + ' ' + text.slice(n.end, n.end + 30))))) { const pf = m.f.d.prior && byId.get(m.f.d.prior); if (!pf) return; m = { f:pf, s:m.s }; }
       valueOf(m, n.raw, { via:'sentence', loc:b.loc, struct, snippet:clause.trim(), ctx:{ locale, pctHeader:/%|percent/i.test(n.raw) }, foot:/[¹²³*†]/.test(label) });
     });
   };
@@ -313,14 +331,15 @@ function sfCandidates(doc, cls, fields, opts) {
     if (b.type === 'kv') { blockKV(b.rows[0][0], b.rows[0][1], b, bi); return; }
     const t = b.text || ''; if (!t) return;
     const kvm = /^([^:.!?]{2,70}):\s+(\S.{0,400})$/.exec(t);
-    if (kvm && b.type !== 'heading' && !/^(hi|dear|bonjour|note)\b/i.test(kvm[1])) { blockKV(kvm[1], kvm[2], b, bi); return; }
+    if (kvm && b.type !== 'heading' && !/^(hi|dear|bonjour|note)\b/i.test(kvm[1]) && !SF_GREET.test(sfFold(kvm[1]))) { blockKV(kvm[1], kvm[2], b, bi); return; }
     /* a KPI tile split in two blocks (PDF, HTML): a short value block next to a short label block */
     const nxt = doc.blocks[bi + 1], VAL = /^[~≈]?[-(]?[$€£]?\s?\d[\d,.  ]*\s?(%|x|[kKmMbB](n)?|M€|k€|M\$)?\)?[¹²³*†]?$/;
-    if (VAL.test(t.trim()) && nxt && nxt.text && nxt.text.length < 60 && !/\d{2}/.test(nxt.text)) {
+    const isVal = VAL.test(t.trim()) || (t.length < 30 && SF_NUM_CELL.test(sfFold(t.trim())));
+    if (isVal && nxt && nxt.text && nxt.text.length < 60 && !/\d{2}/.test(nxt.text)) {
       const m = sfMatch(nxt.text, fields, ''); if (m && m.f.t === 'num') valueOf(m, t, { via:'tile', loc:b.loc, struct:0.9, snippet:`${nxt.text}: ${t}`, ctx:{ locale }, foot:/[¹²³*†]/.test(nxt.text) });
       return;
     }
-    if (VAL.test(t.trim())) return;
+    if (isVal) return;
     if (/\d/.test(t)) sentenceCands(b, t);
   });
   curHead = '';
@@ -411,6 +430,14 @@ function sfChoices(doc, cls, fields, byId, add, text) {
   }
   if (!once.has('new_liq_pref') && (m = /(\d+(?:\.\d+)?)\s?x\s+((?:non[- ])?participating)[^.]{0,40}liquidation preference/i.exec(T))) {
     const src = { loc:'Liquidation preference', s:m[0] }; put('new_liq_pref', +m[1], src, 0.95); put('new_participating', !/non/i.test(m[2]), src, 0.95);
+  }
+  /* the same clause in the other languages: "preferencia de liquidación 1x no participativa", "1x nicht partizipierende Liquidationspräferenz" */
+  const TF = sfFold(T), PART = /particip|partizip|partecip/, NONPART = /\b(non|no|nicht|nao|niet)[- ]?(particip|partizip|partecip)/;
+  if (!once.has('new_liq_pref') && (m = /(?:preferencia de liquidacion|liquidationsprafe?renz|preferenza di liquidazione|preferencia de liquidacao|liquidatiepreferentie|preference de liquidation)\s*(?:de\s|von\s|di\s)?(\d+(?:[.,]\d+)?)\s?x\b([^.\n]{0,80})/.exec(TF))) {
+    const src = { loc:'Liquidation preference', s:m[0] }; put('new_liq_pref', +m[1].replace(',', '.'), src, 1); put('new_participating', PART.test(m[2]) && !NONPART.test(m[2]), src, 1);
+  }
+  if (!once.has('new_liq_pref') && (m = /(\d+(?:[.,]\d+)?)\s?x\s+([a-z -]{0,30})(?:liquidationsprafe?renz|preferencia de liquidacion|preferenza di liquidazione|preferencia de liquidacao|liquidatiepreferentie|preference de liquidation)/.exec(TF))) {
+    const src = { loc:'Liquidation preference', s:m[0] }; put('new_liq_pref', +m[1].replace(',', '.'), src, 0.95); put('new_participating', PART.test(m[2]) && !NONPART.test(m[2]), src, 0.95);
   }
   if ((m = /unallocated option pool equal to (\d+(?:\.\d+)?)\s?%\s*of the post.money/i.exec(T))) put('pool_target_post', +m[1], { loc:'Pre-money valuation', s:m[0] }, 1);
   if ((m = /board shall consist of (\w+) directors?:?([^.]{0,300})/i.exec(T))) {

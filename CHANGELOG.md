@@ -1,6 +1,22 @@
 # Changelog
 
-## v5.2.0: not released yet (branch `accounts`)
+## v5.3.0: not released yet (branch `accounts`)
+
+**Files fill the form by themselves, and Smart fill reads seven languages.** Scoring is unchanged (rubric 5.0.0). No AI: rules and word lists only, in the browser.
+
+### The ledger and the monthly financials fill the form
+- **The customer ledger** fills the empty form fields as soon as it is loaded (13 fields, new customers in the last 12 months added), without the button. A figure typed by hand stays, so verification can still test it against the ledger. "Fill the form from the ledger" still overwrites on request.
+- **The monthly financials** now fill the form too: cash (latest month), net and gross burn (last three months, the window the consistency check uses), headcount now and twelve months earlier. Same rule for typed figures, and a new "Fill the form from the financials" button. Their figures count as a system export.
+- **Dropped into Smart fill**, a ledger or monthly financials file is also loaded into its own box, so one drop does everything.
+
+### Smart fill in Spanish, German, Italian, Portuguese, Dutch and French
+- **One language file** (`src/smartfill-lang.js`): field names for about 90 fields in each language, plus the words the rules need (forecast, budget, target, "12 months ago", "year on year", "grew by", greetings, definitions headings), month names, scale words (millones, Mio., Mrd., Tsd., milioni, mln, milhões, mi, miljoen, mil) and units (meses, Monate, mesi, maanden, jours). Ledger and monthly-financials headers in the seven languages ("Cliente", "Kunde", "Caja", "Liquide Mittel", "oct-24", "Mär 25", "out/24", "mrt-25"...).
+- **Rules that were English-only** now work in every language: the scale written at the top of a document ("en millones de USD", "in Tsd. USD"), the liquidation-preference clause ("1x no participativa", "1x nicht partizipierende"), "+91 % ggü. Vorjahr", dates without a year ("30 de junio", "30. Juni"), hyphenated labels ("Netto-Burn", "CAC-Amortisation").
+- **Fixes found on the way, in every language:** "X → Y" keeps Y; the words after a figure stop at the next figure, and words starting with "with/con/mit/com/met/avec" never name it; a forecast word in the next sentence no longer vetoes a figure; "sales and marketing" is no longer cut at "and"; a document's number format falls back on its language when its numbers do not say (and JSON always uses a dot).
+- **Measured** (`tests/smartfill-languages.test.mjs`): the Quillstone data room translated into the six languages, 26 of 26 fields in each, no wrong value, no decoy; a second set of management reports, 10 of 10 each after fixing what it revealed; a blind set of update e-mails written last, first measured at 54 of 60 with nothing wrong and no decoy (the miss, "una ronda de 5 M$", is now read: 60 of 60). English and French corpus unchanged: dev 1,058 of 1,072, held out 648 of 802 (was 645), 100% precision on both.
+- **Limits:** amounts in euros or other currencies are found but stay Low (shown, not ticked), because VCR2 does not convert currencies. Other alphabets (Chinese, Japanese, Arabic, Russian) are not read.
+
+## v5.2.0: 2026-11-10
 
 **Optional accounts and a personal library.** Scoring is unchanged (rubric 5.0.0). Guest mode is unchanged: no request, no account storage, no Sign in button until the owner lists a backend project in `site.json` and switches a sign-in method on in the Studio.
 

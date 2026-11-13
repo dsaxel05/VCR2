@@ -1252,7 +1252,7 @@ function evidenceOf(id) {
   const e = S.evid[id];
   if (e != null && e !== '' && EVIDENCE.some(x => x.id === e)) return e;
   const p = S.prov[id];
-  if (p && p.src === 'ledger') return 'export';
+  if (p && (p.src === 'ledger' || p.src === 'series')) return 'export';
   if (p && p.src === 'extracted') return 'deck';
   return '';
 }
@@ -2163,6 +2163,8 @@ function restorePayload(d) {
   /* ...and only while the figure is the ledger's own (rounded as applyLedgerToForm writes it): a typed value cannot borrow its evidence */
   Object.keys(S.prov).forEach(k => { const f = fills[k]; if (S.prov[k].src === 'ledger' && (f == null || +S.vals[k] !== (/pct$/.test(k) ? Math.round(f * 10) / 10 : Math.round(f)))) delete S.prov[k]; });
   if (d.series && d.series.csv) { const r = parseSeries(d.series.csv); if (r.ok) S.series = r.series; }
+  const sfills = S.series ? seriesPrimitives(S.series) : {};   /* the same rule for figures from the monthly financials */
+  Object.keys(S.prov).forEach(k => { const f = sfills[k]; if (S.prov[k].src === 'series' && (f == null || +S.vals[k] !== Math.round(f))) delete S.prov[k]; });
   const n = $id('cname'); if (n) n.value = S.name;
   const a = $id('asof'); if (a) a.value = S.asof;
 }

@@ -3,13 +3,14 @@
    MONTHLY FINANCIALS — trajectory, burn trend, default-alive
    ═══════════════════════════════════════════════════════════════ */
 const SERIES_COLS = {
-  revenue:   /^(revenue|mrr|arr|sales|net revenue|total revenue|recurring revenue|subscription revenue)$/i,
-  cash:      /^(cash|cash balance|ending cash|bank|cash on hand|closing cash)$/i,
-  burn:      /^(burn|net burn|net cash burn|cash burn|burn rate)$/i,
-  cashflow:  /^(net cash flow|cash flow|net cashflow|net change in cash)$/i,
-  expenses:  /^(expenses|opex|total expenses|operating expenses|costs|total costs|spend|gross burn)$/i,
-  headcount: /^(headcount|fte|ftes|employees|team size|staff)$/i,
+  revenue:   /^(revenue|mrr|arr|sales|net revenue|total revenue|recurring revenue|subscription revenue|ingresos|ingresos totales|ventas|facturacion|umsatz|umsatzerlose|erlose|gesamtumsatz|ricavi|ricavi totali|fatturato|receita|receitas|receita total|faturamento|vendas|omzet|totale omzet|netto omzet|chiffre d affaires|ca|revenus)$/i,
+  cash:      /^(cash|cash balance|ending cash|bank|cash on hand|closing cash|caja|tesoreria|saldo de caja|caja al cierre|liquide mittel|liquiditat|kasse|kassenbestand|bankguthaben|cassa|liquidita|disponibilita liquide|saldo di cassa|caixa|saldo de caixa|disponibilidades|kas|kassaldo|banksaldo|liquide middelen|tresorerie|solde de tresorerie)$/i,
+  burn:      /^(burn|net burn|net cash burn|cash burn|burn rate|consumo de caja|consumo neto de caja|quema|quema de caja|mittelabfluss|netto burn|consumo di cassa|burn netto|queima|queima de caixa|consumo de caixa|kasverbranding|consommation de tresorerie|burn net)$/i,
+  cashflow:  /^(net cash flow|cash flow|net cashflow|net change in cash|flujo de caja|flujo de caja neto|cashflow|netto cashflow|flusso di cassa|fluxo de caixa|kasstroom|flux de tresorerie|variation de tresorerie)$/i,
+  expenses:  /^(expenses|opex|total expenses|operating expenses|costs|total costs|spend|gross burn|gastos|gastos totales|costes|costes totales|costos|costos totales|kosten|gesamtkosten|aufwand|aufwendungen|betriebskosten|costi|costi totali|spese|despesas|despesas totais|custos|custos totais|totale kosten|uitgaven|charges|charges totales|depenses|depenses totales)$/i,
+  headcount: /^(headcount|fte|ftes|employees|team size|staff|empleados|plantilla|mitarbeiter|beschaftigte|dipendenti|organico|funcionarios|colaboradores|medewerkers|werknemers|effectif|effectifs|salaries|etp)$/i,
 };
+const seriesFold = h => String(h || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['’]/g, ' ').replace(/\s+/g, ' ').trim();
 
 function parseSeries(text) {
   const rows = parseCSV(text);
@@ -24,7 +25,7 @@ function parseSeries(text) {
   if (hdrOrder.inferred) warnings.push(`The column dates could be day-first or month-first; they were read ${hdrOrder.order === 'dmy' ? 'day-first' : 'month-first'}. Use YYYY-MM to be explicit.`);
   if (loc === 'eu') warnings.push('Numbers were read in European format (a dot groups thousands, a comma is the decimal mark).');
   let recs = []; /* [{month, key:value}] */
-  const colKey = h => Object.keys(SERIES_COLS).find(k => SERIES_COLS[k].test(h.trim()));
+  const colKey = h => Object.keys(SERIES_COLS).find(k => SERIES_COLS[k].test(seriesFold(h)));
 
   if (monthsAcross) {
     /* Transposed P&L: metrics down the side, months across the top. */
@@ -36,7 +37,7 @@ function parseSeries(text) {
     });
     recs = Array.from(byMonth.values());
   } else {
-    let mi = head.findIndex(h => /^(month|date|period)$/i.test(h));
+    let mi = head.findIndex(h => /^(month|date|period|mes|fecha|periodo|monat|datum|zeitraum|mese|data|maand|periode|mois)$/i.test(seriesFold(h)));
     if (mi < 0) mi = head.findIndex((_, i) => rows.slice(1, 8).filter(r => parseMonth(r[i])).length >= Math.min(3, rows.length - 1));
     if (mi < 0) return { ok:false, error:'Could not find a month column.' };
     const colOrder = detectDateOrder(rows.slice(1).map(r => r[mi]));
@@ -87,6 +88,33 @@ function parseSeries(text) {
   }
   out.id = seedFrom(JSON.stringify(out)).toString(16);
   return { ok:true, series:out, warnings };
+}
+
+/* Values the monthly financials can supply to the evidence form: the latest cash, the last three months of net and gross
+   burn (the same window the consistency check uses), and headcount now and twelve months earlier. */
+function seriesPrimitives(SR) {
+  if (!SR) return {};
+  const last = a => { for (let i = a.length - 1; i >= 0; i--) if (a[i] != null) return i; return -1; };
+  const avg3 = a => { const i = last(a); if (i < 0) return null; const xs = a.slice(Math.max(0, i - 2), i + 1).filter(v => v != null); return xs.length ? mean(xs) : null; };
+  const P = {}, ic = last(SR.cash), ih = last(SR.headcount);
+  if (ic >= 0) P.cash_on_hand = SR.cash[ic];
+  const nb = avg3(SR.burn); if (nb != null && nb > 0) P.net_burn = nb;
+  const gb = avg3(SR.expenses); if (gb != null && gb > 0) P.gross_burn = gb;
+  if (ih >= 0) { P.headcount_now = SR.headcount[ih]; if (ih >= 12 && SR.headcount[ih - 12] != null) P.headcount_12mo = SR.headcount[ih - 12]; }
+  Object.keys(P).forEach(k => { if (P[k] == null || !isFinite(P[k]) || P[k] < 0) delete P[k]; });
+  return P;
+}
+function applySeriesToForm(keys) {
+  const P = seriesPrimitives(S.series); let n = 0;
+  (keys || Object.keys(P)).forEach(k => {
+    if (P[k] == null) return;
+    S.vals[k] = String(Math.round(P[k]));
+    S.prov[k] = { src:'series', line:`Computed from the monthly financials (${S.series.months.length} months to ${monthLabel(S.series.months[S.series.months.length - 1])}).` };
+    S.evid[k] = 'export';
+    n++;
+  });
+  saveDraft(); updateProgress();
+  return n;
 }
 
 function seriesToCSV(s) {

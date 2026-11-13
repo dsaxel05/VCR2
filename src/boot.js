@@ -101,9 +101,9 @@ function loadLedgerText(text, name) {
   S._ledgerError = null;
   r.ledger.file = name;
   S.ledger = r.ledger; S._ledgerWarnings = r.warnings;
+  const L = ledgerAnalytics(S.ledger), n = applyLedgerToForm(autoFillKeys(ledgerPrimitives(L), 'ledger'));
   saveDraft(); renderIntakeStatus(); updateProgress();
-  const L = ledgerAnalytics(S.ledger);
-  toast(`Ledger loaded: ${S.ledger.customers.length} customers × ${L.months.length} months, ARR ${money(L.arrNow)}.`);
+  toast(`Ledger loaded: ${S.ledger.customers.length} customers × ${L.months.length} months, ARR ${money(L.arrNow)}. ${n ? `${n} empty form field${n === 1 ? '' : 's'} filled from it.` : 'No empty form field to fill.'}`);
 }
 function loadSeriesText(text, name) {
   if (!text || text.trim().length < 10) { toast('The file is empty.', 'err'); return; }
@@ -112,8 +112,9 @@ function loadSeriesText(text, name) {
   S._seriesError = null;
   r.series.file = name;
   S.series = r.series; S._seriesWarnings = r.warnings;
+  const n = applySeriesToForm(autoFillKeys(seriesPrimitives(S.series), 'series'));
   saveDraft(); renderIntakeStatus(); updateProgress();
-  toast(`Monthly financials loaded: ${S.series.months.length} months.`);
+  toast(`Monthly financials loaded: ${S.series.months.length} months. ${n ? `${n} empty form field${n === 1 ? '' : 's'} filled from them.` : 'No empty form field to fill.'}`);
 }
 function renderIntakeStatus() {
   if (typeof renderSfIntake === 'function') renderSfIntake();
@@ -136,11 +137,14 @@ function renderIntakeStatus() {
   if (ss) {
     if (!S.series) setHTML(ss, bad('Financials', S._seriesError));
     else {
-      const s = S.series, cols = ['revenue','cash','burn','expenses','headcount'].filter(k => s[k].some(v => v != null));
+      const s = S.series, cols = ['revenue','cash','burn','expenses','headcount'].filter(k => s[k].some(v => v != null)), P = seriesPrimitives(s);
+      const conflicts = Object.keys(P).filter(k => gv(k) != null && S.prov[k]?.src !== 'series');
       setHTML(ss, bad('Financials', S._seriesError) + `<div class="file-ok"><b>✓ ${s.months.length} months</b> · ${monthLabel(s.months[0])} to ${monthLabel(s.months[s.months.length - 1])}
         <div class="field-hint">Columns: ${cols.join(', ') || 'none recognised'}</div>
         ${(S._seriesWarnings || []).map(w => `<div class="field-hint" style="color:var(--amber-t)">${esc(w)}</div>`).join('')}
-        <div style="display:flex;gap:4px;margin-top:6px"><button class="btn btn-ghost btn-sm" data-click="rmSeries">Remove</button></div></div>`);
+        <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${Object.keys(P).length ? '<button class="btn btn-primary btn-sm" data-click="fillSeries">Fill the form from the financials</button>' : ''}
+          <button class="btn btn-ghost btn-sm" data-click="rmSeries">Remove</button></div>
+        ${conflicts.length ? `<div class="field-hint" style="margin-top:4px">${conflicts.length} form field${conflicts.length === 1 ? ' is' : 's are'} already filled another way. Filling from the financials overwrites ${conflicts.length === 1 ? 'it' : 'them'}; leaving ${conflicts.length === 1 ? 'it' : 'them'} lets verification test ${conflicts.length === 1 ? 'it' : 'them'} against the financials.</div>` : ''}</div>`);
     }
   }
 }

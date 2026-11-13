@@ -29,6 +29,7 @@ setName: el => { S.name = el.value; saveDraft(); }, setAsof: el => { S.asof = el
   seriesPaste: () => loadSeriesText(document.getElementById('series-paste').value, 'pasted'),
   rmFile: el => { S.files.splice(+el.dataset.a, 1); renderFileList(); },
   fillLedger: () => { const n = applyLedgerToForm(); renderIntakeStatus(); toast(n + ' fields filled from the ledger.'); },
+  fillSeries: () => { const n = applySeriesToForm(); renderIntakeStatus(); toast(n + ' fields filled from the monthly financials.'); },
   rmLedger: () => { S.ledger = null; saveDraft(); renderIntakeStatus(); updateProgress(); },
   rmSeries: () => { S.series = null; saveDraft(); renderIntakeStatus(); updateProgress(); },
   clAll: el => { _clAll = el.checked; setHTML($id('rp-checklist'), paneChecklist()); },

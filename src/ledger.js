@@ -7,10 +7,10 @@
    otherwise spend two days doing in a spreadsheet.
    ═══════════════════════════════════════════════════════════════ */
 
-const LEDGER_NAME_RX = /^(customer|client|account|company|name|logo|customer name|account name|org|organisation|organization)$/i;
-const LEDGER_NAME_LOOSE = /(customer|client|account|company|name|logo|org)/i;
-const LEDGER_MONTH_RX = /(month|date|period|invoice|billing)/i;
-const LEDGER_AMT_RX = /(mrr|arr|revenue|amount|value|billing|billed|sales|usd|eur|total)/i;
+const LEDGER_NAME_RX = /^(customer|client|account|company|name|logo|customer name|account name|org|organisation|organization|cliente|clientes|nombre del cliente|kunde|kunden|kundenname|nome cliente|klant|klantnaam|nom du client|empresa|firma|unternehmen|azienda|bedrijf|soci[eé]t[eé]|cuenta|konto|conta)$/i;
+const LEDGER_NAME_LOOSE = /(customer|client|account|company|name|logo|org|kunde|klant|empresa|firma|azienda|bedrijf|nombre|nome|naam)/i;
+const LEDGER_MONTH_RX = /(month|date|period|invoice|billing|mes|fecha|factura|monat|datum|rechnung|mese|data|fattura|fatura|maand|factuur|mois|facture)/i;
+const LEDGER_AMT_RX = /(mrr|arr|revenue|amount|value|billing|billed|sales|usd|eur|total|importe|monto|ingresos|betrag|umsatz|importo|ricavi|valor|receita|bedrag|omzet|montant)/i;
 
 /* Accepts wide (customer, Jan 24, Feb 24, …) or long (customer, month, amount) layouts. */
 /* Limits so a crafted file cannot freeze the tab: data rows, customers, and customers x months. */
@@ -31,7 +31,7 @@ function parseLedger(text, unitHint) {
   rows.slice(1).forEach(r => r.forEach(x => { const m = String(x == null ? '' : x).match(/[$€£¥]|usd|eur|gbp/i); if (m && parseNum(x, loc) != null) cur.add(m[0].toUpperCase().replace('USD', '$').replace('EUR', '€').replace('GBP', '£')); }));
   if (cur.size > 1) warnings.push(`The amounts are in more than one currency (${[...cur].join(' ')}) and were added as written, without conversion. Convert them to one currency first.`);
   if (hdrOrder.inferred) warnings.push(`The column dates could be day-first or month-first; they were read ${hdrOrder.order === 'dmy' ? 'day-first' : 'month-first'}. Use YYYY-MM headers to be explicit.`);
-  const TOTAL_ROW = /^(total|sum|grand total|totals|subtotal|total mrr|total arr|total revenue|all customers)$/i;
+  const TOTAL_ROW = /^(total|sum|grand total|totals|subtotal|total mrr|total arr|total revenue|all customers|suma|summe|gesamt|totale|somma|totaal|soma)$/i;
   /* Other wordings ("Total général", "TOTAL USD", "Somme", "Σ") are dropped only when the row is the column sum of the others. */
   const TOTAL_LIKE = /^(total|totaux|sum|somme|gesamt|subtotal|sous-total|grand total|all customers|ensemble|tous|[Σ∑])(\b|\s|$)/i;
   const totalRows = new Set();
@@ -241,6 +241,7 @@ function computeLedger(L) {
   const flows = {
     nw: sum(win.map(b => b.nw)), react: sum(win.map(b => b.react)), exp: sum(win.map(b => b.exp)),
     con: sum(win.map(b => b.con)), churn: sum(win.map(b => b.churn)),
+    logosNew: sum(win.map(b => b.nNew + b.nReact)),   /* the customers behind new_arr_l12 (new and reactivated) */
   };
 
   /* Cohort-true retention against the base month. */
@@ -352,6 +353,7 @@ function ledgerPrimitives(LED) {
     contraction_arr_l12: LED.flows.con * 12,
     customers_12mo: LED.customersBase,
     logos_lost_l12: LED.logosLost,
+    new_customers_l12: LED.flows.logosNew,
   });
   Object.keys(P).forEach(k => { if (P[k] == null || !isFinite(P[k])) delete P[k]; });
   return P;
@@ -359,10 +361,12 @@ function ledgerPrimitives(LED) {
 const LEDGER_TOL = {
   arr_now:{ rel:2, hard:6 }, arr_12mo:{ rel:3, hard:8 },
   new_arr_l12:{ rel:6, hard:15 }, expansion_arr_l12:{ rel:8, hard:20 }, churned_arr_l12:{ rel:8, hard:20 }, contraction_arr_l12:{ rel:10, hard:25 },
-  customers_now:{ abs:1, hard:3 }, customers_12mo:{ abs:1, hard:3 }, logos_lost_l12:{ abs:1, hard:3 },
+  customers_now:{ abs:1, hard:3 }, customers_12mo:{ abs:1, hard:3 }, logos_lost_l12:{ abs:1, hard:3 }, new_customers_l12:{ abs:1, hard:3 },
   top1_pct:{ pts:1.5, hard:4 }, top5_pct:{ pts:2, hard:5 }, top10_pct:{ pts:2, hard:6 },
 };
 
+/* the fields a newly loaded file fills by itself: empty ones, and ones an earlier file of the same kind filled */
+function autoFillKeys(P, src) { return Object.keys(P).filter(k => P[k] != null && ((S.vals[k] == null || S.vals[k] === '') || (S.prov[k] && S.prov[k].src === src))); }
 function applyLedgerToForm(keys) {
   const LED = ledgerAnalytics(S.ledger); if (!LED) return 0;
   const P = ledgerPrimitives(LED);

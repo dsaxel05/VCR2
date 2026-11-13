@@ -62,7 +62,7 @@ function sfChipHTML(f, i) {
     ${st === 'reading' ? '<div class="field-hint">Reading…</div>' : ''}
     ${cls ? `<div class="sf-chip-row">
       <span class="pill">${esc(SF_TYPE_NAME(cls.type))} · ${esc(cls.conf.toLowerCase())} confidence</span>
-      <span class="field-hint">${f.extract.proposals.length} value${f.extract.proposals.length === 1 ? '' : 's'} found${tiers.High ? `, ${tiers.High} high` : ''}${f.extract.ledger ? ' · a customer ledger: load it in the ledger box above' : ''}</span>
+      <span class="field-hint">${f.extract.proposals.length} value${f.extract.proposals.length === 1 ? '' : 's'} found${tiers.High ? `, ${tiers.High} high` : ''}${f.extract.ledger ? ' · a customer ledger: loaded in the ledger box above' : ''}</span>
       <label class="field-hint">Read as <select class="mini-sel" data-change="sfReadAs" data-a="#${i}"><option value="">${esc(SF_TYPE_NAME(cls.type))} (detected)</option>${sfGuide().map(g => `<option value="${esc(g.id)}"${f.as === g.id ? ' selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>
       <label class="field-hint">Evidence <select class="mini-sel" data-change="sfTag" data-a="#${i}">${EVIDENCE.map(e => `<option value="${esc(e.id)}"${(f.tag != null ? f.tag : SF_EVID[cls.role] || '') === e.id ? ' selected' : ''}>${esc(e.label)}</option>`).join('')}</select></label>
     </div>` : ''}</li>`;
@@ -168,11 +168,34 @@ async function sfRead() {
     f.status = 'done'; f.dirty = false;
   }
   SFS.reading = false;
+  if (!SFS.cancel) await sfLoadStructured();
   await sfYield(); sfResolveNow();
   renderSfIntake();
   if (!SFS.cancel && SFS.resolved) { await sfYield(); renderSfReview(); await sfYield(); showPage('sfreview'); }
 }
 const sfYield = () => new Promise(r => setTimeout(r, 0));
+/* A customer ledger or monthly financials dropped here also goes into its own box on this page, as if dropped there:
+   the analyses it unlocks run, and it fills the form fields that are still empty. One file of each kind; a loaded one stays. */
+async function sfLoadStructured() {
+  for (const f of SFS.files) {
+    if (!f.file || !f.extract || !/\.(csv|tsv|txt|xlsx|xlsm)$/i.test(f.file.name)) continue;
+    const ledger = !!f.extract.ledger; if (ledger ? S.ledger : S.series) continue;
+    /* monthly financials are small and say so in their first row (column names, or months across): anything else is not
+       parsed here, on the page (a 150,000-row bank export would block it) */
+    if (!ledger) {
+      if (f.file.size > 1e6) continue;
+      if (!SHEET_EXT.test(f.file.name)) {
+        const head = (await f.file.slice(0, 4096).text()).split(/\r?\n/)[0].split(/[,;\t]/).map(h => h.replace(/\(.*?\)|\$|usd|"/gi, '').trim());
+        if (!head.some(h => Object.values(SERIES_COLS).some(re => re.test(seriesFold(h)))) && head.filter(h => parseMonth(h)).length < 3) continue;
+      }
+    }
+    let text;
+    try { text = SHEET_EXT.test(f.file.name) ? (await sheetFileToCSV(f.file, ledger ? 'ledger' : 'series')).csv : await f.file.text(); } catch (e) { continue; }
+    if (ledger) { loadLedgerText(text, f.name); continue; }
+    const r = parseSeries(text); if (!r.ok) continue;
+    if (['cash', 'burn', 'expenses', 'headcount', 'revenue'].filter(k => r.series[k].some(v => v != null)).length >= 2 && Object.keys(seriesPrimitives(r.series)).length) loadSeriesText(text, f.name);
+  }
+}
 function sfResolveNow() {
   const ex = []; SFS.files.forEach(f => { if (f.extract) ex.push(sfTagged(f.extract, f.tag)); (f.children || []).forEach(c => ex.push(c)); });
   SFS.extracts = ex; SFS.resolved = ex.length ? sfResolveAll(ex, S.model) : null;

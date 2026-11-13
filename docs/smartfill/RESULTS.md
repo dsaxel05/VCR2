@@ -26,7 +26,7 @@ Time per document: median 1 ms, 95th percentile 6 ms, slowest 21 ms. Hostile fil
 <!-- /readers -->
 
 <!-- engine-dev -->
-## Engine, set dev (seed 7), 2026-11-10, commit 7250506
+## Engine, set dev (seed 7), 2026-11-12, commit 8ec1a13
 
 140 documents (8 HTML read in Chromium). Codes: R1 unknown label or not found, R2 wrong period or value, R3 decoy filled, R4 unit or scale, R5 reader failure, R6 structure or extra field, R7 right value at too low a tier.
 
@@ -39,7 +39,7 @@ Time per document: median 1 ms, 95th percentile 6 ms, slowest 21 ms. Hostile fil
 | Wrong values per 100 High fields | 0.0 | 1 or less |
 | Ledgers recognised | 6/6 | all |
 | Same proposals in reverse order | yes | yes |
-| Time per document (read and extract) | median 4 ms, 95th percentile 11 ms | 400 ms, 1.5 s |
+| Time per document (read and extract) | median 15 ms, 95th percentile 40 ms | 400 ms, 1.5 s |
 | Requests to any other site (HTML in Chromium) | 0 | 0 |
 
 Failures by code: {"R1":1}
@@ -142,9 +142,9 @@ Failures by code: {"R1":1}
 |---|---|---|
 | clause | 148 | 0 |
 | computed | 57 | 0 |
-| kv | 317 | 0 |
+| kv | 315 | 0 |
 | sentence | 70 | 0 |
-| table | 422 | 0 |
+| table | 424 | 0 |
 | tile | 63 | 0 |
 
 ### The 20 worst failures
@@ -330,7 +330,7 @@ Failures by code: {"R1":438}
 <!-- /engine-fuzz -->
 
 <!-- engine-heldout -->
-## Engine, set heldout (seed 1009), 2026-11-10, commit 48fd8f7
+## Engine, set heldout (seed 1009), 2026-11-12, commit 8ec1a13
 
 140 documents (8 HTML read in Chromium). Codes: R1 unknown label or not found, R2 wrong period or value, R3 decoy filled, R4 unit or scale, R5 reader failure, R6 structure or extra field, R7 right value at too low a tier.
 
@@ -338,12 +338,12 @@ Failures by code: {"R1":438}
 |---|---|---|
 | High-tier precision | 355/355 (100.0%) | 98% or better |
 | Medium-tier precision | 284/284 (100.0%) | 90% or better |
-| Recall (High and Medium, plus Low where the gold is Low) | 645/802 (80.4%) | 92% clean, 75% messy |
+| Recall (High and Medium, plus Low where the gold is Low) | 648/802 (80.8%) | 92% clean, 75% messy |
 | Decoys filled (must_not_fill) | 0 of 654 proposals | 0.5% or less |
 | Wrong values per 100 High fields | 0.0 | 1 or less |
 | Ledgers recognised | 6/6 | all |
 | Same proposals in reverse order | yes | yes |
-| Time per document (read and extract) | median 6 ms, 95th percentile 17 ms | 400 ms, 1.5 s |
+| Time per document (read and extract) | median 15 ms, 95th percentile 38 ms | 400 ms, 1.5 s |
 | Requests to any other site (HTML in Chromium) | 0 | 0 |
 
 Failures by code: {"R1":154}
@@ -354,24 +354,24 @@ Failures by code: {"R1":154}
 |---|---|---|---|
 | High | 355 | 355 | 100.0% |
 | Medium | 284 | 284 | 100.0% |
-| Low | 15 | 6 | 40.0% |
+| Low | 15 | 9 | 60.0% |
 
 ### By format
 
 | Format | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
 | csv | 63 | 61 (96.8%) | 0 |
-| docx | 35 | 24 (68.6%) | 0 |
+| docx | 35 | 25 (71.4%) | 0 |
 | eml | 33 | 23 (69.7%) | 0 |
 | htm | 14 | 8 (57.1%) | 0 |
 | html | 34 | 22 (64.7%) | 0 |
 | json | 21 | 21 (100.0%) | 0 |
 | md | 74 | 44 (59.5%) | 0 |
 | ods | 76 | 75 (98.7%) | 0 |
-| odt | 28 | 20 (71.4%) | 0 |
+| odt | 28 | 21 (75.0%) | 0 |
 | pdf | 130 | 105 (80.8%) | 0 |
 | pptx | 42 | 24 (57.1%) | 0 |
-| rtf | 37 | 27 (73.0%) | 0 |
+| rtf | 37 | 28 (75.7%) | 0 |
 | tsv | 25 | 21 (84.0%) | 0 |
 | txt | 44 | 27 (61.4%) | 0 |
 | xlsm | 27 | 25 (92.6%) | 0 |
@@ -392,7 +392,7 @@ Failures by code: {"R1":154}
 | model | 240 | 240 (100.0%) | 0 |
 | receivables | 8 | 8 (100.0%) | 0 |
 | security | 27 | 27 (100.0%) | 0 |
-| termsheet | 88 | 65 (73.9%) | 0 |
+| termsheet | 88 | 68 (77.3%) | 0 |
 | update | 96 | 64 (66.7%) | 0 |
 
 ### By field family (form section)
@@ -401,7 +401,7 @@ Failures by code: {"R1":154}
 |---|---|---|---|
 | capital | 117 | 79 (67.5%) | 0 |
 | claims | 176 | 128 (72.7%) | 0 |
-| deal | 160 | 113 (70.6%) | 0 |
+| deal | 160 | 116 (72.5%) | 0 |
 | govern | 42 | 42 (100.0%) | 0 |
 | gtm | 22 | 17 (77.3%) | 0 |
 | market | 21 | 7 (33.3%) | 0 |
@@ -412,7 +412,7 @@ Failures by code: {"R1":154}
 
 | Mutation | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
-| base | 802 | 645 (80.4%) | 0 |
+| base | 802 | 648 (80.8%) | 0 |
 
 ### By trap
 
@@ -425,7 +425,7 @@ Failures by code: {"R1":154}
 | granted versus unallocated pool | 99 | 99 (100.0%) | 0 |
 | gross versus net burn | 336 | 304 (90.5%) | 0 |
 | hidden stale sheet | 240 | 240 (100.0%) | 0 |
-| including clauses | 88 | 65 (73.9%) | 0 |
+| including clauses | 88 | 68 (77.3%) | 0 |
 | industry benchmark | 21 | 7 (33.3%) | 0 |
 | margin with and without customer success | 240 | 240 (100.0%) | 0 |
 | negation | 27 | 27 (100.0%) | 0 |
@@ -510,3 +510,17 @@ Failures by code: {"R1":154}
 | adv-utf16le.txt | 70 | read | 1 | 1 |
 | adv-windows-1252.txt | 46 | read | 1 | 4 |
 <!-- /adversarial -->
+
+<!-- languages -->
+## Languages (v5.3.0), 2026-11-12
+
+`tests/smartfill-languages.test.mjs`. Fields proposed right (High or Medium), none wrong, no decoy, per language.
+
+| Set | es | de | it | pt | nl | fr | Notes |
+|---|---|---|---|---|---|---|---|
+| Quillstone data room translated (deck, model, update) | 26/26 | 26/26 | 26/26 | 26/26 | 26/26 | 26/26 | the rules were tuned on this set |
+| Management reports (other company, budget column) | 10/10 | 10/10 | 10/10 | 10/10 | 10/10 | 10/10 | first measured at 5 to 10 of 10 with wrong values; the causes were fixed (see CHANGELOG) |
+| Update e-mails, blind (written last) | 9/10 | 9/10 | 9/10 | 9/10 | 9/10 | 9/10 | first measurement, nothing wrong, no decoy; the one miss ("una ronda de 5 M$") was then added: 10/10 |
+
+Ledger (month headers in each language) recognised and read with the same 13 form values as the English file; monthly financials read with the same 5 form values; 14 number phrasings, 7 dates without figures, 10 month headers. English and French corpus unchanged (dev 1,058/1,072; held out 648/802, was 645; 100% precision).
+<!-- /languages -->
