@@ -5,6 +5,8 @@
 ## As a guest (the default)
 VCR2 runs entirely in your browser. What you type, the files you drop and Smart fill's reading of them, the ledger, the checks, the simulation and the score stay on your device. The page loads its own configuration from the same site. Nothing else is sent, unless you turn on an AI feature with your own key (then only the text you choose goes to the AI provider you choose).
 
+**Market intel (live), optional.** With your own AI key, the Market intel tab asks your AI provider to search the public web about the company. What is sent is the public profile shown on that tab (name, website, what it does, sector, customers, country, known competitors) and the research task, never the documents, the ledger, the financials or the evidence form. You see the exact text and tick a box before anything is sent. The results stay in this browser (the last 10 companies) until you delete them. Your key stays in your browser and goes only to the provider you chose: the page's own security policy blocks every other address.
+
 ## If you choose to sign in
 - **Stored in your account:** the structured analysis (answers, choices, evidence levels, source lines of up to 160 characters, notes, checklist, assumptions, company name, stage, model, score summary, dates, app version), your saved versions, your comparables, your preferences, your email, your sign-in method and the date you accepted the terms.
 - **Never stored:** uploaded documents or their text, customer-level ledger rows or customer names (unless encrypted in Vault mode), AI keys, passwords (the sign-in service hashes them; VCR2 never sees them).
@@ -20,6 +22,8 @@ VCR2 runs entirely in your browser. What you type, the files you drop and Smart 
 
 ## En invité (par défaut)
 VCR2 fonctionne entièrement dans votre navigateur. Ce que vous saisissez, les fichiers déposés et leur lecture par Smart fill, le registre clients, les contrôles, la simulation et le score restent sur votre appareil. La page charge sa propre configuration depuis le même site. Rien d'autre n'est envoyé, sauf si vous activez une fonction d'IA avec votre propre clé (seul le texte choisi part alors chez le fournisseur choisi).
+
+**Market intel (en direct), facultatif.** Avec votre propre clé d'IA, l'onglet Market intel demande à votre fournisseur d'IA de chercher sur le web public des informations sur l'entreprise. Ce qui part : le profil public affiché sur cet onglet (nom, site, activité, secteur, clients, pays, concurrents connus) et la consigne de recherche, jamais les documents, le registre clients, les chiffres ni le formulaire. Vous voyez le texte exact et cochez une case avant tout envoi. Les résultats restent dans ce navigateur (les 10 dernières entreprises) jusqu'à ce que vous les supprimiez. Votre clé reste dans votre navigateur et ne part que chez le fournisseur choisi : la politique de sécurité de la page bloque toute autre adresse.
 
 ## Si vous choisissez de vous connecter
 - **Conservé dans votre compte :** l'analyse structurée (réponses, choix, niveaux de preuve, lignes de source de 160 caractères au plus, notes, liste de contrôle, hypothèses, nom de l'entreprise, stade, modèle, résumé du score, dates, version de l'application), vos versions, vos comparables, vos préférences, votre e-mail, votre méthode de connexion et la date d'acceptation des conditions.

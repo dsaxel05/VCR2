@@ -1,6 +1,17 @@
 # Changelog
 
-## v5.3.2: not released yet (branch `accounts`)
+## v5.4.0: not released yet (branch `accounts`)
+
+**Market intel (live): what a partner checks outside the data room, researched on the public web with the visitor's own AI key.** Optional, never scored, nothing sent without a ticked box.
+- **Nine sections**, in the order an investment memo reads (Bessemer's published memos and current memo practice: market, competition, comparable rounds, exit, team, customers, risks, timing): what the company does, competitors (with their funding), comparable funding rounds (with revenue multiples), market size (published estimates, year, growth, method), listed peers and acquisitions, founders' track record, customer and traction signals (named customers, reviews, hiring), red flags, and trends and why now.
+- **Sources or nothing**: Anthropic, OpenAI (Responses API), Gemini (Google Search grounding) and OpenRouter search the web; each claim must cite a page, and a page the search did not really return is dropped with everything resting on it. Each card lists its sources and how many claims were left out.
+- **For this deal**: comparable rounds against the entry multiple (also on the ledger's ARR), published market size against the deck's and VCR2's bottom-up figure, peers' multiples against the exit multiple assumed, competitors' funding against the company's.
+- **What the company does**: when the profile leaves it empty, the first section finds it on the web and the next searches use it.
+- **Cost before anything runs**: the number of web searches and a dollar range on the visitor's own account (Gemini: 5,000 free searches a month).
+- **The key, proven safe on the page**: six checkable statements, including the list of addresses the page's own security policy allows, read live from the page; where the key is kept now; a button to forget it.
+- **What is sent** is shown word for word: the public profile only, never the documents, the ledger, the financials or the form. Results stay in this browser (last 10 companies). Tests: 24 unit checks on each provider's answer shape and the source filter, 18 browser checks with the provider simulated.
+
+## v5.3.2: 2026-11-14
 
 **Accounts connected.** The page now holds the owner's two Supabase projects: Europe (London, eu-west-2) and United States (Oregon, us-west-2), each with the accounts schema, row-level security on every table, sign-up with a confirmed email, passwords of 10 characters or more with lower case, upper case and digits, and confirmation emails sent from the owner's address. Guest mode is unchanged: no request until a visitor clicks Sign in, and the Sign in button shows only once a sign-in method is switched on in the Studio. The terms page and the privacy notice name the real regions. The tests that checked an empty build now check that the page lists exactly the projects in `site.json`, and nothing else.
 

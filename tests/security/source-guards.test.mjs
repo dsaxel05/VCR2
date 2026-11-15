@@ -119,6 +119,7 @@ console.log('Source guards');
     'vcr3-draft', 'vcr3-draft-meta', 'vcr3-key', 'vcr3-provider', 'vcr3-remember', 'vcr4-memo', 'vcr4-model',   // assessment draft, AI key and model, memo
     'vcr2-library', 'vcr2-calibrate',                                           // library and its calibration switch
     'vcr2-acct-session', 'vcr2-acct-flow', 'vcr2-acct-region', 'vcr2-acct-draft', 'vcr2-acct-stage',   // accounts (signed-in visitors only): session, pending sign-in, region, which record the open draft is, default stage
+    'vcr2-intel',                                                               // Market intel results (this browser only, per company, the last 10)
     'vcr2-sf-aliases',                                                          // Smart fill labels a visitor taught (this browser only, never published)
     'vcr2-theme', 'vcr2-theme-default', 'vcr2-text', 'vcr2-text-default', 'vcr2-look', 'vcr2-look-style', 'vcr2-sidebar',   // theme, text size, look, sidebar
   ]);

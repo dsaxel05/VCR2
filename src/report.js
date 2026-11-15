@@ -23,6 +23,7 @@ function renderResult(R) {
     ['forensics', `Forensics${fxFlags ? ' (' + fxFlags + ')' : ''}`],
     ['runway', 'Runway & odds'],
     ['deal', 'Deal & returns'],
+    ['intel', 'Market intel (live)'],
     ['bench', 'Benchmarks'],
     ['scoring', 'Scoring'],
     ['questions', `Questions (${questions.length})`],
@@ -64,6 +65,7 @@ function renderResult(R) {
     <div class="rpane${_rtab === 'forensics' ? ' active' : ''}" id="rp-forensics">${paneForensics(R)}</div>
     <div class="rpane${_rtab === 'runway' ? ' active' : ''}" id="rp-runway">${paneRunway(R)}</div>
     <div class="rpane${_rtab === 'deal' ? ' active' : ''}" id="rp-deal">${paneDeal(R)}</div>
+    <div class="rpane${_rtab === 'intel' ? ' active' : ''}" id="rp-intel" role="tabpanel" aria-labelledby="rt-intel">${paneIntel(R)}</div>
     <div class="rpane${_rtab === 'bench' ? ' active' : ''}" id="rp-bench">${paneBench(R)}</div>
     <div class="rpane${_rtab === 'scoring' ? ' active' : ''}" id="rp-scoring">${paneScoring(R)}</div>
     <div class="rpane${_rtab === 'questions' ? ' active' : ''}" id="rp-questions">${paneQuestions(R)}</div>
@@ -186,6 +188,7 @@ function paneOverview(R) {
   return `
     ${bottomLineHTML(R)}
     <div class="kpi-grid">${tiles.join('')}</div>
+    ${intelInviteHTML()}
     ${R.opt && R.opt.significant ? `<div class="gate optim" style="margin-top:12px"><h3>Every discrepancy points the same way</h3><p style="font-size:0.875rem;color:var(--t1)">${R.opt.k} of the ${R.opt.n} discrepancies that have a direction flatter the company (chance under honest error ${fmtProb(R.opt.p)}).</p></div>` : ''}
     ${riskMapHTML(R.risk)}
     <div class="block-title" style="margin-top:16px">Pattern read-out <span class="field-group-hint">${reds.length} risk · ${ambers.length} watch · ${greens.length} strength</span></div>

@@ -9,6 +9,7 @@ const CALLS = {
   showPage, toggleSidebar, setBool, setChecklist, libSetOutcome, libOpen, libDelete, goLibrary, goStudio, goSetup, goIntake, goVerify, startSections, runAnalysis, resetApp, continueDraft, watchDemo, importAssessment, loadDemo,
   sidebarToggle, cycleTextSize, cycleTheme, copyEmail, closeModal, downloadTemplate, runExtraction, selStage, selModel, jumpTo, setChip, prevSec, nextSec, clearSection,
   libSortBy, libImportCSV, libOpenAIPaste, libExport, libImportJSON, libRemoveSynthetic, loadSyntheticLibrary, libClear, copyChecklistRequest,
+  intelSet, intelPick, intelConsent, intelStop, intelJump, intelForgetKey, intelClear, intelRun, intelRerun, intelCopy,
   printMemo, editData, goTab, founderEmail, saveRunToLibrary, exportAssessment, downloadReport, applyAssumptions, resetAssumptions,
   leaveStudio, setPreview, studioUndo, studioRedo, reviewPublish, openHistory, downloadDraft, importDraft, discardDraft, studioSignOut, startFromLive, keepDraftOverLive,
   studioTab, editItem, moveItem, deleteItem, toggleBuiltin, setLabel, setSetting, setSettingStr, setMinN, setNextStage, setStageWeight, resetStageWeights,
