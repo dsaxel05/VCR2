@@ -41,7 +41,9 @@ async def guest(b):
     check('published page: no Sign in button (no backend in the build)', await pg.evaluate("() => document.getElementById('sb-acct').hidden") is True)
     check('published page: zero network requests for a guest', not net, net[:3])
     check('published page: no account storage written', await pg.evaluate("() => Object.keys(localStorage).concat(Object.keys(sessionStorage)).filter(k => k.startsWith('vcr2-acct')).length") == 0)
-    check('published page: the connect-src policy lists no account host', await pg.evaluate("() => !/supabase|127\\.0\\.0\\.1/.test(document.querySelector('meta[http-equiv=Content-Security-Policy]').content)"))
+    want = sorted(r['url'] for r in (json.loads((ROOT / 'site.json').read_text(encoding='utf-8')).get('accounts') or {}).get('regions', []) if r.get('url'))
+    got = await pg.evaluate("() => (document.querySelector('meta[http-equiv=Content-Security-Policy]').content.match(/https:\\/\\/[a-z0-9]+\\.supabase\\.co/g) || []).sort()")
+    check('published page: the connect-src policy lists exactly the site.json account projects, and no local test host', got == want and not await pg.evaluate("() => /127\\.0\\.0\\.1/.test(document.querySelector('meta[http-equiv=Content-Security-Policy]').content)"), [got, want])
     check('published page: no console error', not errs, errs[:3])
     await ctx.close()
 

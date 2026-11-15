@@ -6,15 +6,15 @@
     "regions": [
       {
         "id": "eu",
-        "label": "Europe (Paris)",
-        "url": "",
-        "anonKey": ""
+        "label": "Europe (London)",
+        "url": "https://tgiezjiohisojywuudlh.supabase.co",
+        "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnaWV6amlvaGlzb2p5d3V1ZGxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3MDIwMTYsImV4cCI6MjExMDI3ODAxNn0.fsTmMQ83KCYoroza69C1Iy0_SrfTePAA41DX3u4xI3U"
       },
       {
         "id": "us",
-        "label": "United States",
-        "url": "",
-        "anonKey": ""
+        "label": "United States (Oregon)",
+        "url": "https://tporrotpmfkiochuuxjh.supabase.co",
+        "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwb3Jyb3RwbWZraW9jaHV1eGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MDExNTYsImV4cCI6MjExMDE3NzE1Nn0.5pahKZT7HCWG_2Pq26yWIGgvO0UgBMhgNpjMY2vEe5Q"
       }
     ]
   }

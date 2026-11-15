@@ -82,7 +82,7 @@ async def main():
         await pg.route('https://api.github.com/**', lambda r: r.fulfill(status=404, json={}))
         await pg.goto(BASE); await pg.wait_for_selector('#api-key', state='attached')
         meta = await pg.evaluate("() => (document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]') || {}).content || ''")
-        check('a Content-Security-Policy is set', "default-src 'none'" in meta and "connect-src 'self' https://api.github.com" in meta, meta[:120])
+        check('a Content-Security-Policy is set', "default-src 'none'" in meta and "connect-src 'self' " in meta and 'https://api.github.com' in meta, meta[:120])
         check('and a no-referrer policy', await pg.evaluate("() => (document.querySelector('meta[name=referrer]') || {}).content") == 'no-referrer')
 
         # AI key: this tab only, unless asked

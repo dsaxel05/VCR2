@@ -8,7 +8,7 @@ itself when another site frames it. Nothing here contacts the outside: refused r
 import os as _os, sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 import _paths
-import asyncio, sys, re, hashlib, base64, pathlib
+import asyncio, sys, re, hashlib, base64, pathlib, json
 from playwright.async_api import async_playwright
 import fontroute
 BASE = _paths.BASE
@@ -37,7 +37,8 @@ async def main():
     check("no inline handler is allowed: script-src-attr 'none'", d.get('script-src-attr') == ["'none'"], d.get('script-src-attr'))
     check("Trusted Types are required for scripts and only the vcr2 policy may exist", d.get('require-trusted-types-for') == ["'script'"] and d.get('trusted-types') == ['vcr2'], [d.get('require-trusted-types-for'), d.get('trusted-types')])
     check('default-src none, frames none, objects none, base none, forms none', d.get('default-src') == ["'none'"] and d.get('frame-src') == ["'none'"] and d.get('object-src') == ["'none'"] and d.get('base-uri') == ["'none'"] and d.get('form-action') == ["'none'"])
-    check('connections: the site, GitHub (Studio) and the five AI providers, nothing else', d.get('connect-src') == ["'self'", 'https://api.github.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'], d.get('connect-src'))
+    acct = sorted(r['url'] for r in (json.loads((ROOT / 'site.json').read_text(encoding='utf-8')).get('accounts') or {}).get('regions', []) if re.match(r'^https://[a-z0-9]+\.supabase\.co$', r.get('url') or ''))   # the owner's account projects
+    check('connections: the site, the site.json account projects, GitHub (Studio) and the five AI providers, nothing else', d.get('connect-src') == ["'self'", *acct, 'https://api.github.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'], d.get('connect-src'))
     check('video and captions: the site only', set(d.get('media-src', [])) == {"'self'", 'file:'}, d.get('media-src'))
     check('images and fonts: the site only (plus data: and blob: made in the page)', set(d.get('img-src', [])) <= {"'self'", 'data:', 'blob:', 'file:'} and set(d.get('font-src', [])) <= {"'self'", 'data:', 'file:'})
     check('a no-referrer policy', '<meta name="referrer" content="no-referrer" />' in head)

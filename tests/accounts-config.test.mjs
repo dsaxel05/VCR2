@@ -1,6 +1,10 @@
 // Accounts settings (Part B, B5): settings.accounts cleaned on load, never part of the score, and the Studio section.
 //   node tests/accounts-config.test.mjs
-import { runSuite } from './_harness.mjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { runSuite, root } from './_harness.mjs';
+/* the projects this build holds (site.json), passed into the test body as data */
+const SITE_JSON = JSON.stringify(((JSON.parse(readFileSync(join(root, 'site.json'), 'utf8')).accounts || {}).regions || []).filter(r => r.url && r.anonKey).map(r => ({ url:r.url })));
 
 runSuite('Accounts settings and Studio section', String.raw`
 {
@@ -17,15 +21,22 @@ ok('the notice is capped at 600 characters; an extra provider must be a custom: 
 applyConfig({ settings:{ accounts:{ providers:{ google:{ enabled:true } } } } });
 eq('accounts settings never change the rubric version', rubricVersion(), base);
 eq('nor the run ID of an assessment', Radar.assess(co()).hash, h0);
-eq('with no project in this build, sign-in stays hidden even with a provider switched on', acctAvailable(), false);
-ok('the published page holds no project address', acctRegions().length === 0);
+const SITE = ${SITE_JSON};
+if (SITE.length) {
+  eq('with the site.json projects in this build, a switched-on provider shows sign-in', acctAvailable(), true);
+  ok('the page holds exactly the site.json projects', JSON.stringify(acctRegions().map(r => r.url).sort()) === JSON.stringify(SITE.map(r => r.url).sort()), acctRegions().map(r => r.url));
+  applyConfig({}); ok('and with no provider switched on, sign-in stays hidden', acctAvailable() === false);
+} else {
+  eq('with no project in this build, sign-in stays hidden even with a provider switched on', acctAvailable(), false);
+  ok('the published page holds no project address', acctRegions().length === 0);
+}
 
 /* the Studio section */
 saveStudioDraft = () => {}; renderStudioPane = () => {};
 ST.draft = { settings:{} };
 const html = paneStAccounts();
 ok('the Studio section lists every sign-in method, Passkey disabled with its reason', ['Google', 'Microsoft', 'Apple', 'Yahoo', 'GitHub', 'LinkedIn', 'X', 'Facebook', 'Email link (no password)', 'Email and password', 'Passkey'].every(l => html.includes('>' + l + '<')) && /experimental/.test(html));
-ok('it says the build has no project and where to add one', /No project in this build/.test(html) && /site\.json/.test(html));
+ok(SITE.length ? 'it lists the projects in this build' : 'it says the build has no project and where to add one', SITE.length ? SITE.every(r => html.includes(r.url)) : /No project in this build/.test(html) && /site\.json/.test(html));
 stAcctOn('github', true);
 eq('switching a method on writes settings.accounts', ST.draft.settings.accounts.providers.github.enabled, true);
 stAcctMove('github', -1); stAcctMove('github', -1);

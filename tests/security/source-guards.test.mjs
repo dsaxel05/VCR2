@@ -84,7 +84,9 @@ console.log('Source guards');
     (m ? m[1] : '').split(';').map(s => s.trim()).filter(Boolean).forEach(s => { const [k, ...v] = s.split(/\s+/); d[k] = v; });
     return { found: !!m, d };
   };
-  const HOSTS = ["'self'", 'https://api.github.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'];
+  /* the accounts backend: exactly the project hosts the owner put in site.json (none when it lists none) */
+  const ACCT_HOSTS = ((JSON.parse(read('site.json')).accounts || {}).regions || []).map(r => r.url).filter(u => /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(u || '')).sort();
+  const HOSTS = ["'self'", ...ACCT_HOSTS, 'https://api.github.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'];
   for (const [label, html] of [['src/shell.html', SRC['src/shell.html']], ['index.html', INDEX]]) {
     const { found, d } = parse(html);
     ok(`${label}: has a Content-Security-Policy meta`, found);
@@ -97,7 +99,7 @@ console.log('Source guards');
     }
     ok(`${label}: require-trusted-types-for 'script'`, JSON.stringify(d['require-trusted-types-for']) === JSON.stringify(["'script'"]), d['require-trusted-types-for']);
     ok(`${label}: trusted-types allows only the vcr2 policy`, JSON.stringify(d['trusted-types']) === JSON.stringify(['vcr2']), d['trusted-types']);
-    ok(`${label}: connect-src is the site, GitHub and the five AI hosts, nothing else`, JSON.stringify(d['connect-src']) === JSON.stringify(HOSTS), d['connect-src']);
+    ok(`${label}: connect-src is the site, the site.json account projects, GitHub and the five AI hosts, nothing else`, JSON.stringify(d['connect-src']) === JSON.stringify(label === 'index.html' ? HOSTS : HOSTS.filter(h => !ACCT_HOSTS.includes(h))), d['connect-src']);   /* build.py adds the projects to the built page only */
     ok(`${label}: default-src, object-src, frame-src are 'none', base-uri and form-action 'none'`,
       ['default-src', 'object-src', 'frame-src', 'base-uri', 'form-action'].every(k => JSON.stringify(d[k]) === JSON.stringify(["'none'"])), d);
     ok(`${label}: worker-src is 'self' and blob: only`, JSON.stringify(d['worker-src']) === JSON.stringify(["'self'", 'blob:']), d['worker-src']);

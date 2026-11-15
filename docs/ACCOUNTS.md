@@ -4,7 +4,7 @@ Signing in is never required and never blocks a feature. A guest keeps using VCR
 A visitor who chooses to sign in gets a private library: every analysis saved automatically, reopenable on any device, plus their comparables and preferences.
 For signed-in users only, the promise "your data never leaves your browser" changes: the structured analysis is stored in their account (rule A3). This is said on the sign-in dialog, on the Terms and privacy page, in the README and in [PRIVACY.md](PRIVACY.md).
 
-Backend: Supabase (Auth and Postgres with row-level security), chosen at STOP D, with two projects: Europe (Paris) and United States. The sign-in and data code is written by hand against Supabase's REST APIs (no SDK: `@supabase/supabase-js` is 55.4 KB gzip, more than the page's whole size headroom).
+Backend: Supabase (Auth and Postgres with row-level security), chosen at STOP D, with two projects: Europe (London, eu-west-2) and United States (Oregon, us-west-2). The sign-in and data code is written by hand against Supabase's REST APIs (no SDK: `@supabase/supabase-js` is 55.4 KB gzip, more than the page's whole size headroom).
 Test results: [accounts/RESULTS.md](accounts/RESULTS.md). Data model: [accounts/DATA-MODEL.md](accounts/DATA-MODEL.md). Console steps: [accounts/SETUP-supabase.md](accounts/SETUP-supabase.md) first, then one SETUP file per provider.
 
 ## The rules, and how each is kept

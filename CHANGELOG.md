@@ -1,6 +1,10 @@
 # Changelog
 
-## v5.3.1: not released yet (branch `accounts`)
+## v5.3.2: not released yet (branch `accounts`)
+
+**Accounts connected.** The page now holds the owner's two Supabase projects: Europe (London, eu-west-2) and United States (Oregon, us-west-2), each with the accounts schema, row-level security on every table, sign-up with a confirmed email, passwords of 10 characters or more with lower case, upper case and digits, and confirmation emails sent from the owner's address. Guest mode is unchanged: no request until a visitor clicks Sign in, and the Sign in button shows only once a sign-in method is switched on in the Studio. The terms page and the privacy notice name the real regions. The tests that checked an empty build now check that the page lists exactly the projects in `site.json`, and nothing else.
+
+## v5.3.1: 2026-11-12
 
 **The report, read as a VC would read it.** Scoring and every computed figure are unchanged (rubric 5.0.0); only what is shown and how.
 - **Hover cards were unreadable**: their text took the page's ink colour, dark on the dark-green card (light on light in the night theme). Fixed for every chart, the cohort table and the benchmark dots.
