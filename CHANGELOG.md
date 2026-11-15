@@ -1,6 +1,10 @@
 # Changelog
 
-## v5.4.0: not released yet (branch `accounts`)
+## v5.4.1: 2026-11-15
+
+**Fix: the Sign in button now appears once the owner switches sign-in methods on in the Studio.** The button was decided at start-up, before the published configuration arrived, and was not redrawn after it loaded, so the live site kept it hidden. It is now redrawn whenever the configuration changes. New browser test tests/browser/acct_button_test.py (6 checks): the configuration is served over http, the button appears on its own, stays hidden with no method on, no request leaves the computer.
+
+## v5.4.0: 2026-11-15
 
 **Market intel (live): what a partner checks outside the data room, researched on the public web with the visitor's own AI key.** Optional, never scored, nothing sent without a ticked box.
 - **Nine sections**, in the order an investment memo reads (Bessemer's published memos and current memo practice: market, competition, comparable rounds, exit, team, customers, risks, timing): what the company does, competitors (with their funding), comparable funding rounds (with revenue multiples), market size (published estimates, year, growth, method), listed peers and acquisitions, founders' track record, customer and traction signals (named customers, reviews, hiring), red flags, and trends and why now.

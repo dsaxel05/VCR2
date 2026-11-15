@@ -134,6 +134,7 @@ function refreshAfterConfig() {
   while (idx < SECTIONS.length - 1 && sectionHidden(SECTIONS[idx])) idx++;
   S.section = Math.max(0, idx);
   buildNav(); updateProgress(); renderPreviewBanner(); updateStudioLink();
+  if (typeof acctRenderButton === 'function') acctRenderButton();   /* the sign-in methods come with the published configuration, after start-up */
   if (typeof introStats === 'function') introStats();
   if ($id('page-setup') && $id('page-setup').classList.contains('active')) { buildStages(); buildTypes(); }
   if (onSection && SECTIONS[S.section]) renderSection(S.section);
