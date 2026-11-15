@@ -1,21 +1,86 @@
 {
   "version": 1,
-  "updated": null,
+  "updated": "2026-11-15T22:43:39.216Z",
   "owner": "dsaxel05",
   "repo": "VCR2",
   "branch": "main",
   "path": "radar-config.json",
   "branding": {},
-  "settings": {},
-  "hidden": { "sections": [], "fields": [], "metrics": [], "checks": [], "patterns": [], "forensics": [], "questions": [], "requests": [], "gates": [] },
-  "labels": { "fields": {}, "hints": {}, "metrics": {} },
+  "settings": {
+    "accounts": {
+      "providers": {
+        "email_link": {
+          "enabled": true
+        },
+        "email_password": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "look": {},
+  "texts": [],
+  "hidden": {
+    "sections": [],
+    "fields": [],
+    "metrics": [],
+    "checks": [],
+    "patterns": [],
+    "forensics": [],
+    "questions": [],
+    "requests": [],
+    "gates": [],
+    "checklist": [],
+    "models": [],
+    "stages": []
+  },
   "thresholds": {},
   "metricWeights": {},
   "stageWeights": {},
+  "labels": {
+    "fields": {},
+    "hints": {},
+    "metrics": {},
+    "sections": {},
+    "dims": {},
+    "patterns": {},
+    "gates": {},
+    "checklist": {},
+    "units": {},
+    "stages": {},
+    "models": {},
+    "evidence": {},
+    "calib": {},
+    "sdescs": {},
+    "checks": {}
+  },
+  "formulas": {},
+  "dimensions": [],
+  "stages": [],
+  "meta": {
+    "fields": {},
+    "gates": {},
+    "checklist": {},
+    "patterns": {},
+    "booleans": {},
+    "checks": {},
+    "answers": {},
+    "families": {},
+    "prompts": {}
+  },
   "fields": [],
   "metrics": [],
   "checks": [],
   "questions": [],
   "patterns": [],
-  "requests": []
+  "requests": [],
+  "checklist": [],
+  "gates": [],
+  "checkTol": {},
+  "categorical": {},
+  "booleans": {},
+  "patternParams": {},
+  "defaults": {},
+  "models": [],
+  "benchmarks": []
 }
