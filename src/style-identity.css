@@ -717,16 +717,49 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
 /* Accounts (Part B): sidebar button and sign-in dialog */
 .sb-acct { padding: var(--sp-2) var(--sp-3) 0; }
 .sb-acct-btn { width: 100%; justify-content: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.acct-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--sp-2); margin: var(--sp-3) 0; }
-.acct-prov { min-height: 44px; }
-.acct-msg { color: var(--warn-text); font-weight: 600; }
-.acct-note { margin-top: 0; }
-.acct-region { border: 1px solid var(--line-2); border-radius: var(--radius-control); margin: var(--sp-2) 0; }
-.acct-region label { margin-right: var(--sp-3); }
-.acct-more summary { cursor: pointer; margin: var(--sp-2) 0; }
-.acct-field { display: block; margin: var(--sp-2) 0; }
-.acct-field input { display: block; width: 100%; min-height: 40px; }
-.acct-keep { display: block; margin-top: var(--sp-3); }
+.modal-auth { width: min(460px, 100%); }
+.modal-auth .modal-f { display: none; }
+.modal-auth .modal-h h3 { font-family: var(--font-display); font-size: 1.35rem; }
+.acct-box { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-1) var(--sp-2) var(--sp-2); }
+.acct-box p { margin: 0; }
+.acct-lead { color: var(--text-2); }
+.acct-msg { color: var(--warn-text); background: var(--warn-soft); border-radius: var(--radius-control); padding: var(--sp-2) var(--sp-3); font-weight: 600; }
+.acct-provs { display: flex; flex-direction: column; gap: var(--sp-2); }
+.acct-prov { display: flex; align-items: center; justify-content: center; gap: var(--sp-3); width: 100%; min-height: 46px; padding: 0 var(--sp-3);
+  border: 1px solid var(--line-3); border-radius: var(--radius-control); background: var(--bg1); color: var(--text); font: 600 0.95rem var(--font-ui); cursor: pointer; }
+.acct-prov:hover { border-color: var(--brand); }
+.acct-prov:focus-visible, .acct-eye:focus-visible, .acct-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.acct-mark svg { width: 20px; height: 20px; display: block; }
+.acct-more summary { cursor: pointer; color: var(--text-2); margin-bottom: var(--sp-2); }
+.acct-or { display: flex; align-items: center; gap: var(--sp-3); color: var(--text-3); font-size: 0.85rem; }
+.acct-or::before, .acct-or::after { content: ""; flex: 1; border-top: 1px solid var(--line-2); }
+.acct-field { display: flex; flex-direction: column; gap: 6px; }
+.acct-field label { font-weight: 600; }
+.acct-label-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); }
+.acct-field input { width: 100%; min-height: 46px; }
+.acct-pw { position: relative; }
+.acct-pw input { padding-right: 52px; }
+.acct-eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 38px; display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: var(--radius-control); background: transparent; color: var(--text-2); cursor: pointer; }
+.acct-eye svg { width: 20px; height: 20px; }
+.acct-eye[aria-pressed="true"] { color: var(--brand); }
+.acct-eye .acct-slash { display: none; }
+.acct-eye[aria-pressed="true"] .acct-slash { display: inline; }
+.acct-rules { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; color: var(--text-3); }
+.acct-rules li::before { content: "○"; display: inline-block; width: 1.3em; }
+.acct-rules li.ok { color: var(--ok-text); }
+.acct-rules li.ok::before { content: "✓"; }
+.acct-go { width: 100%; min-height: 48px; justify-content: center; font-size: 1rem; margin-top: var(--sp-1); }
+.acct-link { border: 0; background: none; padding: 0; color: var(--brand-text); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.acct-alt { align-self: center; font-weight: 500; font-size: 0.9rem; }
+.acct-switch { text-align: center; padding-top: var(--sp-3); border-top: 1px solid var(--line-2); }
+.acct-opts { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sp-2) var(--sp-3); font-size: 0.9rem; color: var(--text-2); }
+.acct-keep, .acct-where { display: inline-flex; align-items: center; gap: 6px; }
+.acct-where .acct-sel { width: auto; min-height: 34px; font-size: 0.9rem; }
+.acct-trust { display: flex; gap: var(--sp-2); align-items: flex-start; font-size: 0.85rem; color: var(--text-2); background: var(--ok-soft); border-radius: var(--radius-control); padding: var(--sp-2) var(--sp-3); }
+.acct-lock svg { width: 18px; height: 18px; color: var(--ok-text); margin-top: 2px; }
+.acct-guest { text-align: center; font-size: 0.9rem; }
+.acct-guest .acct-link { color: var(--text-2); font-weight: 500; }
 .mine-tools { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); align-items: end; margin: var(--sp-3) 0; }
 .mine-acts { display: flex; flex-wrap: wrap; gap: 4px; }
 .mine-arch { opacity: .7; }

@@ -1,5 +1,16 @@
 # Changelog
 
+## v5.5.0: 2026-11-15
+
+**A sign-in dialog built like the ones people already trust.** The owner found the first one unwelcoming; this one follows the common pattern of well-known sites.
+- **Continue with Google, Microsoft, Yahoo...**: one full-width button per sign-in method switched on in the Studio, each with its mark, at the top.
+- **Two clear modes**: "Sign in" (with a Forgot password? link that emails a sign-in link) and "Create your VCR2 account", switched by a link at the bottom. One main button per mode, never two side by side under the password.
+- **Show password**: an eye button shows and hides what was typed (announced to screen readers).
+- **New-password rules shown before typing** (10 characters, upper and lower case, a digit) and ticked while typing, instead of an error after sending.
+- **Enter** in a field presses the main button. **Keep me signed in** is ticked by default. **The storage region is chosen** from the visitor's time zone (Americas: United States, Europe and Africa: Europe), with a picker to change it, instead of an error when none was picked.
+- **Trust note**: what is saved and what never is, free with no ads and no tracking, the terms link. "Not now, continue as a guest" closes it.
+- Test: tests/browser/acct_button_test.py grows to 27 checks (modes, eye button, rules, Enter, region from the time zone, phone width, 4.5:1 contrast in both themes, nothing sent anywhere).
+
 ## v5.4.1: 2026-11-15
 
 **Fix: the Sign in button now appears once the owner switches sign-in methods on in the Studio.** The button was decided at start-up, before the published configuration arrived, and was not redrawn after it loaded, so the live site kept it hidden. It is now redrawn whenever the configuration changes. New browser test tests/browser/acct_button_test.py (6 checks): the configuration is served over http, the button appears on its own, stays hidden with no method on, no request leaves the computer.

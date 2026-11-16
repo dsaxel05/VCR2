@@ -70,12 +70,12 @@ async def live(b, env, port):
     await pg.focus('#sb-acct-btn'); await pg.keyboard.press('Enter')
     check('keyboard: Enter on Sign in opens the dialog', await pg.locator('.modal[role=dialog]').count() == 1)
     labels = [t.strip() for t in await pg.locator('.acct-prov').all_text_contents()]
-    check('dialog: Google first, more options below (GitHub)', labels[:1] == ['Google'] and 'GitHub' in labels, labels)
-    check('dialog: one plain sentence says what is and is not saved', 'Never your uploaded documents' in (await pg.locator('.acct-note').text_content() or ''))
+    check('dialog: Continue with Google first, then GitHub, as full-width buttons', labels[:1] == ['Continue with Google'] and 'Continue with GitHub' in labels, labels)
+    check('dialog: one plain sentence says what is and is not saved', 'Never your uploaded documents' in (await pg.locator('.acct-trust').text_content() or ''))
     await pg.keyboard.press('Escape')
     check('keyboard: Escape closes the dialog', await pg.locator('.modal[role=dialog]').count() == 0)
     # GitHub: through the local sign-in server, PKCE accepted, then github.com (blocked here)
-    await pg.click('#sb-acct-btn'); await pg.click('details.acct-more summary'); await pg.click('.acct-prov[data-a=github]')
+    await pg.click('#sb-acct-btn'); await pg.click('.acct-prov[data-a=github]')
     for _ in range(40):
         if gh: break
         await pg.wait_for_timeout(100)
@@ -85,7 +85,7 @@ async def live(b, env, port):
     # email and password: real sign-up, confirmation through the local inbox, back to the page
     await pg.goto(site); await pg.wait_for_selector('#api-key', state='attached'); await pg.evaluate(ENABLE)
     email, pw = f'ui-{uuid.uuid4().hex[:8]}@example.test', 'Aa1' + secrets.token_urlsafe(18)
-    await pg.click('#sb-acct-btn'); await pg.click('details.acct-more summary')
+    await pg.click('#sb-acct-btn'); await pg.click('button[data-click=acctMode][data-a=signup]')
     await pg.fill('#acct-email', email); await pg.fill('#acct-pass', pw); await pg.click('button[data-click=acctSignUpGo]')
     await pg.wait_for_timeout(800)
     link = mail_link(env, email)

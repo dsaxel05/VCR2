@@ -74,7 +74,7 @@ async def main():
     try:
         async with async_playwright() as p:
             b = await p.chromium.launch()
-            # 1. keyboard only: Sign in, More options, email, password, sign in, terms
+            # 1. keyboard only: Sign in, email, password, sign in, terms
             ctx, pg, st = await new_page(b); await open_site(pg)
             await pg.evaluate("() => document.activeElement && document.activeElement.blur()")
             for _ in range(60):
@@ -87,7 +87,6 @@ async def main():
                     await pg.keyboard.press('Tab')
                     if await pg.evaluate(f"() => document.activeElement.matches({json.dumps(sel)})"): return True
                 return False
-            await tab_to('details.acct-more summary'); await pg.keyboard.press('Enter')
             await tab_to('#acct-email'); await pg.keyboard.type(email)
             await tab_to('#acct-pass'); await pg.keyboard.type(pw)
             ok_btn = await tab_to('button[data-click=acctPassGo]'); await pg.keyboard.press('Enter')
@@ -133,7 +132,7 @@ async def main():
             sw = await pg.evaluate("() => [document.documentElement.scrollWidth, innerWidth]")
             hs = await pg.evaluate("() => [...document.querySelectorAll('.acct-prov')].map(b => b.getBoundingClientRect().height)")
             check('phone (375 px): the sign-in dialog has no sideways scroll and 44 px tall provider buttons', sw[0] <= sw[1] and hs and min(hs) >= 44, (sw, hs))
-            cols = await pg.evaluate("() => { const n = document.querySelector('.acct-note'); let e = n, bg = 'rgba(0, 0, 0, 0)'; while (e && /rgba\\(0, 0, 0, 0\\)|transparent/.test(bg)) { bg = getComputedStyle(e).backgroundColor; e = e.parentElement; } return [getComputedStyle(n).color, bg, matchMedia('(prefers-color-scheme: dark)').matches]; }")
+            cols = await pg.evaluate("() => { const n = document.querySelector('.acct-trust p'); let e = n, bg = 'rgba(0, 0, 0, 0)'; while (e && /rgba\\(0, 0, 0, 0\\)|transparent/.test(bg)) { bg = getComputedStyle(e).backgroundColor; e = e.parentElement; } return [getComputedStyle(n).color, bg, matchMedia('(prefers-color-scheme: dark)').matches]; }")
             check('dark theme: the dialog text has at least 4.5:1 contrast', cols[2] and ratio(cols[0], cols[1]) >= 4.5, (cols, round(ratio(cols[0], cols[1]), 2)))
             await axe(pg, 'the sign-in dialog (phone, dark)')
             check('phone and dark: no console error, nothing sent anywhere before a click', not st['errs'] and not any(h.endswith(':54321') for h in st['hosts']), (st['errs'][:2], sorted(st['hosts'])))

@@ -21,7 +21,7 @@ const CALLS = {
   acctMineOpen, acctMineHistory, acctMineDup, acctMineRename, acctMineTags, acctMineArchive, acctMineDelete, acctMineUndo, acctMineExport, acctMineCompare,
   acctMineSearch, acctMineStage, acctMineSort, acctMineArch, acctMineTick, acctVerTick, acctVerRestore, acctSaveVersionGo, acctPrefsSave,
   stAcctOn, stAcctMove, stAcctNotice, stAcctLim, stAcctCopy, stAcctUsage, stAcctReset,
-  acctTermsPage, acctOpen, acctPick, acctLinkGo, acctPassGo, acctSignUpGo, acctRegionPick, acctKeepPick,
+  acctTermsPage, acctOpen, acctPick, acctLinkGo, acctPassGo, acctSignUpGo, acctRegionPick, acctKeepOn, acctMode, acctPwCheck,
   sfChecklist, sfAddRequests, sfStSwitch, sfStThreshold, sfStList, sfStRange, sfStResetField, sfStType, sfStWords, sfStLocale, sfStReset
 };
 const ACTIONS = {
@@ -44,6 +44,7 @@ setName: el => { S.name = el.value; saveDraft(); }, setAsof: el => { S.asof = el
   derivedAll: () => { derivedShowAll = !derivedShowAll; liveDerive(); }, backInputs: () => jumpTo(lastVisibleSection()),
   calib: el => { setCalibration(el.checked); renderLibrary(); toast(el.checked ? 'Thresholds now calibrate on your library.' : 'Back to the default rubric.'); },
   libFilter: el => { _libFilter = el.value; renderLibraryTable(); },
+  acctEye: el => acctEye(el), acctEnter: (el, e) => { if (e.key === 'Enter') { e.preventDefault(); const g = document.querySelector('#modal-wrap .acct-go'); if (g) g.click(); } },
   rtab: el => rtab(el, el.dataset.a), rtabKey: (el, e) => rtabKey(e), toggleDetail: el => toggleDetail(el), cohortMode: el => cohortMode(el, el.dataset.a),
   openDeal: () => jumpTo(SECTIONS.findIndex(s => s.deal)),
   copyQuestions: () => copyText(S.result.questions.map((q, i) => (i + 1) + '. ' + q.text).join('\n'), 'Questions copied.'),
