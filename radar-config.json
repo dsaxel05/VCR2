@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-11-15T22:43:39.216Z",
+  "updated": "2026-11-16T08:36:39.215Z",
   "owner": "dsaxel05",
   "repo": "VCR2",
   "branch": "main",
@@ -13,6 +13,9 @@
           "enabled": true
         },
         "email_password": {
+          "enabled": true
+        },
+        "google": {
           "enabled": true
         }
       }
