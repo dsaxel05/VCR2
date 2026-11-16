@@ -92,11 +92,12 @@
       <div class="sb-nav-label">Evidence sections</div>
     </nav>
 
-    <div class="sb-footer">
+    <div class="sb-footer" id="sb-footer">
+      <div class="sb-links">
       <button type="button" class="nav-item lib-link" data-click="goLibrary"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
       <button type="button" class="nav-item lib-link" data-click="showPage" data-a="about"><span class="nav-dot"></span><span class="nav-label">About</span></button>
       <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" data-click="goStudio"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
-      <p class="api-hint">Alt + M shows or hides this menu.</p>
+      </div>
       <details class="sb-more sb-ai">
       <summary>AI assist (optional)</summary>
       <select class="api-sel" id="api-provider">
@@ -120,10 +121,14 @@
       <div class="api-status ok" id="api-status">Deterministic engine ready</div>
       <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere.</div>
       </details>
+      <details class="sb-more sb-data" id="sb-data">
+      <summary>Reset or erase data</summary>
       <button type="button" class="nav-item lib-link sb-reset" data-click="resetApp"><span class="nav-dot"></span><span class="nav-label">Reset all inputs</span></button>
       <button type="button" class="nav-item lib-link sb-reset" id="erase-btn" data-click="eraseAsk" aria-expanded="false" aria-controls="erase-box"><span class="nav-dot"></span><span class="nav-label">Erase everything VCR2 stored in this browser</span></button>
       <div class="api-hint" id="erase-box" role="group" aria-label="Confirm erase" style="display:none;padding:0 10px 8px">This also deletes your Library, drafts, settings and any remembered key, and cannot be undone. Export a library backup first if you may want it.
         <div class="lib-actions" style="margin:6px 0 0"><button type="button" class="btn btn-ghost btn-sm" data-click="libExport">Export library backup</button><button type="button" class="btn btn-primary btn-sm" data-click="eraseAll">Erase now</button><button type="button" class="btn btn-ghost btn-sm" data-click="eraseAsk">Cancel</button></div></div>
+      </details>
+      <p class="sb-key">Alt + M hides this menu</p>
     </div>
   </aside>
 

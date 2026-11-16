@@ -71,7 +71,7 @@ async def main():
         check('no banner for a file without marks', 'Evidence levels came from' not in await pg.text_content('#verify-content'))
 
         # erase everything: two steps, inline, no browser dialog
-        await pg.evaluate("() => { saveDraft(); sessionStorage.setItem('vcr3-key', 'sk-ant-' + 'A'.repeat(40)); localStorage.setItem('vcr3-provider', 'anthropic'); toggleSidebar && toggleSidebar(true); }")
+        await pg.evaluate("() => { saveDraft(); sessionStorage.setItem('vcr3-key', 'sk-ant-' + 'A'.repeat(40)); localStorage.setItem('vcr3-provider', 'anthropic'); toggleSidebar && toggleSidebar(true); $id('sb-data').open = true; }")   # reset and erase sit behind a disclosure in the sidebar footer
         before = await pg.evaluate("() => Object.keys(localStorage).filter(k => /^vcr/i.test(k)).length")
         check('there is something to erase', before >= 3, before)
         btn = pg.locator('#erase-btn')

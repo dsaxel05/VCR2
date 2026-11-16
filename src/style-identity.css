@@ -426,7 +426,16 @@ th, .tbl-wrap { position: relative; }
 .nav-dot { background: var(--line-4); }
 .nav-item.done .nav-dot { background: var(--ok); }
 .nav-item.active .nav-dot { background: var(--gold); }
-.sb-footer { padding: var(--sp-2) var(--sp-3) var(--sp-3); border-top: 1px solid var(--line-2); }
+/* The sidebar keeps its header and a compact footer in place; the evidence sections take all the height left and scroll on
+   their own. Opening AI assist or Reset in the footer never squeezes the sections: the footer scrolls inside its own cap.
+   A wheel or a swipe over the sidebar never scrolls the page behind it (overscroll-behavior here, a wheel guard in core.js). */
+.sb-nav { flex: 1 1 auto; min-height: 8rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-4) transparent; }
+.sb-footer { flex: 0 0 auto; max-height: 46%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: var(--sp-1) var(--sp-2) var(--sp-2); border-top: 1px solid var(--line-2); }
+.sb-links { display: flex; flex-direction: column; }
+.sb-footer .nav-item { min-height: 2.125rem; margin: 0; width: 100%; }
+.sb-footer .sb-more > summary { padding: 0 var(--sp-2); }
+.sb-data .nav-item { font-size: 0.8125rem; }
+.sb-key { font-size: .8125rem; color: var(--text-3); padding: var(--sp-1) var(--sp-2) 0; margin: 0; }
 .sb-ai { margin-top: var(--sp-1); }
 .sb-ai > * + * { margin-top: var(--sp-1); }
 .api-check, .api-status, .api-hint { font-size: .8125rem; color: var(--text-2); }

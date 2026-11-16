@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-a6PY8cJBDxXmFfFPYe3GuqGMGiIZZ7GyGnXu9m/geVc=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-gtvJjJQm8CVS85PKC4XxyznFgu3e3i7lozmKYQNLD+g='; script-src-elem 'sha256-a6PY8cJBDxXmFfFPYe3GuqGMGiIZZ7GyGnXu9m/geVc=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-gtvJjJQm8CVS85PKC4XxyznFgu3e3i7lozmKYQNLD+g='; script-src-attr 'none'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://tgiezjiohisojywuudlh.supabase.co https://tporrotpmfkiochuuxjh.supabase.co https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types vcr2" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-a6PY8cJBDxXmFfFPYe3GuqGMGiIZZ7GyGnXu9m/geVc=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-A2Wo7DqFDjjVIXoaKcihdfHkfrNERhEQffyuz7QaDog='; script-src-elem 'sha256-a6PY8cJBDxXmFfFPYe3GuqGMGiIZZ7GyGnXu9m/geVc=' 'sha256-n1z8jkD0ndqOpk79KGMV0kjI1pRdCcU7IxhPgDxDR+w=' 'sha256-A2Wo7DqFDjjVIXoaKcihdfHkfrNERhEQffyuz7QaDog='; script-src-attr 'none'; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file:; font-src 'self' data: file:; connect-src 'self' https://tgiezjiohisojywuudlh.supabase.co https://tporrotpmfkiochuuxjh.supabase.co https://api.github.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai; worker-src 'self' blob:; media-src 'self' file:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types vcr2" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VCR2: evidence-first diligence engine</title>
@@ -971,7 +971,13 @@ th,.tbl-wrap{position:relative}
 .nav-dot{background:var(--line-4)}
 .nav-item.done .nav-dot{background:var(--ok)}
 .nav-item.active .nav-dot{background:var(--gold)}
-.sb-footer{padding:var(--sp-2) var(--sp-3) var(--sp-3);border-top:1px solid var(--line-2)}
+.sb-nav{flex:1 1 auto;min-height:8rem;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-4) transparent}
+.sb-footer{flex:0 0 auto;max-height:46%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:var(--sp-1) var(--sp-2) var(--sp-2);border-top:1px solid var(--line-2)}
+.sb-links{display:flex;flex-direction:column}
+.sb-footer .nav-item{min-height:2.125rem;margin:0;width:100%}
+.sb-footer .sb-more > summary{padding:0 var(--sp-2)}
+.sb-data .nav-item{font-size:.8125rem}
+.sb-key{font-size:.8125rem;color:var(--text-3);padding:var(--sp-1) var(--sp-2) 0;margin:0}
 .sb-ai{margin-top:var(--sp-1)}
 .sb-ai > * + *{margin-top:var(--sp-1)}
 .api-check,.api-status,.api-hint{font-size:.8125rem;color:var(--text-2)}
@@ -1376,11 +1382,12 @@ to{transform:scale(1.55);opacity:0}
 <div class="sb-nav-label">Evidence sections</div>
 </nav>
 
-<div class="sb-footer">
+<div class="sb-footer" id="sb-footer">
+<div class="sb-links">
 <button type="button" class="nav-item lib-link" data-click="goLibrary"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
 <button type="button" class="nav-item lib-link" data-click="showPage" data-a="about"><span class="nav-dot"></span><span class="nav-label">About</span></button>
 <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" data-click="goStudio"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
-<p class="api-hint">Alt + M shows or hides this menu.</p>
+</div>
 <details class="sb-more sb-ai">
 <summary>AI assist (optional)</summary>
 <select class="api-sel" id="api-provider">
@@ -1404,10 +1411,14 @@ to{transform:scale(1.55);opacity:0}
 <div class="api-status ok" id="api-status">Deterministic engine ready</div>
 <div class="api-hint" id="api-hint">Scores are computed in your browser and never sent anywhere.</div>
 </details>
+<details class="sb-more sb-data" id="sb-data">
+<summary>Reset or erase data</summary>
 <button type="button" class="nav-item lib-link sb-reset" data-click="resetApp"><span class="nav-dot"></span><span class="nav-label">Reset all inputs</span></button>
 <button type="button" class="nav-item lib-link sb-reset" id="erase-btn" data-click="eraseAsk" aria-expanded="false" aria-controls="erase-box"><span class="nav-dot"></span><span class="nav-label">Erase everything VCR2 stored in this browser</span></button>
 <div class="api-hint" id="erase-box" role="group" aria-label="Confirm erase" style="display:none;padding:0 10px 8px">This also deletes your Library, drafts, settings and any remembered key, and cannot be undone. Export a library backup first if you may want it.
 <div class="lib-actions" style="margin:6px 0 0"><button type="button" class="btn btn-ghost btn-sm" data-click="libExport">Export library backup</button><button type="button" class="btn btn-primary btn-sm" data-click="eraseAll">Erase now</button><button type="button" class="btn btn-ghost btn-sm" data-click="eraseAsk">Cancel</button></div></div>
+</details>
+<p class="sb-key">Alt + M hides this menu</p>
 </div>
 </aside>
 
@@ -1824,6 +1835,8 @@ function isNarrow(){return !!(window.matchMedia&&matchMedia('(max-width: 780px)'
 function toggleSidebar(open){const sb=$id('sidebar'),tg=$id('sb-toggle');if(!sb)return;const was=sb.classList.contains('open');sb.classList.toggle('open',open);$id('sidebar-overlay').classList.toggle('show',open);syncSidebar();if(open&&!was){const first=sb.querySelector('.nav-item, .sb-logo-row');if(first)first.focus()}
 else if (!open&&was&&tg)tg.focus()}
 function syncSidebar(){const sb=$id('sidebar'),tg=$id('sb-toggle');if(!sb||!tg||!tg.setAttribute)return;const hidden=isNarrow()?!sb.classList.contains('open'):resolvedSidebar()==='hidden';sb.inert=hidden;tg.setAttribute('aria-expanded',hidden?'false':'true')}
+function sidebarWheel(e){const sb=$id('sidebar');if(!sb||e.ctrlKey)return; const dy=e.deltaY;for(let el=e.target;el&&el!==sb;el=el.parentElement){if(el.scrollHeight>el.clientHeight+1&&/auto|scroll/.test(getComputedStyle(el).overflowY)){if(dy<0?el.scrollTop>0:el.scrollTop+el.clientHeight<el.scrollHeight-1)return}}
+e.preventDefault()}
 function sidebarToggle(){const sb=$id('sidebar');if(isNarrow()){toggleSidebar(!sb.classList.contains('open'));return}
 lsSet(SB_KEY,resolvedSidebar()==='hidden'?'open':'hidden');applyLook()}
 function showPage(id){if(id==='intro'){if(S.example)leaveExample();renderResumeCard()}
@@ -2592,7 +2605,7 @@ function acctBoot(){let back=false;try{back=typeof location!=='undefined'&&new U
 if(back||acctSession())acctArm();return back}
 const ACCT_LINK_CODES=['email_exists','user_already_exists','identity_already_exists','email_conflict_identity_not_deletable'];const ACCT_MSG={access_denied:'Sign-in was cancelled. Nothing was saved to an account; you can keep working as a guest.',state_mismatch:'This sign-in link does not match a sign-in started in this browser, so it was ignored. Start again from "Sign in".',flow_expired:'This sign-in took too long and expired. Start again from "Sign in".',bad_code_verifier:'This sign-in link was already used or has expired. Start again from "Sign in".',flow_state_not_found:'This sign-in link was already used or has expired. Start again from "Sign in".',flow_state_expired:'This sign-in link was already used or has expired. Start again from "Sign in".',otp_expired:'This sign-in link was already used or has expired. Start again from "Sign in".',invalid_credentials:'Wrong email or password.',email_not_confirmed:'Confirm your email first: open the link we sent you.',weak_password:'Choose a stronger password: at least 10 characters, with lower-case and upper-case letters and a digit.',email_address_invalid:'Check the email address.',over_email_send_rate_limit:'Too many emails were sent. Wait a few minutes and try again.',over_request_rate_limit:'Too many attempts. Wait a few minutes and try again.',provider_disabled:'This sign-in method is not available right now.',no_region:'Choose where your account is stored (Europe or United States).',offline:'No connection. You can keep working: everything stays on this device.',};function acctMessage(code,existingId){if(ACCT_LINK_CODES.includes(code)){const p=existingId&&ACCT_PROVIDERS.find(x=>x.id===existingId);return p&&p.kind==='oauth'?`This email already uses ${p.label}: sign in with ${p.label} first.`:'This email already has an account with another sign-in method. Sign in with that method first.'}
 return ACCT_MSG[code]||'Sign-in did not work. Nothing was changed; you can keep working as a guest.'}
-const VCR2_VERSION='5.5.0';const ACCT_META='vcr2-acct-draft';let _acctTimer=0,_acctBusy=null,_acctEdits=0,_acctEpoch=0,_acctApplying=false,_acctState={k:''};let acctDelay=3000; async function acctRest(path,o={}){const s=acctSession();if(!s)throw acctErr('signed_out');const tok=await acctToken();try{return await acctFetch(acctRegion(s.region),'/rest/v1/'+path,Object.assign({token:tok},o))}
+const VCR2_VERSION='5.5.1';const ACCT_META='vcr2-acct-draft';let _acctTimer=0,_acctBusy=null,_acctEdits=0,_acctEpoch=0,_acctApplying=false,_acctState={k:''};let acctDelay=3000; async function acctRest(path,o={}){const s=acctSession();if(!s)throw acctErr('signed_out');const tok=await acctToken();try{return await acctFetch(acctRegion(s.region),'/rest/v1/'+path,Object.assign({token:tok},o))}
 catch(e){if(e.status!==401||o.retried)throw e;await acctRefresh(acctSession()||s);return acctRest(path,Object.assign({},o,{retried:true}))}}
 const acctRep={prefer:'return=representation'};
 function acctLedgerStats(L){const r=v=>v==null||!isFinite(v)?null:Math.round(v*100) / 100;return{months:L.months.length,customersNow:L.customersNow,arrNow:r(L.arrNow),top1:r(L.top1),top5:r(L.top5),top10:r(L.top10),nrr:r(L.nrrCohort),grr:r(L.grrCohort),logoRet:r(L.logoRet),cmgr12:r(L.cmgr12)}}
@@ -4964,7 +4977,8 @@ storeApiKey($id('api-key').value.trim());toast(e.target.checked?'The key is reme
 updateKeyStatus('');toast('The key was forgotten.')});$id('api-model').addEventListener('input',e=>{try{localStorage.setItem('vcr4-model',e.target.value.trim())}catch(err){}});$id('api-provider').addEventListener('change',e=>{try{localStorage.setItem('vcr3-provider',e.target.value)}catch(err){}
 updateProviderUI()});$id('api-eye').addEventListener('click',()=>{const i=$id('api-key');i.type=i.type==='password'?'text':'password'}); const dz=$id('dropzone');const readFiles=list=>{Array.from(list).slice(0,5).forEach(file=>{if(file.size>900000){toast(`${file.name} is too large to paste inline. Export a summary tab instead.`,'err');return}
 readAnyFile(file,(text,name)=>{S.files.push({name,text:String(text).slice(0,20000)});renderFileList()},'series')})};dz.addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.multiple=true;i.accept='.csv,.txt,.md,.tsv,.xlsx,.xlsm';i.onchange=()=>readFiles(i.files);i.click()});['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over')}));['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over')}));dz.addEventListener('drop',e=>readFiles(e.dataTransfer.files)); wireDrop('ledger-drop',(t,n)=>loadLedgerText(t,n),'.csv,.tsv,.txt,.xlsx,.xlsm','ledger');wireDrop('series-drop',(t,n)=>loadSeriesText(t,n),'.csv,.tsv,.txt,.xlsx,.xlsm','series'); document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&e.code==='KeyM'){e.preventDefault();sidebarToggle()}
-else if (e.key==='Escape'&&$id('sidebar').classList.contains('open'))toggleSidebar(false)});if(window.addEventListener)window.addEventListener('resize',()=>{if(!isNarrow())toggleSidebar(false);syncSidebar()});syncSidebar(); document.addEventListener('keydown',e=>{if(!$id('page-section').classList.contains('active'))return;const tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='select'||tag==='textarea'||e.metaKey||e.ctrlKey||e.altKey)return;if(e.key==='ArrowRight'){e.preventDefault();nextSec()}
+else if (e.key==='Escape'&&$id('sidebar').classList.contains('open'))toggleSidebar(false)});if(window.addEventListener)window.addEventListener('resize',()=>{if(!isNarrow())toggleSidebar(false);syncSidebar()});syncSidebar();{const sb=$id('sidebar');if(sb&&sb.addEventListener)sb.addEventListener('wheel',sidebarWheel,{passive:false})}
+document.addEventListener('keydown',e=>{if(!$id('page-section').classList.contains('active'))return;const tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='select'||tag==='textarea'||e.metaKey||e.ctrlKey||e.altKey)return;if(e.key==='ArrowRight'){e.preventDefault();nextSec()}
 if(e.key==='ArrowLeft'){e.preventDefault();prevSec()}}); updateStudioLink();renderPreviewBanner();CFG_READY=loadPublishedConfig().then(ok=>{if(ok)refreshAfterConfig();introStats();return ok}).catch(()=>false);const route=()=>{if(typeof location==='undefined')return;if(/^#studio\b/i.test(location.hash||''))openStudio();else if (/^#about\b/i.test(location.hash||''))showPage('about')};if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('hashchange',route);route()})();
 function demoPlay(){const v=$id('demo-video');if(!v)return;const p=v.play();if(p&&p.catch)p.catch(()=>demoFail());v.focus({preventScroll:true})}
 function demoFail(){const f=document.querySelector('.demo-frame');if(f)f.classList.remove('is-started');toast('The demo video could not be loaded. Check your connection and try again, or download it with the link under the video.','err',7000)}

@@ -1651,6 +1651,18 @@ function syncSidebar() {
   sb.inert = hidden;
   tg.setAttribute('aria-expanded', hidden ? 'false' : 'true');
 }
+/* A wheel over the sidebar scrolls the part of the sidebar under the pointer (the sections or the footer) and never the page
+   behind it: when that part is already at its end, or nothing under the pointer can scroll, the wheel is simply absorbed. */
+function sidebarWheel(e) {
+  const sb = $id('sidebar'); if (!sb || e.ctrlKey) return;   /* Ctrl + wheel is the browser zoom: leave it alone */
+  const dy = e.deltaY;
+  for (let el = e.target; el && el !== sb; el = el.parentElement) {
+    if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(el).overflowY)) {
+      if (dy < 0 ? el.scrollTop > 0 : el.scrollTop + el.clientHeight < el.scrollHeight - 1) return;
+    }
+  }
+  e.preventDefault();
+}
 function sidebarToggle() {
   const sb = $id('sidebar');
   if (isNarrow()) { toggleSidebar(!sb.classList.contains('open')); return; }

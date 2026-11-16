@@ -277,6 +277,7 @@ function eraseAll() {
   });
   if (window.addEventListener) window.addEventListener('resize', () => { if (!isNarrow()) toggleSidebar(false); syncSidebar(); });
   syncSidebar();
+  { const sb = $id('sidebar'); if (sb && sb.addEventListener) sb.addEventListener('wheel', sidebarWheel, { passive:false }); }
 
   /* Keyboard: ←/→ between evidence sections when focus is not in a field. */
   document.addEventListener('keydown', e => {

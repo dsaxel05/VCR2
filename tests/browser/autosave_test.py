@@ -143,6 +143,7 @@ async def main():
         await pg.evaluate("() => { loadHalcyon(); S.example = false; buildNav(); window.__go = runAnalysis(); }")
         await pg.wait_for_timeout(900)           # past the loading steps; the worker never answers
         pending = await pg.evaluate("() => _simJobs.size")
+        await pg.click('#sb-data > summary')   # reset and erase sit behind a disclosure in the sidebar footer
         await pg.click('#sidebar >> text=Reset all inputs'); await pg.wait_for_timeout(300)
         await pg.wait_for_timeout(2500)
         after = await pg.evaluate("() => ({ result: S.result, jobs: _simJobs.size, page: document.querySelector('.page.active').id, name: S.name, report: ($id('page-result').textContent || '').trim().length })")

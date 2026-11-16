@@ -1,5 +1,13 @@
 # Changelog
 
+## v5.5.1: 2026-11-16
+
+**The sidebar gives its height to the evidence sections, and scrolling over it never moves the page.** The owner found the input sections squeezed to almost nothing on a laptop screen, and the wheel over the menu scrolling the page behind it.
+- **The evidence sections take all the free height** and scroll on their own (on a 670 px tall window: about 300 px, up from almost none).
+- **A compact footer**: Library & benchmarks, About and Owner Studio, then AI assist and a new "Reset or erase data" disclosure (the two reset buttons were always open before), and a one-line Alt + M hint. Closed, it shows everything without scrolling; opening AI assist caps it at 46% of the sidebar with its own scroll, so the sections always keep at least 8rem.
+- **The wheel over the sidebar scrolls only the part under the pointer** (sections or footer) and is absorbed at its ends or over the header, so the page behind never moves; over the page, the page scrolls as before. Ctrl + wheel (zoom) is untouched.
+- Tests: new tests/browser/sidebar_scroll_test.py (12 checks, with real mouse wheels); the erase and reset steps of two suites open the new disclosure first.
+
 ## v5.5.0: 2026-11-15
 
 **A sign-in dialog built like the ones people already trust.** The owner found the first one unwelcoming; this one follows the common pattern of well-known sites.
