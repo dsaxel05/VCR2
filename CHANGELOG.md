@@ -1,5 +1,14 @@
 # Changelog
 
+## v5.5.2: 2026-11-16
+
+**My analyses, laid out for people.** The owner found the table with seven buttons per row hard to use.
+- **One card per analysis**: the name, then one line of facts (stage and model by name, when it was saved, the score and its band, tags).
+- **Open is the main button**, Versions beside it; Duplicate, Rename, Tags, Archive and Delete (last, in red) sit in a **More** menu that closes on a click elsewhere or on Escape, one open at a time.
+- **One toolbar**: a search box, the stage and sort pickers, Show archived. A bulk line says how many are ticked; Compare turns on at exactly two. "Save a version" appears only when an analysis is open from the account. A usage bar under the title; Preferences folded away.
+- On a phone the actions move under the card; nothing scrolls sideways.
+- Test: new tests/browser/mine_layout_test.py (17 checks, rows provided by the test, no backend).
+
 ## v5.5.1: 2026-11-16
 
 **The sidebar gives its height to the evidence sections, and scrolling over it never moves the page.** The owner found the input sections squeezed to almost nothing on a laptop screen, and the wheel over the menu scrolling the page behind it.

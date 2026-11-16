@@ -30,38 +30,71 @@ function acctRenderMine() {
     && (!q || [r.title, r.company, r.model, r.band, (r.tags || []).join(' '), r.folder].join(' ').toLowerCase().includes(q)))
     .sort((a, b) => _mine.sort === 'score' ? (b.score ?? -1) - (a.score ?? -1) : _mine.sort === 'title' ? String(a.title).localeCompare(b.title) : String(b.updated_at).localeCompare(a.updated_at));
   const stages = [...new Set(_mine.rows.map(r => r.stage).filter(Boolean))];
-  const act = (attr, id, l) => `<button type="button" class="btn btn-ghost btn-sm" ${attr} data-a="${esc(id)}">${l}</button>`;   /* attr is the whole data-click attribute written out, so the dispatcher test can check the name */
+  const stageName = id => { const s = (typeof STAGES !== 'undefined' ? STAGES : []).find(x => x.id === id); return s ? (s.n || s.label || s.id) : id; };
+  const modelName = id => { const x = (typeof MODELS !== 'undefined' ? MODELS : []).find(y => y.id === id); return x ? x.n : id; };
+  /* attr is the whole data-click attribute written out, so the dispatcher test can check the name */
+  const act = (attr, id, l, cls = 'btn btn-ghost btn-sm') => `<button type="button" class="${cls}" ${attr} data-a="${esc(id)}">${l}</button>`;
   const undo = Object.entries(_mine.gone).map(([id, g]) => `<div class="warnstrip" role="status"><div>Deleted “${esc(g.title)}”. It is removed for good in 30 seconds. ${act('data-click="acctMineUndo"', id, 'Undo')}</div></div>`).join('');
-  setHTML(el, `<h2 class="pg-title">My analyses</h2>
+  const pct = u && u.max_analyses ? Math.min(100, Math.round(u.analyses / u.max_analyses * 100)) : 0;
+  const n = _mine.tick.size;
+  const item = r => {
+    const meta = [stageName(r.stage), modelName(r.model), 'saved ' + acctAgo(Date.parse(r.updated_at)), r.score == null ? 'no score yet' : 'score ' + r.score + (r.band ? ' (' + r.band + ')' : '')].filter(Boolean);
+    return `<li class="mine-item${r.archived ? ' mine-arch' : ''}${m && m.id === r.id ? ' mine-open' : ''}">
+      <input type="checkbox" class="mine-tick" aria-label="Tick ${esc(r.title)}" data-change="acctMineTick" data-a="${esc(r.id)}"${_mine.tick.has(r.id) ? ' checked' : ''}>
+      <div class="mine-main">
+        <div class="mine-name">${esc(r.title)}${m && m.id === r.id ? ' <span class="chip">open now</span>' : ''}${r.archived ? ' <span class="chip">archived</span>' : ''}${r.vault ? ' <span class="chip">vault</span>' : ''}</div>
+        <div class="mine-meta">${meta.map(esc).join(' · ')}${(r.tags || []).length ? ` · <span class="mine-tags">${(r.tags || []).map(x => `<span class="chip">${esc(x)}</span>`).join(' ')}</span>` : ''}</div>
+      </div>
+      <div class="mine-acts">
+        ${act('data-click="acctMineOpen"', r.id, 'Open', 'btn btn-primary btn-sm')}
+        ${act('data-click="acctMineHistory"', r.id, 'Versions')}
+        <details class="mine-more"><summary class="btn btn-ghost btn-sm" aria-label="More actions for ${esc(r.title)}">More</summary>
+          <div class="mine-menu">
+            ${act('data-click="acctMineDup"', r.id, 'Duplicate', 'mine-mi')}${act('data-click="acctMineRename"', r.id, 'Rename', 'mine-mi')}${act('data-click="acctMineTags"', r.id, 'Tags', 'mine-mi')}
+            ${act('data-click="acctMineArchive"', r.id, r.archived ? 'Unarchive' : 'Archive', 'mine-mi')}${act('data-click="acctMineDelete"', r.id, 'Delete', 'mine-mi mine-del')}
+          </div>
+        </details>
+      </div>
+    </li>`;
+  };
+  setHTML(el, `<div class="mine-head">
+      <div><h2 class="pg-title">My analyses</h2>
+      ${u ? `<p class="pg-desc">${u.analyses} of ${u.max_analyses} analyses · ${mb(u.bytes)} of ${mb(u.max_bytes)} MB · each keeps its last 20 versions</p>
+        <div class="mine-meter" role="img" aria-label="${pct}% of your analyses used"><span style="width:${pct}%"></span></div>` : ''}</div>
+      ${m ? '<button type="button" class="btn btn-ghost btn-sm" data-click="acctSaveVersionGo">Save a version of the open analysis</button>' : ''}
+    </div>
     ${_mine.err ? `<p class="acct-msg" role="alert">${esc(_mine.err)}</p>` : ''}
-    ${u ? `<p class="pg-desc">${u.analyses} of ${u.max_analyses} analyses · ${mb(u.bytes)} of ${mb(u.max_bytes)} MB used. Each analysis keeps its last 20 saved versions.</p>` : ''}
     ${undo}
-    <div class="mine-tools">
-      <label>Search <input type="search" id="mine-q" value="${esc(_mine.q)}" data-input="acctMineSearch" maxlength="80"></label>
-      <label>Stage <select data-change="acctMineStage"><option value="">All</option>${stages.map(s => `<option${s === _mine.stage ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select></label>
-      <label>Sort <select data-change="acctMineSort">${[['updated_at', 'Last saved'], ['score', 'Score'], ['title', 'Name']].map(([v, l]) => `<option value="${v}"${v === _mine.sort ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
-      <label><input type="checkbox" data-change="acctMineArch"${_mine.arch ? ' checked' : ''}> Show archived</label>
+    <div class="mine-bar">
+      <input type="search" class="form-inp mine-search" id="mine-q" placeholder="Search by name, tag or model" aria-label="Search your analyses" value="${esc(_mine.q)}" data-input="acctMineSearch" maxlength="80">
+      <select class="form-inp mine-sel" aria-label="Stage" data-change="acctMineStage"><option value="">All stages</option>${stages.map(s => `<option value="${esc(s)}"${s === _mine.stage ? ' selected' : ''}>${esc(stageName(s))}</option>`).join('')}</select>
+      <select class="form-inp mine-sel" aria-label="Sort" data-change="acctMineSort">${[['updated_at', 'Last saved first'], ['score', 'Highest score first'], ['title', 'Name A to Z']].map(([v, l]) => `<option value="${v}"${v === _mine.sort ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      <label class="mine-check"><input type="checkbox" data-change="acctMineArch"${_mine.arch ? ' checked' : ''}> Show archived</label>
     </div>
-    <div class="mine-tools">
-      <button type="button" class="btn btn-ghost btn-sm" data-click="acctMineCompare"${_mine.tick.size === 2 ? '' : ' disabled'}>Compare the two ticked</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-click="acctMineExport">Export ${_mine.tick.size ? 'ticked' : 'all'} (.json)</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-click="acctSaveVersionGo">Save a version of the open analysis</button>
+    <div class="mine-bulk">
+      <span class="mine-count">${n ? n + ' ticked' : rows.length + (rows.length === 1 ? ' analysis' : ' analyses')}</span>
+      <button type="button" class="btn btn-ghost btn-sm" data-click="acctMineCompare"${n === 2 ? '' : ' disabled'} title="Tick exactly two analyses to compare them">Compare the two ticked</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-click="acctMineExport">Export ${n ? 'ticked' : 'all'} (.json)</button>
     </div>
-    ${rows.length ? `<div class="tbl-wrap"><table class="tbl mine-tbl"><thead><tr><th scope="col"><span class="sr-only">Tick</span></th><th scope="col">Company</th><th scope="col">Stage</th><th scope="col">Model</th><th scope="col">Saved</th><th scope="col">Score</th><th scope="col">Tags</th><th scope="col">Actions</th></tr></thead><tbody>
-      ${rows.map(r => `<tr${r.archived ? ' class="mine-arch"' : ''}><td><input type="checkbox" aria-label="Tick ${esc(r.title)}" data-change="acctMineTick" data-a="${esc(r.id)}"${_mine.tick.has(r.id) ? ' checked' : ''}></td>
-        <th scope="row">${esc(r.title)}${m && m.id === r.id ? ' <span class="chip">open</span>' : ''}${r.archived ? ' <span class="chip">archived</span>' : ''}${r.vault ? ' <span class="chip">vault</span>' : ''}</th>
-        <td>${esc(r.stage || '')}</td><td>${esc(r.model || '')}</td><td>${esc(acctAgo(Date.parse(r.updated_at)))}</td>
-        <td>${r.score == null ? 'n/a' : esc(String(r.score)) + (r.band ? ' ' + esc(r.band) : '')}</td><td>${esc((r.tags || []).join(', '))}</td>
-        <td class="mine-acts">${act('data-click="acctMineOpen"', r.id, 'Open')}${act('data-click="acctMineHistory"', r.id, 'Versions')}${act('data-click="acctMineDup"', r.id, 'Duplicate')}${act('data-click="acctMineRename"', r.id, 'Rename')}${act('data-click="acctMineTags"', r.id, 'Tags')}${act('data-click="acctMineArchive"', r.id, r.archived ? 'Unarchive' : 'Archive')}${act('data-click="acctMineDelete"', r.id, 'Delete')}</td></tr>`).join('')}
-    </tbody></table></div>` : `<p>${_mine.rows.length ? 'No analysis matches.' : 'No analysis in your account yet. Your open analysis is saved here automatically.'}</p>`}
-    <h3>Preferences</h3>
-    <div class="mine-tools">
-      <label>Default stage for a new analysis <select id="pref-stage"><option value="">None</option>${STAGES.map(s => `<option value="${esc(s.id)}"${acctDefaultStage() === s.id ? ' selected' : ''}>${esc(s.label || s.id)}</option>`).join('')}</select></label>
-      <label>Theme <select id="pref-theme">${[['', 'Follow the device'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => `<option value="${v}"${(acctPrefs().theme || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
-      <button type="button" class="btn btn-ghost btn-sm" data-click="acctPrefsSave">Save preferences</button>
-    </div>
-    <p class="field-hint">Your comparables library and these preferences are kept in your account too.</p>`);
+    ${rows.length ? `<ul class="mine-list">${rows.map(item).join('')}</ul>`
+      : `<p class="mine-empty">${_mine.rows.length ? 'No analysis matches.' : 'No analysis in your account yet. Your open analysis is saved here automatically.'}</p>`}
+    <details class="mine-prefs"><summary>Preferences</summary>
+      <div class="mine-bar">
+        <label>Default stage for a new analysis <select class="form-inp mine-sel" id="pref-stage"><option value="">None</option>${STAGES.map(s => `<option value="${esc(s.id)}"${acctDefaultStage() === s.id ? ' selected' : ''}>${esc(s.n || s.label || s.id)}</option>`).join('')}</select></label>
+        <label>Theme <select class="form-inp mine-sel" id="pref-theme">${[['', 'Follow the device'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => `<option value="${v}"${(acctPrefs().theme || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
+        <button type="button" class="btn btn-ghost btn-sm" data-click="acctPrefsSave">Save preferences</button>
+      </div>
+      <p class="field-hint">Your comparables library and these preferences are kept in your account too.</p>
+    </details>`);
 }
+/* The More menus of My analyses: one open at a time, closed by a click elsewhere or by Escape (focus back on its button). */
+function acctMineMenus(e) {
+  const open = [...document.querySelectorAll('#mine-content .mine-more[open]')]; if (!open.length) return;
+  if (e.type === 'keydown') { if (e.key !== 'Escape') return; open.forEach(d => { d.open = false; const s = d.querySelector('summary'); if (s) s.focus(); }); return; }
+  const inside = e.target.closest && e.target.closest('.mine-more');
+  open.forEach(d => { if (d !== inside) d.open = false; });
+}
+if (typeof document !== 'undefined' && document.addEventListener) { document.addEventListener('click', acctMineMenus); document.addEventListener('keydown', acctMineMenus); }
 const acctMineRow = id => _mine.rows.find(r => r.id === id);
 const acctTry = async (fn, okMsg) => { try { const r = await fn(); if (okMsg) toast(okMsg); return r; } catch (e) { toast(e.code === 'version_exists' ? 'Already saved: nothing changed since the last version.' : e.code === 'version_conflict' ? 'Changed on another device meanwhile: the list was reloaded.' : acctSyncMessage(e), 'err', 8000); if (e.code === 'version_conflict') acctGoMine(); } };
 const acctMineSearch = v => { _mine.q = String(v).slice(0, 80); acctRenderMine(); const i = $id('mine-q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } };

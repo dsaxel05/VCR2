@@ -111,9 +111,9 @@ async def live(b, env, port):
             await pg.wait_for_timeout(100)
         check('autosave: the top bar says "Saved to your account"', (await pg.inner_text('#tb-saved')).startswith('Saved to your account'), await pg.inner_text('#tb-saved'))
         await pg.click('#sb-acct-btn'); await pg.click('.modal-f button:has-text("My analyses")')
-        await pg.wait_for_selector('.mine-tbl tbody tr', timeout=10000)
-        check('My analyses lists the analysis, its name shown as text (no element injected)', await pg.locator('.mine-tbl tbody tr').count() == 1
-              and 'Browser Co <img' in await pg.inner_text('.mine-tbl tbody th') and await pg.locator('#mine-content img').count() == 0
+        await pg.wait_for_selector('.mine-item', timeout=10000)
+        check('My analyses lists the analysis, its name shown as text (no element injected)', await pg.locator('.mine-item').count() == 1
+              and 'Browser Co <img' in await pg.inner_text('.mine-item .mine-name') and await pg.locator('#mine-content img').count() == 0
               and await pg.evaluate("() => !window.__xss"))
         check('My analyses shows the quota meter', 'of 100 analyses' in await pg.inner_text('#mine-content'))
         await pg.fill('#mine-q', 'no such deal'); await pg.wait_for_timeout(200)
@@ -123,10 +123,10 @@ async def live(b, env, port):
         await pg.wait_for_selector('.modal[aria-label="Saved versions"]', timeout=10000)
         check('Versions opens the version history', await pg.locator('.modal[aria-label="Saved versions"]').count() == 1)
         await pg.keyboard.press('Escape')
-        await pg.click('button[data-click=acctMineDelete]'); await pg.wait_for_timeout(200)
-        check('delete: the row goes at once and an Undo is offered', await pg.locator('.mine-tbl tbody tr').count() == 0 and await pg.locator('button[data-click=acctMineUndo]').count() == 1)
+        await pg.click('.mine-more > summary'); await pg.click('button[data-click=acctMineDelete]'); await pg.wait_for_timeout(200)
+        check('delete: the row goes at once and an Undo is offered', await pg.locator('.mine-item').count() == 0 and await pg.locator('button[data-click=acctMineUndo]').count() == 1)
         await pg.click('button[data-click=acctMineUndo]'); await pg.wait_for_timeout(200)
-        check('undo: the row is back and nothing was deleted', await pg.locator('.mine-tbl tbody tr').count() == 1)
+        check('undo: the row is back and nothing was deleted', await pg.locator('.mine-item').count() == 1)
         await pg.click('#sb-acct-btn'); await pg.click('.modal-f button:has-text("Sign out")'); await pg.wait_for_timeout(500)
         check('sign out: back to "Sign in", no session kept', (await pg.inner_text('#sb-acct-btn')).strip() == 'Sign in' and await pg.evaluate("() => !acctSession()"))
     check('every completed request stayed on this computer, and the page never even tried another host',

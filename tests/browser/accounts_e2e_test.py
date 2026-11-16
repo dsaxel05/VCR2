@@ -95,7 +95,7 @@ async def main():
             await tab_to('.modal-f button[data-mi="0"]'); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(600)
             check('keyboard only: email, password, sign in and the terms, without the mouse', ok_btn and await pg.evaluate("() => !!acctSession() && _acctTermsOk"))
             await pg.evaluate("() => { acctDelay = 150; S.name = 'Keyboard Co'; saveDraft(); }"); await pg.wait_for_timeout(1200)
-            await pg.click('#sb-acct-btn'); await pg.click('.modal-f button:has-text("My analyses")'); await pg.wait_for_selector('.mine-tbl tbody tr', timeout=10000)
+            await pg.click('#sb-acct-btn'); await pg.click('.modal-f button:has-text("My analyses")'); await pg.wait_for_selector('.mine-item', timeout=10000)
             await axe(pg, 'My analyses')
             # 2. Vault on, recovery key shown
             await pg.click('#sb-acct-btn'); await pg.click('.modal-f button:has-text("Vault mode")')

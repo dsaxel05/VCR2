@@ -769,9 +769,43 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
 .acct-lock svg { width: 18px; height: 18px; color: var(--ok-text); margin-top: 2px; }
 .acct-guest { text-align: center; font-size: 0.9rem; }
 .acct-guest .acct-link { color: var(--text-2); font-weight: 500; }
+/* My analyses: one card per analysis (name, one line of facts, Open first, the rest under More), a single toolbar, bulk
+   actions that say how many are ticked, preferences folded away. */
 .mine-tools { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); align-items: end; margin: var(--sp-3) 0; }
-.mine-acts { display: flex; flex-wrap: wrap; gap: 4px; }
+.mine-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-3); }
+.mine-head .pg-desc { margin: var(--sp-1) 0; }
+.mine-meter { height: 6px; width: min(320px, 100%); background: var(--line-2); border-radius: var(--radius-pill); overflow: hidden; }
+.mine-meter span { display: block; height: 100%; background: linear-gradient(90deg, var(--ok), var(--gold)); }
+.mine-bar { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; margin: var(--sp-2) 0; }
+.mine-bar label { display: inline-flex; align-items: center; gap: 6px; }
+.mine-search { flex: 1 1 16rem; min-width: 12rem; }
+.mine-sel { width: auto; }
+.mine-check { white-space: nowrap; }
+.mine-bulk { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; margin: 0 0 var(--sp-2); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--line-2); }
+.mine-count { color: var(--text-2); font-size: 0.875rem; margin-right: auto; }
+.mine-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.mine-item { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line-2); border-radius: var(--radius-card); background: var(--glass); }
+.mine-item.mine-open { border-color: var(--accent-line); }
+.mine-tick { flex: none; width: 18px; height: 18px; }
+.mine-main { flex: 1 1 auto; min-width: 0; }
+.mine-name { font-family: var(--font-display); font-size: 1.125rem; color: var(--text); overflow-wrap: anywhere; }
+.mine-meta { color: var(--text-2); font-size: 0.875rem; margin-top: 2px; }
+.mine-acts { flex: none; display: flex; align-items: center; gap: var(--sp-1); }
+.mine-more { position: relative; }
+.mine-more > summary { list-style: none; cursor: pointer; }
+.mine-more > summary::-webkit-details-marker { display: none; }
+.mine-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 11rem; display: flex; flex-direction: column; padding: var(--sp-1); background: var(--glass-strong); border: 1px solid var(--line-3); border-radius: var(--radius-control); box-shadow: var(--shadow-2); }
+.mine-mi { text-align: left; border: 0; background: none; font: inherit; font-size: 0.9375rem; color: var(--text); padding: var(--sp-1) var(--sp-2); min-height: 2.25rem; border-radius: var(--radius-control); cursor: pointer; }
+.mine-mi:hover, .mine-mi:focus-visible { background: var(--sb-hover); }
+.mine-del { color: var(--risk-text); border-top: 1px solid var(--line-2); border-radius: 0 0 var(--radius-control) var(--radius-control); }
 .mine-arch { opacity: .7; }
+.mine-empty { color: var(--text-2); }
+.mine-prefs { margin-top: var(--sp-4); border-top: 1px solid var(--line-2); padding-top: var(--sp-2); }
+.mine-prefs > summary { cursor: pointer; font-weight: 600; color: var(--text); }
+@media (max-width: 640px) {
+  .mine-item { flex-wrap: wrap; }
+  .mine-acts { width: 100%; padding-left: calc(18px + var(--sp-3)); }
+}
 .acct-rec { word-break: break-all; }
 
 /* Market intel (live): the invitation on the overview, the set-up steps, and one card per researched section. */
