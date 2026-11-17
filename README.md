@@ -51,7 +51,7 @@ VCR2 rebuilds them from the raw figures in about a second, shows its working, ne
 
 <p align="center"><img src="docs/media/02-verification.jpg" alt="Verification step listing material discrepancies, such as net revenue retention overstated by 35.2 points" width="900"></p>
 
-**Report.** Metrics, risks, runway odds and deal maths in one place. Here the score is withheld until the contradictions are resolved. Under All metrics, display-only figures add sales efficiency, churn mix and the ARR the next round needs next to the ARR projected at six months of runway.
+**Report.** Metrics, risks, runway odds and deal maths in one place. The score is shown with the open gates flagged next to it, and every contradiction links to the fields to correct. Under All metrics, display-only figures add sales efficiency, churn mix and the ARR the next round needs next to the ARR projected at six months of runway.
 
 <p align="center"><img src="docs/media/03-report.jpg" alt="Northwind Data report with the score withheld and the key metrics: ARR, growth, net revenue retention, burn multiple, runway, odds and entry multiple" width="900"></p>
 
@@ -130,7 +130,7 @@ Investors ask for different things. The Studio lets the owner add them without t
 | An investor tells you... | You change it in |
 |---|---|
 | "At Series A, 110% NRR is only average." | **Healthy ranges** |
-| "We never invest if one customer is over half of revenue." | **Deal-breakers**: conditions that withhold the score |
+| "We never invest if one customer is over half of revenue." | **Deal-breakers**: conditions flagged as gates next to the score |
 | "The runway warning should fire at 15 months, not 12." | **Red-flag triggers**: every built-in trigger and term-sheet norm |
 | "A SOC 2 Type I is worth less than you think." | **Scored answers**: the score of every choice and yes/no answer |
 | "Model a 5-year exit at 35%, with a 6x multiple." | **Defaults & assumptions** |
@@ -165,7 +165,7 @@ A few of the formulas:
 
 - **Never ask for a number that can be derived.** Runway, NRR, burn multiple and payback are computed, never typed in.
 - **Prefer the company's data to its summary.** A customer ledger outranks a deck; a bank statement outranks a model.
-- **Refuse to score bad data.** Three or more material contradictions, or an open IP or cap-table gate, withholds the score. The analysis still runs.
+- **Flag bad data, never hide it.** Three or more material contradictions, or an open IP or cap-table gate, opens a gate shown next to the score. Each contradiction links straight to the fields behind it, so a typing mistake is fixed in two clicks.
 - **Weight evidence, not just values.** Unverified inputs widen the confidence band and count for less in the score.
 - **Show the working.** Every metric carries its formula, every test its method and limits.
 - **The model never scores.** AI is optional and only extracts figures or drafts prose around numbers the engine has already computed.

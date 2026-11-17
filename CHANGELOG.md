@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.6.0: 2026-11-16
+
+**The score is always shown, and every issue leads to the fields behind it.** The owner's call: VCR2 is used by investors, who should see the score and judge it themselves.
+- **No more withheld score.** Gates (incomplete IP assignments, too many material contradictions, an owner deal-breaker...) still sit at the top of the report as items to resolve before terms, with a "gates open" warning under the score, but the score, its range and its word are always shown. The verification page says "N material discrepancies to resolve before terms" instead of "Assessment blocked". The memo and the Markdown export print the score next to the open gates. Methodology, README and Studio texts updated.
+- **Fix in the form.** Under every contradiction and inconsistency (verification page, Findings, Consistency ledger, Questions, the overview's first questions) and every gate tied to a field, buttons name the entered fields behind the issue, the stated figure first. A press opens the right section (unfolding More options), highlights the field and puts the cursor in it; a bar then offers "Re-check the numbers". Forensic signals from the billing ledger have no form field, so no button.
+- Tests: new tests/browser/fixlinks_test.py (19 checks, including the full loop on Northwind: correct the stated NRR, re-check, the contradiction is gone); the motion test scrolls to the tiles, which now sit below the score card.
+
 ## v5.5.2: 2026-11-16
 
 **My analyses, laid out for people.** The owner found the table with seven buttons per row hard to use.

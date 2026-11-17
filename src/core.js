@@ -257,7 +257,7 @@ const SECTIONS = [
   },
   {
     id:'govern', label:'Governance, cap table & technical risk', em:'⚖️', ibg:'#1e0a1e',
-    desc:'Four of these are hard gates. A gate does not lower the score. It stops the assessment until resolved.',
+    desc:'Four of these are hard gates. A gate does not lower the score: it is flagged at the top of the report as a deal-breaker to resolve before terms.',
     fields:[
       { g:'Gates', id:'ip_assignments', lbl:'Every employee and contractor has signed IP assignment', t:'bool', gate:'no',
         hint:'Gate. One unsigned contractor can mean the company does not own its own product.' },
@@ -505,7 +505,7 @@ const RUBRIC = {
     { id:'oss_reviewed',        dim:'govern', good:true,  pts:2,  note:'Open-source licences reviewed' },
   ],
 
-  /* Hard gates. A gate halts the assessment; it does not merely reduce the score. */
+  /* Hard gates. A gate is flagged as a deal-breaker to resolve before terms; the score is still shown (investors read it with the gate in mind). */
   gates: [
     { id:'ip_assignments',      when:false, title:'IP assignments are not complete',
       why:'If any employee or contractor has not assigned their work, the company may not own the product it is selling. This is resolvable but it is resolved before terms, not after.' },
@@ -884,12 +884,12 @@ function runChecks(D) {
     const overBy = o.pts ? abs : rel;
     const tt = tolOf(statedId, o.tol, o.hard != null ? o.hard : o.tol * 2.5), tol = tt.tol, hard = tt.hard;
     if (overBy <= tol) {
-      add({ id:statedId, sev:'ok', title:o.title, stated:o.f(st), computed:o.f(cp), delta:'within tolerance' });
+      add({ id:statedId, key:computedKey, sev:'ok', title:o.title, stated:o.f(st), computed:o.f(cp), delta:'within tolerance' });
       return;
     }
     const sev = overBy > hard ? 'major' : 'minor';
     add({
-      id:statedId, sev, title:o.title, stated:o.f(st), computed:o.f(cp),
+      id:statedId, key:computedKey, sev, title:o.title, stated:o.f(st), computed:o.f(cp),
       flatter: o.good === 'lo' ? st < cp : st > cp, rawStated:st, rawComputed:cp,
       delta:(o.pts ? abs.toFixed(1) + ' pts' : rel.toFixed(0) + '%') + (st > cp ? ' overstated' : ' understated'),
       text:o.text ? o.text(st, cp) : `The stated figure is ${o.f(st)}; recomputing it from the underlying inputs gives ${o.f(cp)}.`,
@@ -1443,7 +1443,7 @@ function scoreAll(D, checks, opts) {
     const lt = CFG.labels.gates && CFG.labels.gates.reconcile, mw = CFG.meta.gates.reconcile && CFG.meta.gates.reconcile.why;
     gates.push({ id:'reconcile',
       title:(typeof lt === 'string' && lt.trim()) ? lt.trim() : `${major} material discrepancies`,
-      why:mw || 'When this many headline numbers disagree with the arithmetic behind them, the correct next step is a corrected data pack, not a score. VCR2 will not produce one until the material contradictions are resolved.',
+      why:mw || 'When this many headline numbers disagree with the arithmetic behind them, ask for a corrected data pack before terms, and read the score with that in mind. Each contradiction (Findings) links to the fields to correct if it comes from a typing mistake.',
     });
   }
 
@@ -2425,6 +2425,7 @@ function goVerify() {
     <div class="contra-h"><strong>${esc(c.title)}</strong><span class="sev">${esc(c.delta || c.sev)}</span></div>
     <p>${esc(c.text || '')}</p>
     ${c.ask ? `<div class="ask">${esc(c.ask)}</div>` : ''}
+    ${fixFor(c)}
   </div>`;
 
   setHTML($id('verify-content'), `
@@ -2440,8 +2441,8 @@ function goVerify() {
       ${LED ? `<div class="stat"><span class="stat-n" style="color:${fx.length ? 'var(--amber)' : 'var(--green)'}">${fx.length}</span><span class="stat-l">Forensic flags</span></div>` : ''}
     </div>
 
-    ${majors.length >= blockAfter() && !cfgHidden('gates', 'reconcile') ? `<div class="gate"><h3>Assessment blocked</h3>
-      <p style="font-size:0.875rem;color:var(--t1);margin-bottom:6px">${majors.length} material discrepancies: headline figures that disagree with the arithmetic behind them. VCR2 will still produce the full analysis (revenue, forensics, runway, deal maths and the question list) but it will not publish a score against a data pack in this state.</p></div>` : ''}
+    ${majors.length >= blockAfter() && !cfgHidden('gates', 'reconcile') ? `<div class="gate"><h3>${majors.length} material discrepancies to resolve before terms</h3>
+      <p style="font-size:0.875rem;color:var(--t1);margin-bottom:6px">Headline figures that disagree with the arithmetic behind them. The full report and the score are still produced: read the score with these in mind. If one comes from a typing mistake, the buttons under it open the field to correct.</p></div>` : ''}
 
     ${opt && opt.significant ? `<div class="gate optim"><h3>Every discrepancy points the same way</h3>
       <p style="font-size:0.875rem;color:var(--t1)">${opt.k} of the ${opt.n} discrepancies that have a direction flatter the company. If these were honest, random errors, the chance of at least that many leaning in its favour would be ${fmtProb(opt.p)}. That is a pattern in how the data pack was prepared, not a series of typos.</p></div>` : ''}

@@ -35,7 +35,7 @@ function memoHTML(R) {
   </header>
   ${sec(N(), 'Summary', `
     <div class="p-verdict ${sc.gates.length ? 'blocked' : ''}">${sc.gates.length
-      ? `<b>Score withheld.</b> ${sc.gates.length} gate${sc.gates.length === 1 ? '' : 's'} open: ${sc.gates.map(g => esc(g.title)).join('; ')}.`
+      ? `${sc.overall != null ? `<b>Score ${sc.overall}/100</b> (likely range ${sc.band[0]} to ${sc.band[1]}), with ` : ''}<b>${sc.gates.length} gate${sc.gates.length === 1 ? '' : 's'} open</b>, to resolve before terms: ${sc.gates.map(g => esc(g.title)).join('; ')}.`
       : sc.overall != null ? `<b>${sc.overall}/100</b> (likely ${sc.band[0]} to ${sc.band[1]}, ${sc.confidence.toLowerCase()} confidence, scoring weight covered ${Math.round(sc.coverage * 100)}%).` : 'Not enough scored inputs for a score.'}</div>
     ${kv([
       ['ARR', money(gv('arr_now'))], ['Growth YoY', D.growth_yoy != null ? fmtPct(D.growth_yoy, 0) : null],
@@ -157,8 +157,8 @@ function downloadReport() {
   let md = `# ${S.name}: diligence report\n\n`;
   md += `${stageName} · ${modelLabel(S.model)} · ${new Date(R.at).toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' })}\n\n`;
   md += `Rubric ${sc.rubric} · run ${R.hash} · scoring weight covered ${Math.round(sc.coverage * 100)}% · ${sc.confidence} confidence · evidence strength ${sc.evidence != null ? Math.round(sc.evidence * 100) + '%' : 'n/a'}\n\n`;
-  if (sc.gates.length) { md += `## Gates: resolve before terms\n\n`; sc.gates.forEach(g => md += `- **${g.title}.** ${g.why}\n`); md += `\nNo score is published while a gate is open.\n\n`; }
-  else if (sc.overall != null) md += `## Score\n\n**${sc.overall}/100**, likely range ${sc.band[0]} to ${sc.band[1]}.\n\n`;
+  if (sc.gates.length) { md += `## Gates: resolve before terms\n\n`; sc.gates.forEach(g => md += `- **${g.title}.** ${g.why}\n`); md += `\nThe score below is shown with these gates open: read it with them in mind.\n\n`; }
+  if (sc.overall != null) md += `## Score\n\n**${sc.overall}/100**, likely range ${sc.band[0]} to ${sc.band[1]}.\n\n`;
   if (patterns.length) { md += `## Patterns\n\n`; patterns.forEach(p => md += `- **${p.sev.toUpperCase()}: ${p.title}.** ${p.why} _(${p.evidence.join('; ')})_\n`); md += '\n'; }
   const bad = checks.filter(c => c.sev !== 'ok');
   if (bad.length) {

@@ -1288,7 +1288,7 @@ function setTol(el) {
    ═══════════════════════════════════════════════════════════════ */
 function paneStGates() {
   const L = ST.draft.gates, add = `<button class="btn btn-primary btn-sm" data-click="editItem" data-a="gates" data-b="#-1">Add a deal-breaker</button>`;
-  return `<p class="pg-desc">A deal-breaker stops the assessment: while its condition is true, no score is given and it sits at the top of the report, the memo and the founder email. Use it for anything an investor would never invest past, for example <code>top1_pct &gt; 50</code> or <code>litigation == 1</code>. The built-in ones (IP, cap table, taxes, too many contradictions) are in “Switch on or off”.</p>
+  return `<p class="pg-desc">A deal-breaker is flagged while its condition is true: the score is still shown, and the deal-breaker sits at the top of the report, the memo and the founder email. Use it for anything an investor would never invest past, for example <code>top1_pct &gt; 50</code> or <code>litigation == 1</code>. The built-in ones (IP, cap table, taxes, too many contradictions) are in “Switch on or off”.</p>
     ${L.length ? `<div style="margin-bottom:8px">${add}</div><div class="tbl-wrap"><table class="ledger"><thead><tr><th>Deal-breaker</th><th>When</th><th></th></tr></thead><tbody>
       ${L.map((g, i) => `<tr><td>${esc(g.title)}</td><td class="m">${esc(g.when)}</td>${rowActions('gates', i)}</tr>`).join('')}</tbody></table></div>` : stEmpty('deal-breakers of your own', add)}`;
 }

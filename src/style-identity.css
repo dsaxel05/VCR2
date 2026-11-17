@@ -863,3 +863,18 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
 .intel-src { font-size: 0.8125rem; margin-top: 6px; }
 .intel-src li { margin: 3px 0; word-break: break-word; }
 @media (max-width: 600px) { .intel-step { grid-template-columns: 1fr; } .intel-invite .field-hint { display: block; margin: 6px 0 0; } }
+
+/* Fix links: under each issue, the form fields behind it; the field they open is highlighted; a bar offers to re-check. */
+.fix-links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--sp-1); margin-top: var(--sp-2); }
+.fix-l { font-size: .8125rem; color: var(--text-2); margin-right: 2px; }
+.fix-link { font: inherit; font-size: .8125rem; line-height: 1.3; color: var(--brand-text); background: var(--glass-strong); border: 1px solid var(--line-3); border-radius: var(--radius-pill); padding: 3px var(--sp-2); min-height: 28px; cursor: pointer; }
+.fix-link:hover, .fix-link:focus-visible { border-color: var(--brand); color: var(--text); }
+.fix-link.fix-main { font-weight: 600; border-color: var(--accent-line); }
+.ledger .fix-links { margin-top: 4px; }
+.qtext .fix-links { margin-top: var(--sp-1); }
+.gate li .fix-links { margin: 4px 0 var(--sp-1); }
+.field-card.fix-target { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: var(--radius-card); }
+.fix-back { position: fixed; left: 50%; bottom: var(--sp-4); transform: translateX(-50%); z-index: 300; display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3); background: var(--glass-strong); border: 1px solid var(--line-3); border-radius: var(--radius-pill); box-shadow: var(--shadow-2); font-size: .9375rem; color: var(--text); max-width: calc(100vw - 2 * var(--sp-3)); }
+.fix-back[hidden] { display: none; }
+.fix-x { border: 0; background: none; font-size: 1.25rem; line-height: 1; color: var(--text-2); cursor: pointer; padding: 4px 8px; min-height: 32px; }
+.score-card .gate-pill { margin-top: var(--sp-2); }

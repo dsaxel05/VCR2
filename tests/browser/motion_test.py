@@ -55,6 +55,8 @@ async def main():
 
         await pg.evaluate("() => { loadDemo('northwind'); runAnalysis(); }")
         await pg.wait_for_function("() => document.querySelector('#rp-overview .kpi-v')", timeout=20000)
+        # the score card now shows for every company (v5.6), so the tiles can sit below the fold: figures count when seen
+        await pg.evaluate("() => document.querySelector('#rp-overview .kpi-grid').scrollIntoView({ block:'center' })")
         final = None; seen_overlay = False; text_stable = True; frames = []
         for i in range(14):
             f = await pg.evaluate(FIGS)

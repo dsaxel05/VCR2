@@ -21,7 +21,7 @@ const CALLS = {
   acctMineOpen, acctMineHistory, acctMineDup, acctMineRename, acctMineTags, acctMineArchive, acctMineDelete, acctMineUndo, acctMineExport, acctMineCompare,
   acctMineSearch, acctMineStage, acctMineSort, acctMineArch, acctMineTick, acctVerTick, acctVerRestore, acctSaveVersionGo, acctPrefsSave,
   stAcctOn, stAcctMove, stAcctNotice, stAcctLim, stAcctCopy, stAcctUsage, stAcctReset,
-  acctTermsPage, acctOpen, acctPick, acctLinkGo, acctPassGo, acctSignUpGo, acctRegionPick, acctKeepOn, acctMode, acctPwCheck,
+  goField, fixBackGo, fixBackHide, acctTermsPage, acctOpen, acctPick, acctLinkGo, acctPassGo, acctSignUpGo, acctRegionPick, acctKeepOn, acctMode, acctPwCheck,
   sfChecklist, sfAddRequests, sfStSwitch, sfStThreshold, sfStList, sfStRange, sfStResetField, sfStType, sfStWords, sfStLocale, sfStReset
 };
 const ACTIONS = {

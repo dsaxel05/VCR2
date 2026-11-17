@@ -35,12 +35,12 @@ Every change has a way back: switched-off items come back with one tick, every v
 |---|---|
 | **Healthy ranges** | For every scored metric and every stage, the values VCR2 reads as poor, good and excellent, with a plain-language reading as you type, the built-in values next to yours, and an optional note on why you changed it (shown in reports as “your standard”). One click takes a metric back to the built-in values. |
 | **Scored answers** | The score (0 to 100) of each answer to SOC 2 status, financial statement quality, switching cost, last pricing action, regulatory model and how essential the product is, and each one's weight; the points each yes/no answer adds or removes (0 makes it neutral). |
-| **Weights & rules** | Dimension weights by stage, how many material contradictions withhold the score, minimum sample sizes, and the next-stage ARR bar used by the simulation. |
+| **Weights & rules** | Dimension weights by stage, how many material contradictions open a gate, minimum sample sizes, and the next-stage ARR bar used by the simulation. |
 | **Defaults & assumptions** | Exit scenarios (years, target return and probabilities by stage; First Chicago rate; growth decay in the base and upside cases; downside multiple), deal (exit multiple, dilution per round, option pool, further rounds by stage), runway simulation (growth fade, horizon, reserve), stage ARR ranges, and how much each source of evidence counts. Out-of-range values are brought back into range and you see the value actually used. |
 | **Inputs** | Add new inputs (number, yes/no, choice list, text), put them in any section or in a new “Additional evidence” section, mark them required, limit them to some business models. |
 | **Metrics** | Add metrics computed with a formula from any input or metric. Give one a dimension and stage thresholds and it is scored like a built-in metric; leave it unscored and it is simply shown with its formula. |
 | **Checks** | Compare a figure the company states with one VCR2 computes. Set the tolerances, whether an overstatement flatters the company, and the question to ask when it does not reconcile. |
-| **Deal-breakers** | Conditions that withhold the score while true, with the reason, the question for the founders and the risk-map row. |
+| **Deal-breakers** | Conditions flagged as gates next to the score while true, with the reason, the question for the founders and the risk-map row. |
 | **Questions** | Add questions to the question list, the founder email and the IC memo, always, or only when a condition is true (`nrr < 100`, `model == 'fintech'`). |
 | **Red flags & strengths** | Add risk, watch or strength cards to the overview that fire on a condition (`burn_multiple > 3 and runway < 15`), and choose where each one sits on the risk map. |
 | **Document requests** | Add items to “Documents to request”, the memo and the founder email. |

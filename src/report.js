@@ -42,13 +42,11 @@ function renderResult(R) {
         <div class="res-meta" style="margin-top:3px">rubric ${esc(sc.rubric)} · run ${esc(R.hash)}${R.LED ? ' · customer ledger' : ''}${S.series ? ' · monthly financials' : ''}</div>${typeof sfReportLine === 'function' && sfReportLine() ? `<div class="res-meta">${esc(sfReportLine())}</div>` : ''}
         <div class="rule-d" aria-hidden="true"></div>
       </div>
-      <div class="score-card">${blocked
-        ? `<div><div class="verdict-pill vp-avoid">${icon('stop')}Score withheld: ${sc.gates.length} gate${sc.gates.length === 1 ? '' : 's'} to resolve</div>
-           <div style="font-size:.8125rem;color:var(--t2);margin-top:6px;max-width:250px">The score is withheld until these are cleared. Every analysis below still runs.</div></div>`
-        : bandHTML(sc)}</div>
+      <div class="score-card">${bandHTML(sc)}${blocked
+        ? `<div class="verdict-pill vp-avoid gate-pill">${icon('stop')}${sc.gates.length} gate${sc.gates.length === 1 ? '' : 's'} open: resolve before terms</div>` : ''}</div>
     </div>
     ${blocked ? `<div class="gate"><h2>${sc.gates.length === 1 ? 'One item must be resolved before terms' : sc.gates.length + ' items must be resolved before terms'}</h2>
-      <ul>${sc.gates.map(g => `<li><b>${esc(g.title)}.</b> ${esc(g.why)}</li>`).join('')}</ul></div>` : ''}
+      <ul>${sc.gates.map(g => `<li><b>${esc(g.title)}.</b> ${esc(g.why)}${fixLinksHTML([g.id])}</li>`).join('')}</ul></div>` : ''}
 
     ${(() => {
       const MAIN = ((CFG && CFG.look && CFG.look.views) || REPORT_VIEWS_DEFAULT).filter(id => tabs.some(x => x[0] === id));
@@ -195,7 +193,7 @@ function paneOverview(R) {
     ${patterns.length ? `<div class="pat-grid">${patterns.map(patternCard).join('')}</div>` : '<div class="suppressed">No compound patterns fired. Add more evidence: a customer ledger and monthly financials unlock most of them.</div>'}
     ${wnt}
     <div class="block-title" style="margin-top:16px">First five questions for the founders</div>
-    <div class="qlist">${questions.slice(0, 5).map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>
+    <div class="qlist">${questions.slice(0, 5).map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${fixForQuestion(q, R)}${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>
     <button class="btn btn-ghost btn-sm" style="margin-top:8px" data-click="goTab" data-a="questions">All ${questions.length} questions →</button>`;
 }
 
@@ -237,13 +235,13 @@ function riskMapHTML(map) {
 function contraCard(c) {
   return `<div class="contra${c.sev === 'minor' ? ' minor' : ''}">
     <div class="contra-h"><strong>${esc(c.title)}</strong><span class="sev">${esc(c.delta || '')}</span>${typeof c.flatter === 'boolean' ? `<span class="sev ${c.flatter ? 'flat' : ''}">${c.flatter ? 'flatters the company' : 'against the company'}</span>` : ''}</div>
-    <p>${esc(c.text || '')}</p>${c.ask ? `<div class="ask">${esc(c.ask)}</div>` : ''}</div>`;
+    <p>${esc(c.text || '')}</p>${c.ask ? `<div class="ask">${esc(c.ask)}</div>` : ''}${fixFor(c)}</div>`;
 }
 function paneFindings(R) {
   const { checks, sc, requests, opt } = R;
   const majors = checks.filter(c => c.sev === 'major'), minors = checks.filter(c => c.sev === 'minor');
   return `
-    ${majors.length + minors.length ? `<p class="field-hint">${majors.length + minors.length} discrepancies in all: ${majors.length} material (enough of them withhold the score) and ${minors.length} minor. Forensic flags are counted in the Forensics tab.</p>` : ''}
+    ${majors.length + minors.length ? `<p class="field-hint">${majors.length + minors.length} discrepancies in all: ${majors.length} material (enough of them open a gate) and ${minors.length} minor. Forensic flags are counted in the Forensics tab.</p>` : ''}
     ${opt && opt.n >= 3 ? `<div class="optbox ${opt.significant ? 'bad' : ''}"><b>Direction of errors.</b> ${opt.k} of the ${opt.n} discrepancies that have a direction flatter the company. ${opt.p != null ? `Under honest, random error the chance of at least ${opt.k} leaning that way is ${fmtProb(opt.p)}.` : ''} ${opt.significant ? 'That is a finding in itself.' : 'Not a significant skew.'}</div>` : ''}
     ${majors.length ? `<div class="block-title">Material contradictions</div>${majors.map(contraCard).join('')}` : ''}
     ${minors.length ? `<div class="block-title" style="margin-top:14px">Minor inconsistencies</div>${minors.map(contraCard).join('')}` : ''}
@@ -552,7 +550,7 @@ function paneScoring(R) {
       <td class="n" style="color:${sColor(d.score)}">${d.score == null ? 'n/a' : d.score}</td>
       <td style="width:110px"><div class="minibar"><i style="width:${d.score || 0}%;background:${sColor(d.score)}"></i></div></td></tr>`).join('');
   return `
-    <p class="pg-desc" style="margin-bottom:10px">Weights are set by stage, not by how many fields happened to be filled. Coverage and evidence strength are shown separately from the score so a thin or unverified dimension cannot masquerade as a confident one.${sc.gates.length ? ' A gate is open, so the headline score is withheld; the dimension scores are shown for diagnosis.' : ''}</p>
+    <p class="pg-desc" style="margin-bottom:10px">Weights are set by stage, not by how many fields happened to be filled. Coverage and evidence strength are shown separately from the score so a thin or unverified dimension cannot masquerade as a confident one.${sc.gates.length ? ' A gate is open: the headline score is still shown, to be read with the gate in mind.' : ''}</p>
     <div class="tbl-wrap"><table class="dimtbl">
       <thead><tr><th>Dimension</th><th style="text-align:right">Weight</th><th style="text-align:right">Weight covered</th><th style="text-align:right">Score</th><th></th></tr></thead>
       <tbody>${dimRows}</tbody></table></div>
@@ -586,7 +584,7 @@ function driversHTML(sc) {
 function paneQuestions(R) {
   return `<p class="pg-desc" style="margin-bottom:10px">Ordered by what would most change the decision: gates, contradictions, risk patterns and forensic signals, then evidence gaps.</p>
     <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-click="founderEmail">Draft the founder email</button><button class="btn btn-ghost btn-sm" data-click="copyQuestions">Copy as a list</button></div>
-    <div class="qlist">${R.questions.map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>`;
+    <div class="qlist">${R.questions.map((q, i) => `<div class="qitem"><div class="qnum">${i + 1}</div><div class="qtext">${esc(q.text)}<span class="qtag">${esc(q.tag)}</span>${fixForQuestion(q, R)}${q.lever ? `<div class="qlever"><b>If unresolved:</b> ${esc(q.lever)}</div>` : ''}</div></div>`).join('')}</div>`;
 }
 
 /* ── All metrics ── */
@@ -613,7 +611,7 @@ function paneMetrics(R) {
 function paneLedger(R) {
   const { checks } = R;
   const okRows = checks.filter(c => c.sev === 'ok').map(c => `<tr><td>${esc(c.title)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td style="color:var(--green-t)">${esc(c.delta)}</td></tr>`).join('');
-  const badRows = checks.filter(c => c.sev !== 'ok').map(c => `<tr class="${c.sev === 'major' ? 'bad' : 'warn'}"><td>${esc(c.title)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td style="color:${c.sev === 'major' ? 'var(--red)' : 'var(--amber)'}">${esc(c.delta)}</td></tr>`).join('');
+  const badRows = checks.filter(c => c.sev !== 'ok').map(c => `<tr class="${c.sev === 'major' ? 'bad' : 'warn'}"><td>${esc(c.title)}${fixFor(c)}</td><td class="m">${esc(c.stated)}</td><td class="m">${esc(c.computed)}</td><td style="color:${c.sev === 'major' ? 'var(--red)' : 'var(--amber)'}">${esc(c.delta)}</td></tr>`).join('');
   return `<div class="tbl-wrap"><table class="ledger"><thead><tr><th>Check</th><th>Stated / entered</th><th>Computed by VCR2</th><th>Result</th></tr></thead>
     <tbody>${badRows}${okRows}${!checks.length ? '<tr><td colspan="4" style="color:var(--t2)">No checks could run. Fill “What the company states” or load a customer ledger to enable the comparison layer.</td></tr>' : ''}</tbody></table></div>`;
 }
