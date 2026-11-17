@@ -24,12 +24,12 @@ async def main():
         await pg.evaluate("document.getElementById('rt-metrics').click()"); await pg.wait_for_timeout(300)
         rows = await pg.evaluate("""() => Object.fromEntries(Array.from(document.querySelectorAll('#rp-metrics tr')).map(r => Array.from(r.cells).map(c => c.innerText.trim())).filter(c => c.length === 3).map(c => [c[0], c.slice(1)]))""")
         want = {'Sales efficiency (net new ARR ÷ S&M)': ('0.47', 'flagged: below your 0.5'), 'Churn mix (logo ÷ revenue churn)': ('1.04', 'logo churn ÷ revenue churn'),
-                'ARR the next round needs': ('7.50M', '10x ARR (your next-round multiple)'), 'Projected ARR at 6 months of runway': ('6.82M', 'down-round risk')}
+                'ARR to hold today’s valuation': ('7.50M', '10x ARR (your next-round multiple)'), 'Projected ARR at 6 months of runway': ('6.39M', 'down-round risk')}   # v5.7: renamed; projected from the ledger's ARR
         for label, (val, formula) in want.items():
             r = rows.get(label)
             check(f'"{label}" shows {val} with its formula', r is not None and val in r[0] and formula in r[1], r)
         scored = await pg.evaluate("Array.from(document.querySelectorAll('#rp-metrics table')[0].querySelectorAll('td:first-child')).map(t => t.innerText)")
-        check('none of them is in the scored table', not any(any(k in s for k in ['Sales efficiency', 'Churn mix', 'next round', 'Projected ARR']) for s in scored), scored)
+        check('none of them is in the scored table', not any(any(k in s for k in ['Sales efficiency', 'Churn mix', 'hold today', 'Projected ARR']) for s in scored), scored)
         txt = await pg.evaluate("document.getElementById('rp-metrics').innerText")
         check('no NaN, Infinity or undefined', not any(x in txt for x in ['NaN', 'Infinity', 'undefined']))
         check('no console errors or warnings', not errs, errs[:3])

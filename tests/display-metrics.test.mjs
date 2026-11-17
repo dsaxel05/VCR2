@@ -21,13 +21,14 @@ for (const ex of ['northwind', 'halcyon']) {
   near(ex + ': sales efficiency = net new ARR ÷ S&M (last 12 months)', D.sales_eff, (v('new_arr_l12') + v('expansion_arr_l12') - v('churned_arr_l12') - v('contraction_arr_l12')) / v('sm_spend_l12'));
   near(ex + ': churn mix = logo churn ÷ (100 − GRR)', D.churn_mix, (100 - D.logo_ret) / (100 - D.grr));
   near(ex + ': ARR the next round needs = post-money ÷ 10', D.round_arr_need, (v('round_pre_money') + v('round_size')) / 10);
-  near(ex + ': projected ARR at 6 months of runway', D.round_arr_at6, v('arr_now') * Math.pow(1 + D.cmgr12 / 100, D.runway - 6), 1e-6);
+  /* v5.7: with a customer ledger, the projection starts from the ledger's ARR (its growth rate is the ledger's too) */
+  near(ex + ': projected ARR at 6 months of runway', D.round_arr_at6, (S.ledger ? ledgerAnalytics(S.ledger).arrNow : v('arr_now')) * Math.pow(1 + D.cmgr12 / 100, D.runway - 6), 1e-6);
   ok(ex + ': labels and units exist for all four', KEYS.every(k => DLABEL[k] && DUNIT[k] != null), KEYS.filter(k => !DLABEL[k]));
   const scored = R.a.sc.dimensions.flatMap(d => d.metrics.map(m => m.key || m.id));
   ok(ex + ': none of them is scored', KEYS.every(k => !scored.includes(k)), scored.filter(k => KEYS.includes(k)));
 }
 const NW = run('northwind'), HC = run('halcyon');
-eq('Northwind values', [NW.D.sales_eff, NW.D.churn_mix, NW.D.round_arr_need, Math.round(NW.D.round_arr_at6)].map(x => Math.round(x * 100) / 100), [0.47, 1.04, 7500000, 6818238]);
+eq('Northwind values', [NW.D.sales_eff, NW.D.churn_mix, NW.D.round_arr_need, Math.round(NW.D.round_arr_at6)].map(x => Math.round(x * 100) / 100), [0.47, 1.04, 7500000, 6393949]);
 eq('Halcyon values', [HC.D.sales_eff, HC.D.churn_mix, HC.D.round_arr_need, Math.round(HC.D.round_arr_at6)].map(x => Math.round(x * 100) / 100), [1.33, 0.79, 4000000, 10772857]);
 ok('Northwind: sales efficiency flagged below 0.5', /flagged: below your 0\.5/.test(NW.F.sales_eff), NW.F.sales_eff);
 ok('Northwind: churn mix not flagged', !/flagged/.test(NW.F.churn_mix), NW.F.churn_mix);

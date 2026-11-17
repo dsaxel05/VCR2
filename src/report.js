@@ -169,7 +169,9 @@ function paneOverview(R) {
   const tiles = [
     ledgerGap ? tile('ARR, customer ledger', money(LED.arrNow), `the financials say ${money(arrF)} (${fmtSigned((arrF / LED.arrNow - 1) * 100, 0, '%')})`, 'warn')
       : tile('ARR', money(arrF), LED ? `ledger ${money(LED.arrNow)}` : null),
-    tile('Growth YoY', D.growth_yoy != null ? fmtPct(D.growth_yoy, 0) : 'n/a', D.cmgr3 != null ? `${fmtPct(D.cmgr3)} / month lately` : null),
+    tile('Growth YoY', D.growth_yoy != null ? fmtPct(D.growth_yoy, 0) : 'n/a', D.growth_form != null
+      ? `customer ledger${D.cmgr12 != null ? ` · ${fmtPct(D.cmgr12)} / month` : ''}${Math.abs(D.growth_form - D.growth_yoy) >= 2 ? ` · the financials say ${fmtPct(D.growth_form, 0)}` : ''}`
+      : D.cmgr3 != null ? `${fmtPct(D.cmgr3)} / month lately` : null),
     tile('Net revenue retention', D.nrr != null ? fmtPct(D.nrr) : 'n/a', LED ? 'cohort basis, from ledger' : 'waterfall basis'),
     tile('Burn multiple', D.burn_multiple != null ? dfmt('burn_multiple', D.burn_multiple) : 'n/a', D.burn_multiple != null ? 'net burn ÷ net new ARR' : null),
     tile('Runway', D.runway != null ? dfmt('runway', D.runway) : 'n/a', D._cashOut ? 'at today’s burn · cash-out ~' + monthLabel(D._cashOut) : D.runway != null ? 'at today’s burn' : null),
@@ -269,7 +271,7 @@ function paneRevenue(R) {
   return `
     <div class="kpi-grid">
       ${tile('Ledger ARR', money(LED.arrNow), `${LED.customersNow} paying customers`)}
-      ${tile('Monthly growth', cm != null ? fmtPct(cm) : 'n/a', `3-mo CMGR · 12-mo ${fmtPct(LED.cmgr12)}`)}
+      ${tile('Monthly growth', cm != null ? fmtPct(cm) : 'n/a', `3-mo CMGR${(activeForensics(LED) || []).some(f => f.id === 'final_spike' && (f.status === 'warn' || f.status === 'fail')) ? ', with the flagged final-month spike' : ''} · 12-mo ${fmtPct(LED.cmgr12)}`)}
       ${tile('Cohort NRR', fmtPct(LED.nrrCohort), LED.openingKnown === false ? 'not computable from under 24 months of invoices' : LED.window === 12 ? 'trailing 12 months' : `trailing ${LED.window} months`)}
       ${tile('Cohort GRR', fmtPct(LED.grrCohort), `logo retention ${fmtPct(LED.logoRet, 0)}`)}
       ${tile('Waterfall NRR', fmtPct(LED.nrrFlow), nrrGap != null ? `${fmtSigned(nrrGap, 1, ' pts')} vs cohort` : null, nrrGap > 5 ? 'warn' : '')}
@@ -333,8 +335,8 @@ function paneRunway(R) {
   <div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-primary btn-sm" data-click="applyAssumptions">Re-run simulation</button><button class="btn btn-ghost btn-sm" data-click="resetAssumptions">Reset to evidence</button></div>`;
   if (missing.length) return `<div class="empty-card"><h3>Projections need ${esc(missing.join(', '))}</h3><p>Fill these on the evidence form, or load monthly financials, and the default-alive test and the simulation run automatically.</p></div>`;
   const daCard = da ? `<div class="da ${da.alive ? 'alive' : 'dead'}"><div class="da-v">${da.alive ? 'Default alive' : 'Default dead'}</div>
-    <p>${da.alive ? `At ${fmtPct(P.g)} monthly revenue growth and ${fmtPct(P.eg)} monthly expense growth, revenue overtakes expenses in <b>${da.months} months</b>, with cash bottoming at ${money(da.low)}.`
-      : `At ${fmtPct(P.g)} monthly revenue growth and ${fmtPct(P.eg)} monthly expense growth, the cash runs out ${da.deadAt ? `in <b>month ${da.deadAt}</b>` : ''} before revenue catches expenses.${da.needed != null ? ` Reaching breakeven at this pace needs about <b>${money(da.needed)}</b> more.` : ' At this pace expenses never cross revenue within ten years.'}`}</p>
+    <p>${da.alive ? `At ${fmtPct(P.g)} monthly revenue growth${P.gSrc ? ` (${esc(P.gSrc)})` : ''} and ${fmtPct(P.eg)} monthly expense growth, revenue overtakes expenses in <b>${da.months} months</b>, with cash bottoming at ${money(da.low)}.`
+      : `At ${fmtPct(P.g)} monthly revenue growth${P.gSrc ? ` (${esc(P.gSrc)})` : ''} and ${fmtPct(P.eg)} monthly expense growth, the cash runs out ${da.deadAt ? `in <b>month ${da.deadAt}</b>` : ''} before revenue catches expenses.${da.needed != null ? ` Reaching breakeven at this pace needs about <b>${money(da.needed)}</b> more.` : ' At this pace expenses never cross revenue within ten years.'}`}</p>
     <p class="field-hint">Paul Graham’s test: constant growth, no new money. The simulation below relaxes both assumptions.</p></div>` : '';
   if (!sim) return daCard + (proj.simPending ? `<div class="suppressed" role="status">Running ${A.paths.toLocaleString('en-US')} simulated paths in the background; this tab fills in when they finish.</div>` : '') + controls;
   const rw = sim.runway;

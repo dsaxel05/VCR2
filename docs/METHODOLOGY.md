@@ -52,7 +52,7 @@ By construction `MRR(t) − MRR(t−1) = new + reactivation + expansion − cont
 - Logo retention = share of *B* still billing at *e*
 - Waterfall NRR = (MRR(b) + expansion − contraction − churn over the window) ÷ MRR(b). This counts expansion of customers acquired during the window; the gap to cohort NRR is reported.
 
-When a ledger with at least six months of look-back is present, cohort NRR, GRR and logo retention replace the waterfall approximations in scoring.
+When a ledger with at least six months of look-back is present, cohort NRR, GRR and logo retention replace the waterfall approximations in scoring. With a full year of ledger, Growth YoY is also taken from the ledger at both ends of the year (ledger ARR today ÷ ledger ARR twelve months ago − 1), so a summary ARR above the ledger cannot inflate it; the financials' growth stays visible next to it, and the Rule of 40 uses the ledger growth.
 
 **Cohorts.** Customers are grouped by first revenue month (quarterly when the ledger is longer than 18 months). Cell (cohort, age *a*) = revenue at age *a* ÷ revenue at start, over members old enough; partially-aged cells are marked. Customers already live in the first ledger month have no known start and are excluded. Cohort-quality trend compares the older and newer halves of cohorts at month 6 (or 3), with a linear fit across cohorts.
 
@@ -234,7 +234,7 @@ All are computed in `derive()` (`src/core.js`) from primitives; the formula stri
 
 | Metric | Definition |
 |---|---|
-| Growth YoY | ARR today ÷ ARR twelve months ago − 1 |
+| Growth YoY | ARR today ÷ ARR twelve months ago − 1; from the customer ledger at both ends when a full year of ledger is loaded |
 | Net new ARR | new + expansion − churned − contraction (else ARR today − ARR a year ago) |
 | NRR (waterfall) | (opening ARR + expansion − churn − contraction) ÷ opening ARR; replaced by the cohort figure when a ledger of at least six months is loaded |
 | GRR | (opening ARR − churn − contraction) ÷ opening ARR |

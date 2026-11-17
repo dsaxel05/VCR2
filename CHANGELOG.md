@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.7.0: 2026-11-16
+
+**Results audit on the Series A example, and corrections without leaving the report.**
+- **Audit.** Every metric of the Northwind example was recomputed independently from the raw inputs (31 figures: growth, net new ARR, NRR, quick ratio, runway, FCF margin, Rule of 40, ACV, CAC, payback, LTV, LTV:CAC, magic number, bottom-up TAM, SAM, penetration, burn checks...) and matches; the deal maths (ownership, dilution, effective pre-money, fund-return exit, IRR, VC Method) were checked by hand. What did not hold was the presentation, and that is fixed:
+  - **Growth comes from one source.** With a customer ledger, Growth YoY now uses the ledger at both ends of the year (like NRR and GRR already did). It used to set the financials' ARR today against the ledger's ARR a year ago, which inflated growth when the financials overstate ARR (Northwind: 63% shown, 53% in the ledger). The financials' figure stays visible ("the financials say 63%") and the Rule of 40 follows. Northwind's score moves from 45 to 44.
+  - **The growth tile no longer leans on a flagged spike.** It showed the 3-month growth rate ("6.4% / month lately"), which the Forensics tab flags as a final-month spike; it now shows the 12-month rate from the ledger. The Revenue tab keeps the 3-month figure and says it includes the flagged spike.
+  - **Projected ARR at 6 months of runway** starts from the ledger's ARR (it applied the ledger's growth rate to the financials' ARR).
+  - **"ARR the next round needs" is renamed** "ARR to hold today's valuation", so it is not confused with the next-stage bar used by the simulation ($10M at Series A).
+  - **Default alive names its growth source** (6-month growth from the monthly financials), so the three monthly growth rates on the page each say where they come from.
+- **Correct a figure in place.** The buttons under each issue now open a small window over the page with every field behind the issue and its current value; saving recomputes the report where you are (same tab, same place, no loading screen) or re-runs the checks on the verification page. "Open this field in the form" remains for the full section. A correction is never overwritten by stale values when the form is opened later.
+- Tests: tests/browser/fixlinks_test.py grows to 23 checks (window, refusal of a non-number, the correction recomputing the report in place, no stale value after a trip through the form); tests/display-metrics.test.mjs follows the projection on the ledger's ARR.
+
 ## v5.6.0: 2026-11-16
 
 **The score is always shown, and every issue leads to the fields behind it.** The owner's call: VCR2 is used by investors, who should see the score and judge it themselves.
