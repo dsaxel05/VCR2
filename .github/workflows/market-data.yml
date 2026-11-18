@@ -1,0 +1,60 @@
+name: Market data (weekly)
+
+# Refreshes data/market.json from official sources (US Treasury, ECB, US Census, Eurostat) every Monday.
+# Every figure is checked first (tools/market_data.py): when all pass, the file is committed to main (a visible commit you
+# can revert); when one is missing, malformed or moved by more than 25%, main is left alone and a pull request is opened
+# for the owner to approve instead. No key is needed.
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: market-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Fetch and check the official figures
+        id: check
+        run: |
+          set +e
+          python tools/market_data.py --out data/market.json --report "$RUNNER_TEMP/report.md"
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+      - name: Publish, or ask for review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODE: ${{ steps.check.outputs.code }}
+        run: |
+          set -e
+          git config user.name 'vcr2-market-data'
+          git config user.email 'vcr2-market-data@users.noreply.github.com'
+          day=$(date -u +%Y-%m-%d)
+          if [ "$CODE" = "3" ]; then echo "Nothing changed."; exit 0; fi
+          if [ "$CODE" = "0" ]; then
+            git add data/market.json
+            git commit -m "Market data ${day}: official figures refreshed, every check passed"
+            git push origin HEAD:main
+            exit 0
+          fi
+          if [ "$CODE" = "2" ]; then
+            branch="market-data/${day}"
+            git checkout -b "$branch"
+            git add data/market.json
+            git commit -m "Market data ${day}: needs review (a figure failed a check, the previous value was kept)"
+            git push origin "$branch"
+            gh pr create --base main --head "$branch" --title "Market data ${day}: needs review" --body-file "$RUNNER_TEMP/report.md"
+            exit 0
+          fi
+          echo "The market data job failed (exit $CODE); nothing was written."; exit 1

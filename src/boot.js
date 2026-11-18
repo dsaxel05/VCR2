@@ -291,6 +291,8 @@ function eraseAll() {
   /* Owner configuration: the published radar-config.json applies to everyone. */
   updateStudioLink(); renderPreviewBanner();
   CFG_READY = loadPublishedConfig().then(ok => { if (ok) refreshAfterConfig(); introStats(); return ok; }).catch(() => false);
+  /* Market data: the weekly file published with the site (tier 2); without it, the snapshot built into the page (tier 3). */
+  MD_READY = loadMarketData().then(ok => { if (ok && S.result && $id('page-result').classList.contains('active')) { S.result = Object.assign(assessUI(), { memo:S.result.memo }); renderResult(S.result); } return ok; }).catch(() => false);
   const route = () => { if (typeof location === 'undefined') return; if (/^#studio\b/i.test(location.hash || '')) openStudio(); else if (/^#about\b/i.test(location.hash || '')) showPage('about'); };
   if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('hashchange', route);
   route();

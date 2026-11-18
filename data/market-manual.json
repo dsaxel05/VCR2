@@ -1,0 +1,29 @@
+{
+ "about": "VC figures for VCR2's market data, updated each quarter by hand from the reports (source, link and date for each). Official figures are added weekly by tools/market_data.py.",
+ "items": {
+  "exit_multiple": {
+   "us": {
+    "value": 4.7,
+    "date": "2026-11-13",
+    "src": "Clouded Judgement (Jamin Ball, Altimeter): public software index",
+    "kind": "vc",
+    "url": "https://cloudedjudgement.substack.com/p/clouded-judgement-111326-the-frontier",
+    "note": "Median EV ÷ next-12-month revenue. By projected growth: above 22%: 13.4x, 15 to 22%: 5.9x, below 15%: 3.3x."
+   },
+   "eu": {
+    "value": null,
+    "note": "No verified European public-software index yet: the built-in exit multiple is used. The US index is 4.7x for reference."
+   }
+  },
+  "round_pre_a": {
+   "us": {
+    "value": null,
+    "note": "No verified source yet: Carta and PitchBook-NVCA publish it, but their reports could not be read at the source. Add the figure each quarter from the report."
+   },
+   "eu": {
+    "value": null,
+    "note": "No verified source yet: PitchBook European venture reports are not public. Add the figure each quarter from the report."
+   }
+  }
+ }
+}

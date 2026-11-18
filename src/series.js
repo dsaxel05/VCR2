@@ -210,6 +210,7 @@ function projectionInputs(D) {
   let sd = tr.momSd != null ? tr.momSd : (g != null ? Math.max(2, Math.abs(g) * 0.5) : null);
   let sdSrc = tr.momSd != null ? 'observed month-on-month volatility' : 'assumed at half the growth rate (no monthly history)';
   if (A.sdOverride != null) { sd = A.sdOverride; sdSrc = 'your override'; }
-  const milestone = A.milestone != null ? A.milestone : (NEXT_STAGE_ARR[stageKey()] || (arr ? arr * 2 : null));
+  /* The next-stage bar is set in US dollars: converted into the startup's currency. */
+  const bar = NEXT_STAGE_ARR[stageKey()], milestone = A.milestone != null ? A.milestone : (bar ? (typeof fromUsd === 'function' ? fromUsd(bar) : bar) : (arr ? arr * 2 : null));
   return { tr, rev0, exp0, cash0, g, eg, sd, gSrc, egSrc, sdSrc, milestone, A };
 }

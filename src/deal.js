@@ -63,7 +63,7 @@ function dealInputsRaw(n) {
     newPartCap: n('new_part_cap') > 0 ? n('new_part_cap') : null,
     debt: n('debt_outstanding') || 0,
     fund: n('fund_size'),
-    exitMult: n('exit_multiple_assumption') != null ? n('exit_multiple_assumption') : DEAL_DEFAULTS.exit_multiple,
+    exitMult: n('exit_multiple_assumption') != null ? n('exit_multiple_assumption') : (typeof defaultExitMultiple === 'function' ? defaultExitMultiple() : DEAL_DEFAULTS.exit_multiple),
     rounds: n('future_rounds') != null ? n('future_rounds') : DEAL_DEFAULTS.future_rounds[stageKey()],
     dil: n('dilution_per_round') != null ? n('dilution_per_round') : DEAL_DEFAULTS.dilution,
     lastPre: n('pre_money'),

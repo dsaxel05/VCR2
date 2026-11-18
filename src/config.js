@@ -110,6 +110,8 @@ function normalizeConfig(c) {
   /* The model name each AI provider is called with (the web address of a provider is not a setting). */
   if (isObj(st.accounts)) { const v = cleanAccounts(st.accounts); if (Object.keys(v).length) out.settings.accounts = v; }
   if (isObj(st.smartfill)) { const v = cleanSmartfill(st.smartfill); if (Object.keys(v).length) out.settings.smartfill = v; }
+  /* Which market figures may feed the results: an item id mapped to 'show' (shown only); feeding is the default. */
+  if (isObj(st.marketData)) { const md = {}; Object.entries(st.marketData).forEach(([k, v]) => { if (/^[a-z0-9_]{1,40}$/.test(k) && v === 'show') md[k] = 'show'; }); if (Object.keys(md).length) out.settings.marketData = md; }
   if (isObj(st.aiModels)) { const am = {}; Object.entries(st.aiModels).forEach(([p, m]) => { if (/^[a-z]{3,20}$/.test(p) && typeof m === 'string' && /^[A-Za-z0-9._:\/-]{2,80}$/.test(m.trim()) && !KEY_RX.test(m)) am[p] = m.trim(); }); if (Object.keys(am).length) out.settings.aiModels = am; }
   /* Metrics measured together: group name -> metric keys. Absent means the built-in groups; {} means no groups. A metric is in one group
      (the first that names it) and a group needs two members to mean anything. */

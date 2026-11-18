@@ -1,0 +1,103 @@
+{
+ "updated": "2026-11-18",
+ "version": "2026-11-18",
+ "items": {
+  "exit_multiple": {
+   "us": {
+    "value": 4.7,
+    "date": "2026-11-13",
+    "src": "Clouded Judgement (Jamin Ball, Altimeter): public software index",
+    "kind": "vc",
+    "url": "https://cloudedjudgement.substack.com/p/clouded-judgement-111326-the-frontier",
+    "note": "Median EV ÷ next-12-month revenue. By projected growth: above 22%: 13.4x, 15 to 22%: 5.9x, below 15%: 3.3x."
+   },
+   "eu": {
+    "value": null,
+    "note": "No verified European public-software index yet: the built-in exit multiple is used. The US index is 4.7x for reference."
+   }
+  },
+  "round_pre_a": {
+   "us": {
+    "value": null,
+    "note": "No verified source yet: Carta and PitchBook-NVCA publish it, but their reports could not be read at the source. Add the figure each quarter from the report."
+   },
+   "eu": {
+    "value": null,
+    "note": "No verified source yet: PitchBook European venture reports are not public. Add the figure each quarter from the report."
+   }
+  },
+  "firms_large": {
+   "eu": {
+    "value": 54762.0,
+    "date": "2024",
+    "src": "Eurostat, enterprises by size class (250 or more employees), EU27",
+    "kind": "official",
+    "url": "https://ec.europa.eu/eurostat/databrowser/view/sbs_sc_ovw/default/table"
+   },
+   "us": {
+    "value": 19688.0,
+    "date": "2021",
+    "src": "US Census, Statistics of US Businesses (firms with 500 or more employees)",
+    "kind": "official",
+    "url": "https://www.census.gov/programs-surveys/susb.html"
+   }
+  },
+  "firms_mid": {
+   "eu": {
+    "value": 250765.0,
+    "date": "2024",
+    "src": "Eurostat, enterprises by size class (50 to 249 employees), EU27",
+    "kind": "official",
+    "url": "https://ec.europa.eu/eurostat/databrowser/view/sbs_sc_ovw/default/table"
+   },
+   "us": {
+    "value": 88023.0,
+    "date": "2021",
+    "src": "US Census, Statistics of US Businesses (firms with 100 to 499 employees)",
+    "kind": "official",
+    "url": "https://www.census.gov/programs-surveys/susb.html"
+   }
+  },
+  "firms_software": {
+   "eu": {
+    "value": 33004.0,
+    "date": "2024",
+    "src": "Eurostat, enterprises in software publishing (NACE J58.2), EU27",
+    "kind": "official",
+    "url": "https://ec.europa.eu/eurostat/databrowser/view/sbs_sc_ovw/default/table"
+   },
+   "us": {
+    "value": 12741.0,
+    "date": "2021",
+    "src": "US Census, Statistics of US Businesses (NAICS 5112, software publishers)",
+    "kind": "official",
+    "url": "https://www.census.gov/programs-surveys/susb.html"
+   }
+  },
+  "fx_usd": {
+   "eu": {
+    "value": 1.0968,
+    "date": "2026-11-18",
+    "src": "European Central Bank reference rate",
+    "kind": "official",
+    "url": "https://data.ecb.europa.eu/data/datasets/EXR/EXR.D.USD.EUR.SP00.A"
+   }
+  },
+  "risk_free_10y": {
+   "eu": {
+    "value": 3.4246,
+    "date": "2026-11-17",
+    "src": "ECB euro area yield curve (AAA), 10-year spot",
+    "kind": "official",
+    "url": "https://data.ecb.europa.eu/data/datasets/YC/YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y"
+   },
+   "us": {
+    "value": 5.1,
+    "date": "2026-11-17",
+    "src": "US Treasury daily par yield curve, 10-year",
+    "kind": "official",
+    "url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
+   }
+  }
+ }
+}

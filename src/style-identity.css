@@ -888,3 +888,11 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
 .fix-cur { font-size: .8125rem; color: var(--text-2); }
 .fix-err { font-size: .8125rem; color: var(--risk-text); }
 .fix-err:empty { display: none; }
+/* Market data: the market chooser on the set-up page, the sourced figures in the report, the hints. */
+.market-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: var(--sp-3); }
+.md-tbl td { vertical-align: top; }
+.md-tbl a { color: var(--brand-text); }
+.pill.md-feed { color: var(--ok-text); border-color: var(--ok-line); }
+.md-tbl td:last-child .pill { white-space: nowrap; }
+.md-hint, .md-deal { margin-top: var(--sp-1); }
+.md-deal a { color: var(--brand-text); }

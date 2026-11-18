@@ -39,7 +39,7 @@ function renderResult(R) {
       <div>
         <div class="res-company">${esc(S.name)}</div>
         <div class="res-meta">${esc(stageName)} · ${esc(modelName)} · ${esc(date)}${S.asof ? ' · data as of ' + esc(monthLong(S.asof)) : ''}</div>
-        <div class="res-meta" style="margin-top:3px">rubric ${esc(sc.rubric)} · run ${esc(R.hash)}${R.LED ? ' · customer ledger' : ''}${S.series ? ' · monthly financials' : ''}</div>${typeof sfReportLine === 'function' && sfReportLine() ? `<div class="res-meta">${esc(sfReportLine())}</div>` : ''}
+        <div class="res-meta" style="margin-top:3px">${esc(mktInfo().label)} (${esc(curSym())}) · market data ${esc(MARKET_DATA.updated)} · rubric ${esc(sc.rubric)} · run ${esc(R.hash)}${R.LED ? ' · customer ledger' : ''}${S.series ? ' · monthly financials' : ''}</div>${typeof sfReportLine === 'function' && sfReportLine() ? `<div class="res-meta">${esc(sfReportLine())}</div>` : ''}
         <div class="rule-d" aria-hidden="true"></div>
       </div>
       <div class="score-card">${bandHTML(sc)}${blocked
@@ -64,7 +64,7 @@ function renderResult(R) {
     <div class="rpane${_rtab === 'runway' ? ' active' : ''}" id="rp-runway">${paneRunway(R)}</div>
     <div class="rpane${_rtab === 'deal' ? ' active' : ''}" id="rp-deal">${paneDeal(R)}</div>
     <div class="rpane${_rtab === 'intel' ? ' active' : ''}" id="rp-intel" role="tabpanel" aria-labelledby="rt-intel">${paneIntel(R)}</div>
-    <div class="rpane${_rtab === 'bench' ? ' active' : ''}" id="rp-bench">${paneBench(R)}</div>
+    <div class="rpane${_rtab === 'bench' ? ' active' : ''}" id="rp-bench">${marketDataHTML()}${paneBench(R)}</div>
     <div class="rpane${_rtab === 'scoring' ? ' active' : ''}" id="rp-scoring">${paneScoring(R)}</div>
     <div class="rpane${_rtab === 'questions' ? ' active' : ''}" id="rp-questions">${paneQuestions(R)}</div>
     <div class="rpane${_rtab === 'metrics' ? ' active' : ''}" id="rp-metrics">${paneMetrics(R)}</div>
@@ -450,6 +450,7 @@ function returnsHTML(X) {
   const cls = v => v == null ? '' : v >= Rt.r ? 'good' : v >= Rt.r * 0.6 ? 'warn' : 'bad';
   const vs = d => d >= 0 ? `${fmtPct(d * 100, 0)} above the ${money(X.P)} offered` : `${fmtPct(-d * 100, 0)} below the ${money(X.P)} offered`;
   return `<div class="block-title" style="margin-top:20px">Returns: VC Method and First Chicago <span class="field-group-hint">for ${who}</span></div>
+    ${mdDealNote(Rt)}
     <div class="kpi-grid">
       ${tile('Success (upside) case', fmtX(Rt.cases[2].moic, 1), `${fmtPct(Rt.cases[2].irr, 0)} IRR against a ${fmtPct(Rt.r, 0)} target`, cls(Rt.cases[2].irr))}
       ${tile('Base case', fmtX(Rt.cases[1].moic, 1), `${fmtPct(Rt.cases[1].irr, 0)} IRR over ${Rt.years} years`)}

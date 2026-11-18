@@ -187,7 +187,7 @@ function intelSoWhat(id, r, R) {
     return { tone:st && st > m * 2 ? 'bad' : '', text:parts.join('; ') + '.' };
   }
   if (id === 'exits') {
-    const m = med(nums('x').filter(v => v < 100)), a = gv('exit_multiple_assumption') || DEAL_DEFAULTS.exit_multiple; if (m == null) return null;
+    const m = med(nums('x').filter(v => v < 100)), a = gv('exit_multiple_assumption') || (typeof defaultExitMultiple === 'function' ? defaultExitMultiple() : DEAL_DEFAULTS.exit_multiple); if (m == null) return null;
     return { tone:a > m * 1.5 ? 'bad' : '', text:`Listed peers and recent deals sit at a median ${fmtX(m)} revenue; the returns in this report assume ${fmtX(a)} at exit.` };
   }
   if (id === 'competitors') {

@@ -1,5 +1,16 @@
 # Changelog
 
+## v5.8.0: 2026-11-18
+
+**Market data: the startup's market (United States or Europe) and sourced market figures, free and without a key.** The owner's three tiers: online with an AI key (Market intel on top), online without a key (a weekly data file published with the site), offline (a snapshot built into the page). See docs/MARKET-DATA.md.
+- **Market selector** on the set-up page: "Startup to analyse: market", United States or Europe, saved with the analysis. For Europe, amounts are in euros everywhere, and thresholds set in US dollars (ARR per employee, bottom-up market size, the next-stage ARR bar) are converted at the ECB reference rate.
+- **Sourced figures**, each with its source, link and date, listed in the Benchmarks tab with how it is used: the public-software exit multiple (Clouded Judgement, 13 Nov 2026: 4.7x EV ÷ next-12-month revenue), the US dollars per euro rate (ECB), the 10-year risk-free rate (US Treasury, ECB), company counts by size and software publishers (US Census, Eurostat). Round valuations (Carta, PitchBook) could not be read at the source: shown as "no verified source", built-in value used. No verified European exit multiple: the built-in one is used and the report says so.
+- **What feeds the results**: only official or trusted VC figures. A blank exit multiple now takes the market median (precedence: the investor's figure, the owner's Studio default, the market figure, the built-in 8x). Under the returns, the report says which multiple was used and shows the risk-free rate next to the target return. In the Owner Studio, section Market data, each figure can be switched to "shown only".
+- **Reproducible**: the report header names the market and the data date; the market and every figure that fed a result enter the run ID. A US analysis with its own exit multiple keeps the same run ID as before.
+- **Weekly data job** (.github/workflows/market-data.yml, tools/market_data.py): fetches the official figures every Monday and checks each one; when all pass, data/market.json is committed (a visible commit); when one is missing, malformed or moved by more than 25%, the previous value is kept and a pull request asks the owner instead. The VC figures live in data/market-manual.json, updated each quarter from the reports. The publish script never overwrites data/market.json.
+- **Privacy**: online, the page downloads one public file from vcr2.app; nothing about the company is sent (docs/PRIVACY.md).
+- Tests: new tests/market.test.mjs (24 checks) and tests/browser/market_test.py (19 checks: the selector, euros, the sourced table, a newer file used, a malformed file refused, nothing sent anywhere).
+
 ## v5.7.0: 2026-11-16
 
 **Results audit on the Series A example, and corrections without leaving the report.**

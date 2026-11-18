@@ -301,7 +301,8 @@ eq('default probabilities', d1.returns.cases.map(c => Math.round(c.prob * 100)),
 eq('default target return', d1.returns.r, 35);
 eq('default First Chicago rate', d1.returns.fc, 20);
 eq('default exit multiple and dilution', [d1.I.exitMult, d1.I.dil, d1.I.rounds], [6, 15, 2]);
-eq('built-in defaults before the change', [d0.I.exitMult, d0.I.dil], [BASE.deal.exit_multiple, BASE.deal.dilution]);
+/* v5.8: with the exit multiple left blank, the market figure is used when it may feed (else the built-in one) */
+eq('built-in defaults before the change', [d0.I.exitMult, d0.I.dil], [mdFeed('exit_multiple') ? mdFeed('exit_multiple').value : BASE.deal.exit_multiple, BASE.deal.dilution]);
 applyConfig({ defaults:{ sim:{ horizon:48 }, stageRange:{ seed:{ lo:500000, hi:3000000 } }, evidence:{ verbal:0.1 } } });
 eq('default simulation horizon', assumptions().horizon, 48);
 eq('stage range used by the setup page', [STAGE_RANGE.seed.lo, STAGE_RANGE.seed.hi, STAGES[1].s], [500000, 3000000, money(500000) + ' to ' + money(3000000) + ' ARR']);

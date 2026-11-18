@@ -47,7 +47,7 @@ const nf = new Intl.NumberFormat('en-US');
 function money(v) {
   if (v == null || !isFinite(v)) return 'n/a';
   const a = Math.abs(v), sign = v < 0 ? '-' : '';
-  const cur = typeof MONEY_SYMBOL === 'string' ? MONEY_SYMBOL : '$';
+  const cur = typeof curSym === 'function' ? curSym() : typeof MONEY_SYMBOL === 'string' ? MONEY_SYMBOL : '$';
   if (a >= 1e9) return sign + cur + (a / 1e9).toFixed(2) + 'B';
   if (a >= 1e6) return sign + cur + (a / 1e6).toFixed(2) + 'M';
   if (a >= 1e3) return sign + cur + Math.round(a / 1e3) + 'k';
@@ -523,7 +523,7 @@ const RUBRIC = {
 /* ── STATE ── */
 const modelLabel = id => (MODELS.find(m => m.id === id) || { n:'Custom model' }).n;
 const blankState = () => ({
-  name:'', stage:'seed', model:'saas', asof:'', section:0,
+  name:'', stage:'seed', model:'saas', market:'us', asof:'', section:0,
   vals:{}, bools:{}, sel:{}, prov:{}, evid:{}, assume:{}, result:null, files:[],
   ledger:null, series:null, notes:'', checklist:{}, example:false, requests:[],
 });
@@ -1298,7 +1298,9 @@ function scoreAll(D, checks, opts) {
   Object.entries(TH).forEach(([key, cfg]) => {
     const dim = cfg.dim; if (!dims[dim] || !modelOk(cfg)) return;
     const w = MW[key] > 0 ? MW[key] : 1;
-    const anchors = cfg.dir === 'band' ? (cfg[stage] ? true : null) : cfg[stage];
+    const anchors0 = cfg.dir === 'band' ? (cfg[stage] ? true : null) : cfg[stage];
+    /* Thresholds set in US dollars are converted into the startup's currency (Europe: euros at the ECB rate). */
+    const anchors = Array.isArray(anchors0) && DUNIT[key] === '$' && typeof fromUsd === 'function' ? anchors0.map(fromUsd) : anchors0;
     if (!anchors) return;                              // not scored at this stage
     dims[dim].possible += w;
     const v = D[key];
@@ -1599,7 +1601,7 @@ function runHash() {
   /* "1200000", "1200000.0" and "1.2e6" are one number and score the same, so they must give one hash. */
   const canonNum = v => { const s = String(v).trim(); return /^-?\d*\.?\d+(e[+-]?\d+)?$/i.test(s) ? String(parseFloat(s)) : v; };
   const canon = JSON.stringify({
-    v:rubricVersion(), stage:S.stage, model:S.model,
+    v:rubricVersion(), stage:S.stage, model:S.model, ...(typeof mdHashPart === 'function' && (S.market === 'eu' || mdHashPart().md.exit_multiple != null) ? { mkt:mdHashPart() } : {}),
     vals:sorted(S.vals, canonNum), bools:sorted(S.bools), sel:sorted(S.sel), evid:sorted(S.evid),
     ledger:S.ledger ? S.ledger.id : null, series:S.series ? S.series.id : null,
   });
@@ -1757,6 +1759,7 @@ function buildNav() {
       <span class="nav-dot"></span><span class="nav-label">Verification &amp; report</span><span class="nav-count" aria-hidden="true">${icon('arrow', 'ico-sm')}</span></button>`);
 }
 function buildStages() {
+  if (typeof buildMarkets === 'function') buildMarkets();
   setHTML($id('stage-grid'), STAGES.filter(s => !s.hidden || s.id === S.stage).map(s => `
     <button type="button" class="stage-card${S.stage === s.id ? ' sel' : ''}" id="stc-${s.id}" aria-pressed="${S.stage === s.id}" data-click="selStage" data-a="${esc(s.id)}">
       <span class="stage-n">${esc(s.n)}</span><span class="stage-s">${esc(s.s)}</span>
@@ -1864,11 +1867,11 @@ function renderField(f) {
   }
   const chips = f.chips ? `<div class="chip-row">${f.chips.map(c =>
     `<button class="chip${String(S.vals[f.id]) === String(c) ? ' active' : ''}" data-click="setChip" data-a="${esc(f.id)}" data-b="#${c}">${c}${f.unit === '%' ? '%' : ''}</button>`).join('')}</div>` : '';
-  const unit = f.unit ? ` <span class="field-unit">(${esc(f.unit)})</span>` : '';
+  const unit = f.unit ? ` <span class="field-unit">(${esc(typeof unitShown === 'function' ? unitShown(f.unit) : f.unit)})</span>` : '';
   const meta = `${provBadge(f.id)}${evidencePicker(f)}`;
   return `<div class="field-card field-item${filled}" id="fc-${f.id}">
     <label class="field-lbl" for="fi-${f.id}">${esc(f.lbl)}${unit}${req}</label>
-    ${hint}
+    ${hint}${f.id === 'target_accounts' && typeof mdFirmsHint === 'function' && mdFirmsHint() ? `<p class="field-hint md-hint">${mdFirmsHint()}</p>` : ''}
     ${f.multiline
       ? `<textarea class="field-inp field-area" id="fi-${f.id}" data-fid="${f.id}" rows="4" placeholder="${esc(f.example || fieldExample(f))}"
            data-input="fieldIn" data-a="${esc(f.id)}">${esc(S.vals[f.id] == null ? '' : S.vals[f.id])}</textarea>`
@@ -2128,7 +2131,7 @@ let derivedShowAll = false;
 /* ── DRAFTS ── */
 function draftPayload() {
   return {
-    v:4, name:S.name, stage:S.stage, model:S.model, asof:S.asof, section:S.section,
+    v:4, name:S.name, stage:S.stage, model:S.model, market:S.market === 'eu' ? 'eu' : undefined, asof:S.asof, section:S.section,
     vals:S.vals, bools:S.bools, sel:S.sel, prov:S.prov, evid:S.evid, assume:S.assume, notes:S.notes, checklist:S.checklist || {}, evidFile:S.evidFile || undefined, requests:S.requests && S.requests.length ? S.requests : undefined,
     ledger: S.ledger ? { csv:ledgerToCSV(S.ledger) } : null,
     series: S.series ? { csv:seriesToCSV(S.series) } : null,
@@ -2153,6 +2156,7 @@ function restorePayload(d) {
     wantStage:!STAGES.some(s => s.id === d.stage) && /^[a-z][a-z0-9_]{1,23}$/.test(String(d.stage)) ? d.stage : undefined,
     /* A model added in the Studio may not be loaded yet when a draft is restored, so any well-formed id is kept. */
     model:MODELS.some(m => m.id === d.model) || (typeof d.model === 'string' && /^[a-z][a-z0-9_]{1,39}$/.test(d.model) && !RESERVED_ID.test(d.model)) ? d.model : 'saas',
+    market:d.market === 'eu' ? 'eu' : 'us',
     asof:typeof d.asof === 'string' && /^\d{4}-\d{2}$/.test(d.asof) ? d.asof : '',
     section:Number.isInteger(d.section) && d.section >= 0 ? Math.min(d.section, SECTIONS.length - 1) : 0,
     vals:cleanMap(d.vals, okStr), bools:cleanMap(d.bools, v => typeof v === 'boolean'), sel:cleanMap(d.sel, v => typeof v === 'string'),
