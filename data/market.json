@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-18",
- "version": "2026-11-18",
+ "updated": "2026-11-19",
+ "version": "2026-11-19",
  "items": {
   "exit_multiple": {
    "us": {
@@ -92,8 +92,8 @@
     "url": "https://data.ecb.europa.eu/data/datasets/YC/YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y"
    },
    "us": {
-    "value": 5.1,
-    "date": "2026-11-17",
+    "value": 5.07,
+    "date": "2026-11-18",
     "src": "US Treasury daily par yield curve, 10-year",
     "kind": "official",
     "url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
