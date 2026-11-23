@@ -19,18 +19,26 @@ On the set-up page, "Startup to analyse: market" offers United States or Europe.
 - thresholds set in US dollars (ARR per employee, bottom-up market size, the next-stage ARR bar of the simulation) are
   converted at the ECB reference rate;
 - the risk-free rate is the euro area 10-year yield (ECB) and company counts come from Eurostat;
-- no verified European public-software exit multiple exists yet, so the built-in exit multiple is used and the report says so.
+- the stage ARR ranges on the set-up page and the wrong-stage check are in euros;
+- the diligence checklist uses European items and wording (company register, VAT, GDPR, option valuation and tax treatment,
+  foreign investment screening, the AI Act for AI applications, DORA for fintech) instead of the US-only ones;
+- the European public-software index (Multiples.vc) is shown for reference only: it is not on the list of trusted VC sources,
+  so the built-in exit multiple is used and the report says so.
+
+The report also lists, for the chosen market, the **rules to check** (Benchmarks tab) and the **exit routes** (under the
+returns), each with its official source. They are information, not legal or tax advice.
 
 ## The figures
 
 | Figure | United States | Europe | Use |
 |---|---|---|---|
-| Exit multiple (public software, EV ÷ next-12-month revenue) | Clouded Judgement weekly index (VC source) | none verified yet: built-in value | Feeds the exit multiple when the investor leaves it blank |
+| Exit multiple (public software, EV ÷ next-12-month revenue) | Clouded Judgement weekly index (VC source) | Multiples.vc European B2B SaaS Index: shown only, not a trusted source yet | Feeds the exit multiple when the investor leaves it blank (US) |
 | US dollars per euro | n/a | ECB reference rate (official) | Converts the dollar thresholds |
 | Risk-free rate, 10-year | US Treasury par yield curve (official) | ECB euro area yield curve, AAA (official) | Shown under the returns next to the target return |
 | Companies by size, all industries | US Census, Statistics of US Businesses (official) | Eurostat, enterprises by size class (official) | Shown next to the bottom-up market inputs |
 | Software publishers | US Census, NAICS 5112 | Eurostat, NACE J58.2 | Shown next to the bottom-up market inputs |
-| Median Series A pre-money | none verified yet (Carta and PitchBook-NVCA are not readable at the source) | none verified yet (PitchBook Europe is not public) | Not used until a figure is added from the report |
+| Median pre-seed and seed pre-money | none verified yet (full reports only) | PitchBook European VC Valuations Report (VC source) | Shown only |
+| Median Series A pre-money | none verified yet (Carta and PitchBook-NVCA give it in their full reports only) | none verified yet (PitchBook, full report only) | Shown only, once a figure is added from the report |
 
 Precedence for the exit multiple: the investor's own figure, then the owner's Studio default, then the market figure (when
 it may feed), then the built-in 8x.
@@ -40,6 +48,8 @@ it may feed), then the built-in 8x.
 - A figure feeds a result only when it comes from an official source or a trusted VC source. Anything else falls back to
   the built-in value, and the report says so.
 - In the Owner Studio, section **Market data**, each figure that can feed a result can be switched to **shown only**.
+- A figure from a source that is not yet on the trusted list carries `"feeds": false` in `data/market-manual.json`: it is
+  shown with its source, never used. Remove that line once the owner accepts the source.
 - The market and every market figure that fed a result enter the run ID: the same inputs with the same data give the same
   result and the same run ID.
 

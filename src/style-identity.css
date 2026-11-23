@@ -896,3 +896,5 @@ select.st-num, select.form-inp, .field-select, .ev-sel { max-width: 100%; text-o
 .md-tbl td:last-child .pill { white-space: nowrap; }
 .md-hint, .md-deal { margin-top: var(--sp-1); }
 .md-deal a { color: var(--brand-text); }
+.md-list { margin: var(--sp-1) 0 0; padding-left: 1.1em; display: grid; gap: var(--sp-1); max-width: 78ch; font-size: .875rem; line-height: 1.5; }
+.md-list a { color: var(--brand-text); }

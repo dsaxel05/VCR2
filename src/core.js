@@ -278,8 +278,8 @@ const SECTIONS = [
         options:['Audited','Reviewed','Compiled','Internal only'] },
       { g:'Books', id:'funds_separate', lbl:'Company bank accounts are fully separate from the founders’ personal finances', t:'bool',
         hint:'Commingled funds make the books unauditable and are among the first things a diligence accountant checks.' },
-      { g:'Books', id:'valuation_409a', lbl:'A 409A valuation from the last 12 months supports the option grants', t:'bool',
-        hint:'US companies granting options. Without one, grants may be mispriced for tax purposes.' },
+      { g:'Books', id:'valuation_409a', lbl:'A 409A valuation (US) or an independent valuation (Europe) from the last 12 months supports the option grants', t:'bool',
+        hint:'Companies granting options. Without one, grants may be mispriced for tax purposes.' },
       { g:'Books', id:'insurance_dno', lbl:'D&O insurance is in place, or will be bound at closing', t:'bool' },
       { g:'Technical', id:'soc2', lbl:'SOC 2 status', t:'select',
         options:['Type II','Type I','In progress','None'] },
@@ -501,7 +501,7 @@ const RUBRIC = {
     { id:'technical_founder',   dim:'team',   good:true,  pts:5,  note:'A founder can build the core product' },
     { id:'funds_separate',      dim:'govern', good:true,  pts:3,  note:'Company and personal finances are separate' },
     { id:'funds_separate',      dim:'govern', good:true,  pts:-10,note:'Company and personal finances are mixed' },
-    { id:'valuation_409a',      dim:'govern', good:true,  pts:-4, note:'No current 409A behind option grants' },
+    { id:'valuation_409a',      dim:'govern', good:true,  pts:-4, note:'No current 409A or independent valuation behind option grants' },
     { id:'oss_reviewed',        dim:'govern', good:true,  pts:2,  note:'Open-source licences reviewed' },
   ],
 
@@ -1762,7 +1762,7 @@ function buildStages() {
   if (typeof buildMarkets === 'function') buildMarkets();
   setHTML($id('stage-grid'), STAGES.filter(s => !s.hidden || s.id === S.stage).map(s => `
     <button type="button" class="stage-card${S.stage === s.id ? ' sel' : ''}" id="stc-${s.id}" aria-pressed="${S.stage === s.id}" data-click="selStage" data-a="${esc(s.id)}">
-      <span class="stage-n">${esc(s.n)}</span><span class="stage-s">${esc(s.s)}</span>
+      <span class="stage-n">${esc(s.n)}</span><span class="stage-s">${esc(typeof stageText === 'function' ? stageText(s) : s.s)}</span>
     </button>`).join(''));
 }
 function buildTypes() {

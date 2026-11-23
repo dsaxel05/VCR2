@@ -11,18 +11,37 @@
     "note": "Median EV ÷ next-12-month revenue. By projected growth: above 22%: 13.4x, 15 to 22%: 5.9x, below 15%: 3.3x."
    },
    "eu": {
-    "value": null,
-    "note": "No verified European public-software index yet: the built-in exit multiple is used. The US index is 4.7x for reference."
+    "value": 2.1,
+    "date": "2026-11-19",
+    "src": "Multiples.vc European B2B SaaS Index (50 largest listed European B2B SaaS companies)",
+    "kind": "vc",
+    "url": "https://multiples.vc/sector-indexes/multiples-european-b2b-saas-index",
+    "feeds": false,
+    "note": "Median EV ÷ next-12-month revenue. Shown for reference only: this index is not yet on VCR2’s list of trusted VC sources, so the built-in exit multiple is used."
    }
   },
   "round_pre_a": {
    "us": {
     "value": null,
-    "note": "No verified source yet: Carta and PitchBook-NVCA publish it, but their reports could not be read at the source. Add the figure each quarter from the report."
+    "note": "No verified source yet: Carta and PitchBook-NVCA give it only in their full reports, behind a download form. Add the figure each quarter from the report."
    },
    "eu": {
     "value": null,
-    "note": "No verified source yet: PitchBook European venture reports are not public. Add the figure each quarter from the report."
+    "note": "No verified source yet: PitchBook gives it only in the full European report, behind a download form. Add the figure each quarter from the report."
+   }
+  },
+  "round_pre_seed": {
+   "us": {
+    "value": null,
+    "note": "No verified source yet: Carta and PitchBook-NVCA give it only in their full reports, behind a download form. Add the figure each quarter from the report."
+   },
+   "eu": {
+    "value": 4800000,
+    "date": "2026-11-17",
+    "src": "PitchBook, Q3 2026 European VC Valuations Report",
+    "kind": "vc",
+    "url": "https://pitchbook.com/news/reports/q3-2026-european-vc-valuations-report",
+    "note": "In euros. The only stage whose median valuation fell year on year."
    }
   }
  }

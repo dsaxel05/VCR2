@@ -25,7 +25,7 @@ const DILIGENCE = [
   { id:'revenue_ledger', cat:'Financial', from:'seed', text:'Revenue by customer by month (billing-system export)', auto:() => S.ledger ? 'received' : null },
   { id:'monthly_accounts', cat:'Financial', from:'seed', text:'Monthly P&L, balance sheet and cash flow for the last 24 months', auto:() => S.series ? 'received' : null },
   { id:'debt_docs', cat:'Financial', from:'seed', text:'Venture debt and loan agreements, including covenants', when:() => gv('debt_outstanding') > 0 },
-  { id:'gaap_statements', cat:'Financial', from:'a', text:'Accrual-basis (GAAP) financial statements' },
+  { id:'gaap_statements', cat:'Financial', from:'a', text:'Accrual-basis (GAAP) financial statements', eu:'Accrual-basis financial statements (local GAAP or IFRS)' },
   { id:'unit_econ', cat:'Financial', from:'a', text:'CAC, LTV and payback workings with definitions' },
   { id:'ar_ap', cat:'Financial', from:'a', text:'Accounts receivable and payable ageing' },
   { id:'deferred_rev', cat:'Financial', from:'a', text:'Deferred revenue roll-forward and revenue-recognition policy' },
@@ -33,18 +33,21 @@ const DILIGENCE = [
   { id:'audit', cat:'Financial', from:'b', text:'Audited or reviewed financial statements', auto:() => gs('audited_financials') === 'Audited' || gs('audited_financials') === 'Reviewed' ? 'received' : null },
   { id:'qoe', cat:'Financial', from:'b', text:'Quality-of-earnings report' },
   /* Tax */
-  { id:'payroll_tax', cat:'Tax', from:'seed', text:'Payroll tax filings current, with proof of payment', auto:() => gb('taxes_current') === false ? 'issue' : gb('taxes_current') === true ? 'reviewed' : null },
-  { id:'income_tax', cat:'Tax', from:'seed', text:'Federal and state income tax returns filed' },
-  { id:'franchise_tax', cat:'Tax', from:'seed', text:'Delaware franchise tax paid and certificate of good standing' },
-  { id:'val_409a', cat:'Tax', from:'seed', text:'409A valuation from the last 12 months', auto:() => gb('valuation_409a') === false ? 'issue' : gb('valuation_409a') === true ? 'received' : null },
-  { id:'sales_tax', cat:'Tax', from:'a', text:'Sales tax and nexus analysis for every state or country sold into' },
-  { id:'rd_credit', cat:'Tax', from:'a', text:'R&D tax credit documentation, if claimed' },
+  { id:'payroll_tax', cat:'Tax', from:'seed', text:'Payroll tax filings current, with proof of payment', eu:'Payroll taxes and social-security contributions current, with proof of payment', auto:() => gb('taxes_current') === false ? 'issue' : gb('taxes_current') === true ? 'reviewed' : null },
+  { id:'income_tax', cat:'Tax', from:'seed', text:'Federal and state income tax returns filed', eu:'Corporate income tax returns filed in every country of operation' },
+  { id:'qsbs', cat:'Tax', from:'seed', text:'QSBS (Section 1202) status: C corporation, gross assets at each share issuance', mkt:'us' },
+  { id:'franchise_tax', cat:'Tax', from:'seed', text:'Delaware franchise tax paid and certificate of good standing', eu:'Company register extract and annual accounts filed on time' },
+  { id:'val_409a', cat:'Tax', from:'seed', text:'409A valuation from the last 12 months', eu:'Independent valuation supporting the option grants, and the tax treatment of employee options in each country', auto:() => gb('valuation_409a') === false ? 'issue' : gb('valuation_409a') === true ? 'received' : null },
+  { id:'sales_tax', cat:'Tax', from:'a', text:'Sales tax and nexus analysis for every state or country sold into', eu:'VAT registrations and returns, including cross-border sales' },
+  { id:'rd_credit', cat:'Tax', from:'a', text:'R&D tax credit documentation, if claimed', eu:'R&D tax credits and public grants, with any repayment conditions' },
   /* Cap table & legal */
-  { id:'charter', cat:'Cap table & legal', from:'preseed', text:'Certificate of incorporation, bylaws and good standing' },
+  { id:'charter', cat:'Cap table & legal', from:'preseed', text:'Certificate of incorporation, bylaws and good standing', eu:'Articles of association, shareholders’ agreement and company register extract' },
   { id:'cap_table_full', cat:'Cap table & legal', from:'preseed', text:'Fully diluted cap table including SAFEs, notes and options', auto:() => gb('captable_documented') === false ? 'issue' : gb('captable_documented') === true ? 'received' : null },
   { id:'safe_docs', cat:'Cap table & legal', from:'preseed', text:'SAFE and convertible note agreements', when:() => gv('safes_outstanding') > 0 || gv('notes_principal') > 0 },
   { id:'board_minutes', cat:'Cap table & legal', from:'seed', text:'Board minutes and written consents' },
   { id:'prior_rounds', cat:'Cap table & legal', from:'seed', text:'Prior financing documents and any side letters' },
+  { id:'form_d', cat:'Cap table & legal', from:'seed', text:'Form D filings and state notices for every round sold under Regulation D', mkt:'us' },
+  { id:'fdi_screen', cat:'Cap table & legal', from:'a', text:'Foreign investment screening check if a non-EU investor or buyer is involved', mkt:'eu' },
   { id:'option_plan', cat:'Cap table & legal', from:'seed', text:'Equity incentive plan and grant records' },
   { id:'litigation', cat:'Cap table & legal', from:'seed', text:'Pending or threatened litigation and disputes', auto:() => gb('litigation') === true ? 'issue' : gb('litigation') === false ? 'reviewed' : null },
   { id:'licences_reg', cat:'Cap table & legal', from:'seed', text:'Regulatory licences and correspondence with regulators', when:() => gb('regulated_market') === true || S.model === 'fintech' },
@@ -55,7 +58,7 @@ const DILIGENCE = [
   { id:'competition', cat:'Customers & market', from:'seed', text:'Competitive landscape and win/loss notes' },
   { id:'pmf_survey', cat:'Customers & market', from:'preseed', text:'Product-market fit survey or usage-retention evidence', auto:() => gv('pmf_very_disappointed') != null ? 'received' : null },
   { id:'top_customers', cat:'Customers & market', from:'a', text:'Top 20 customers with contract dates, terms and renewal dates' },
-  { id:'cohorts', cat:'Customers & market', from:'a', text:'Cohort retention table, gross and net, in dollars', auto:() => S.ledger ? 'received' : null },
+  { id:'cohorts', cat:'Customers & market', from:'a', text:'Cohort retention table, gross and net, in dollars', eu:'Cohort retention table, gross and net, in euros', auto:() => S.ledger ? 'received' : null },
   { id:'pipeline', cat:'Customers & market', from:'a', text:'CRM pipeline export with stage history' },
   { id:'channel_cac', cat:'Customers & market', from:'a', text:'Customer acquisition by channel: spend, conversion and CAC' },
   /* Product & technology */
@@ -76,11 +79,14 @@ const DILIGENCE = [
   /* IT & security */
   { id:'security', cat:'IT & security', from:'a', text:'Security policies, access controls and incident history' },
   { id:'soc2_doc', cat:'IT & security', from:'a', text:'SOC 2 report or roadmap', auto:() => gs('soc2') === 'Type II' || gs('soc2') === 'Type I' ? 'received' : null },
-  { id:'privacy', cat:'IT & security', from:'a', text:'Data-protection compliance (GDPR, CCPA) and customer DPAs', auto:() => gb('dpas_signed') === true ? 'received' : null },
+  { id:'privacy', cat:'IT & security', from:'a', text:'Data-protection compliance (GDPR, CCPA) and customer DPAs', eu:'GDPR compliance: records of processing, DPAs with customers and processors, transfers outside the EU', auto:() => gb('dpas_signed') === true ? 'received' : null },
   /* Insurance & risk */
   { id:'dno', cat:'Insurance & risk', from:'a', text:'D&O insurance, in place or bound at closing', auto:() => gb('insurance_dno') === true ? 'received' : null },
   { id:'cyber', cat:'Insurance & risk', from:'a', text:'Cyber and general liability cover' },
   { id:'risk_register', cat:'Insurance & risk', from:'b', text:'Top failure modes and their mitigations' },
+  /* Europe only, by business model */
+  { id:'ai_act', cat:'Product & technology', from:'seed', text:'AI Act classification of each AI system and the obligations that apply', mkt:'eu', when:() => modelKey() === 'ai_app' },
+  { id:'dora', cat:'IT & security', from:'seed', text:'DORA: ICT risk framework, incident reporting and register of third-party providers', mkt:'eu', when:() => modelKey() === 'fintech' },
 ];
 
 /* Built-in categories first, then any the owner created, in the order they appear. */
@@ -89,7 +95,9 @@ function checklistCats(items) { const extra = []; items.forEach(it => { if (!CL_
 function checklistItems(allStages) {
   const custom = (CFG.checklist || []).map(c => ({ id:c.id, cat:(c.category && c.category.trim()) || 'Financial', from:c.from in STAGE_ORDER ? c.from : 'preseed', text:c.text, why:c.why || '', custom:true }));
   const L = (CFG.labels && CFG.labels.checklist) || {};
-  const builtIn = DILIGENCE.map(it => typeof L[it.id] === 'string' && L[it.id].trim() ? Object.assign({}, it, { text:L[it.id].trim() }) : it);
+  /* The startup's market: items that exist in one market only, and the European wording of US-specific items. The owner's own wording wins. */
+  const mk = typeof mktId === 'function' ? mktId() : 'us';
+  const builtIn = DILIGENCE.filter(it => !it.mkt || it.mkt === mk).map(it => typeof L[it.id] === 'string' && L[it.id].trim() ? Object.assign({}, it, { text:L[it.id].trim() }) : mk === 'eu' && it.eu ? Object.assign({}, it, { text:it.eu }) : it);
   return builtIn.concat(custom)
     .filter(it => !cfgHidden('checklist', it.id))
     .filter(it => allStages || STAGE_ORDER[it.from] <= STAGE_ORDER[stageKey()])

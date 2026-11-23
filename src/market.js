@@ -21,21 +21,23 @@ const MD_ITEMS = [
   { id:'firms_mid', label:'Companies with 100 to 499 employees (US) or 50 to 249 (EU), all industries', unit:'', feeds:null },
   { id:'firms_large', label:'Companies with 500 or more employees (US) or 250 or more (EU), all industries', unit:'', feeds:null },
   { id:'firms_software', label:'Software publishers (US NAICS 5112, EU NACE J58.2)', unit:'', feeds:null },
+  { id:'round_pre_seed', label:'Median pre-seed and seed pre-money valuation', unit:'$', feeds:null },
   { id:'round_pre_a', label:'Median Series A pre-money valuation', unit:'$', feeds:null },
 ];
 /* The snapshot built into the page (tier 3). Official figures are refreshed weekly by the data job; VC figures each quarter. */
 const MARKET_BUILTIN = {
-  updated:'2026-11-18', version:'2026-11-18',
+  updated:'2026-11-19', version:'2026-11-19',
   items:{
     exit_multiple:{
       us:{ value:4.7, date:'2026-11-13', src:'Clouded Judgement (Jamin Ball, Altimeter): public software index', kind:'vc', url:'https://cloudedjudgement.substack.com/p/clouded-judgement-111326-the-frontier',
         note:'Median EV ÷ next-12-month revenue. By projected growth: above 22%: 13.4x, 15 to 22%: 5.9x, below 15%: 3.3x.' },
-      eu:{ value:null, note:'No verified European public-software index yet: the built-in exit multiple is used. The US index is 4.7x for reference.' },
+      eu:{ value:2.1, date:'2026-11-19', src:'Multiples.vc European B2B SaaS Index (50 largest listed European B2B SaaS companies)', kind:'vc', url:'https://multiples.vc/sector-indexes/multiples-european-b2b-saas-index', feeds:false,
+        note:'Median EV ÷ next-12-month revenue. Shown for reference only: this index is not yet on VCR2’s list of trusted VC sources, so the built-in exit multiple is used.' },
     },
-    fx_usd:{ eu:{ value:1.0968, date:'2026-11-18', src:'European Central Bank reference rate', kind:'official', url:'https://data.ecb.europa.eu/data/datasets/EXR/EXR.D.USD.EUR.SP00.A' } },
+    fx_usd:{ eu:{ value:1.0992, date:'2026-11-19', src:'European Central Bank reference rate', kind:'official', url:'https://data.ecb.europa.eu/data/datasets/EXR/EXR.D.USD.EUR.SP00.A' } },
     risk_free_10y:{
-      us:{ value:5.10, date:'2026-11-17', src:'US Treasury daily par yield curve, 10-year', kind:'official', url:'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve' },
-      eu:{ value:3.42, date:'2026-11-17', src:'ECB euro area yield curve (AAA), 10-year spot', kind:'official', url:'https://data.ecb.europa.eu/data/datasets/YC/YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y' },
+      us:{ value:5.04, date:'2026-11-19', src:'US Treasury daily par yield curve, 10-year', kind:'official', url:'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve' },
+      eu:{ value:3.41, date:'2026-11-18', src:'ECB euro area yield curve (AAA), 10-year spot', kind:'official', url:'https://data.ecb.europa.eu/data/datasets/YC/YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y' },
     },
     firms_mid:{
       us:{ value:88023, date:'2021', src:'US Census, Statistics of US Businesses (firms with 100 to 499 employees)', kind:'official', url:'https://www.census.gov/programs-surveys/susb.html' },
@@ -49,9 +51,14 @@ const MARKET_BUILTIN = {
       us:{ value:12741, date:'2021', src:'US Census, Statistics of US Businesses (NAICS 5112, software publishers)', kind:'official', url:'https://www.census.gov/programs-surveys/susb.html' },
       eu:{ value:33004, date:'2024', src:'Eurostat, enterprises in software publishing (NACE J58.2), EU27', kind:'official', url:'https://ec.europa.eu/eurostat/databrowser/view/sbs_sc_ovw/default/table' },
     },
+    round_pre_seed:{
+      us:{ value:null, note:'No verified source yet: Carta and PitchBook-NVCA give it only in their full reports, behind a download form. Add the figure each quarter from the report.' },
+      eu:{ value:4800000, date:'2026-11-17', src:'PitchBook, Q3 2026 European VC Valuations Report', kind:'vc', url:'https://pitchbook.com/news/reports/q3-2026-european-vc-valuations-report',
+        note:'In euros. The only stage whose median valuation fell year on year.' },
+    },
     round_pre_a:{
-      us:{ value:null, note:'No verified source yet: Carta and PitchBook-NVCA publish it, but their reports could not be read at the source. Add the figure each quarter from the report.' },
-      eu:{ value:null, note:'No verified source yet: PitchBook European venture reports are not public. Add the figure each quarter from the report.' },
+      us:{ value:null, note:'No verified source yet: Carta and PitchBook-NVCA give it only in their full reports, behind a download form. Add the figure each quarter from the report.' },
+      eu:{ value:null, note:'No verified source yet: PitchBook gives it only in the full European report, behind a download form. Add the figure each quarter from the report.' },
     },
   },
 };
@@ -71,7 +78,7 @@ const mdMode = id => (((typeof CFG !== 'undefined' && CFG.settings && CFG.settin
    switch it to "shown only". */
 function mdFeed(id) {
   const d = mdGet(id), item = MD_ITEMS.find(x => x.id === id);
-  return d && item && item.feeds && (d.kind === 'official' || d.kind === 'vc') && mdMode(id) === 'feed' ? d : null;
+  return d && item && item.feeds && d.feeds !== false && (d.kind === 'official' || d.kind === 'vc') && mdMode(id) === 'feed' ? d : null;
 }
 /* US dollars per unit of the startup's currency: 1 in the US; the ECB rate in Europe (the built-in rate when the live one
    is switched to shown only, so euro thresholds never go unconverted). */
@@ -148,7 +155,7 @@ function marketDataHTML() {
   const m = mktInfo();
   const rows = MD_ITEMS.filter(it => !it.only || it.only === m.id).map(it => {
     const d = mdGet(it.id), feed = mdFeed(it.id);
-    const use = !d ? `<span class="pill">built-in value used</span>` : feed ? '<span class="pill md-feed">feeds the results</span>' : it.feeds && mdMode(it.id) === 'show' ? '<span class="pill">shown only (Studio)</span>' : '<span class="pill">shown only</span>';
+    const use = !d ? `<span class="pill">built-in value used</span>` : feed ? '<span class="pill md-feed">feeds the results</span>' : it.feeds && d.feeds !== false && mdMode(it.id) === 'show' ? '<span class="pill">shown only (Studio)</span>' : '<span class="pill">shown only</span>';
     return `<tr><td>${esc(it.label)}${it.feeds && feed ? `<div class="field-hint">It ${esc(it.feeds)}.</div>` : ''}</td>
       <td class="m">${d ? esc(mdFmt(it, d)) : 'n/a'}</td>
       <td>${d ? `<a href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${esc(d.src)}</a>${d.note ? `<div class="field-hint">${esc(d.note)}</div>` : ''}` : `<span class="field-hint">${esc(mdNote(it.id) || 'No trusted source: the built-in value is used.')}</span>`}</td>
@@ -191,4 +198,64 @@ function mdDealNote(Rt) {
     : `Exit multiple: ${DEAL_DEFAULTS.exit_multiple}x, the built-in assumption (${esc(mdNote('exit_multiple') || 'no trusted market figure for this market')}).`;
   const r = rf ? ` Risk-free rate: ${rf.value.toFixed(2)}% (<a href="${esc(rf.url)}" target="_blank" rel="noopener noreferrer">${esc(rf.src)}</a>, ${esc(rf.date)})${Rt && Rt.r != null ? `, so the ${Math.round(Rt.r)}% target asks ${Math.round(Rt.r - rf.value)} points a year for the venture risk` : ''}.` : '';
   return `<p class="field-hint md-deal">${ex}${r}</p>`;
+}
+
+/* ── stages: the ARR ranges are set in US dollars; for a European startup they are shown and compared in euros ── */
+function stageRangeLocal(id) {
+  const r = typeof STAGE_RANGE !== 'undefined' && STAGE_RANGE[id]; if (!r) return null;
+  return { lo:r.lo != null ? fromUsd(r.lo) : null, hi:r.hi != null ? fromUsd(r.hi) : null };
+}
+function stageText(st) {
+  if (!st) return '';
+  if (mktId() === 'us') return st.s;
+  const r = stageRangeLocal(st.id); if (!r || (r.lo == null && r.hi == null)) return st.s;
+  return r.lo && r.hi ? `${money(r.lo)} to ${money(r.hi)} ARR` : r.hi ? `< ${money(r.hi)} ARR` : `${money(r.lo)}+ ARR`;
+}
+
+/* ── what differs beyond the figures: the rules an investor checks, and the usual exit routes. Each line links to an
+   official source (or the VC report it quotes), checked on 2026-11-19. Not legal or tax advice. ── */
+const MKT_RULES = {
+  us:[
+    { t:'Fundraising rules (Regulation D)', why:'Startup rounds are usually sold under the SEC’s Regulation D exemption, and a Form D notice is due within 15 days of the first sale. Ask for the filings for every past round.', src:'SEC, Filing a Form D notice', url:'https://www.sec.gov/resources-small-businesses/exempt-offerings/filing-form-d-notice' },
+    { t:'Privacy', why:'There is no single federal privacy law: California’s CCPA and a growing number of state laws apply depending on where customers live, plus the GDPR for European users.', src:'California Attorney General, CCPA', url:'https://oag.ca.gov/privacy/ccpa' },
+    { t:'Foreign investors (CFIUS)', why:'Investment by non-US investors in companies with critical technology, critical infrastructure or sensitive personal data can need a CFIUS filing before closing.', src:'US Treasury, CFIUS', url:'https://www.cfius.gov/' },
+  ],
+  eu:[
+    { t:'Data protection (GDPR)', why:'Applies to any company handling personal data of people in the EU. Fines reach €20 million or 4% of worldwide annual turnover, whichever is higher.', src:'Regulation (EU) 2016/679, Article 83', url:'https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng' },
+    { t:'AI Act', models:['ai_app'], why:'Prohibited uses have been banned since February 2025 and rules for general-purpose models apply since August 2025. Rules for high-risk uses (biometrics, critical infrastructure, education, employment and others) apply from 2 December 2027. Ask how each AI system is classified.', src:'European Commission, AI Act (Regulation (EU) 2024/1689)', url:'https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai' },
+    { t:'Digital operational resilience (DORA)', models:['fintech'], why:'Since 17 January 2025, financial firms, payment and e-money institutions included, must meet rules on ICT risk, incident reporting and third-party providers.', src:'Regulation (EU) 2022/2554', url:'https://eur-lex.europa.eu/eli/reg/2022/2554/oj/eng' },
+    { t:'Foreign investment screening', why:'A revised EU regulation makes screening of foreign investment in sensitive sectors mandatory in every Member State, which have 18 months from mid-2026 to put it in place. A non-EU investor or buyer can face a review.', src:'European Commission, 26 June 2026', url:'https://policy.trade.ec.europa.eu/news/eu-strengthens-its-foreign-investment-screening-framework-2026-06-26_en' },
+  ],
+};
+const MKT_EXITS = {
+  us:[
+    { t:'Sale to a buyer (M&A)', why:'The usual exit. Deals above $133.9 million must be notified to the FTC and the Justice Department before closing (thresholds in force from 17 February 2026), which adds a waiting period.', src:'Federal Trade Commission, HSR thresholds', url:'https://www.ftc.gov/enforcement/premerger-notification-program/current-thresholds' },
+    { t:'Listing (IPO)', why:'Rare at the moment: 18 US companies went public in Q3 2026, most of them in healthcare, while 992 unicorns wait for an exit.', src:'PitchBook-NVCA Venture Monitor, Q3 2026', url:'https://pitchbook.com/news/reports/q3-2026-pitchbook-nvca-venture-monitor' },
+    { t:'Tax relief on the exit (QSBS)', why:'For individual holders, gains on shares of a US C corporation that had up to $75 million of gross assets when the shares were issued can be partly or fully excluded from tax: 50% after 3 years, 75% after 4, 100% after 5, up to $15 million per company, for shares issued after 4 July 2025.', src:'26 U.S. Code § 1202', url:'https://www.law.cornell.edu/uscode/text/26/1202' },
+  ],
+  eu:[
+    { t:'Sale to a buyer (M&A)', why:'The usual exit, often to a US buyer. Only very large deals reach the EU merger thresholds (more than €5 billion combined worldwide turnover and at least two parties with more than €250 million each in the EU); national rules can still apply.', src:'EU Merger Regulation (EC) No 139/2004, Article 1', url:'https://eur-lex.europa.eu/eli/reg/2004/139/oj/eng' },
+    { t:'Listing (IPO)', why:'European exit valuations are above the 2021 peak, but carried by a handful of large deals rather than broad activity.', src:'PitchBook, Q3 2026 European VC Valuations Report', url:'https://pitchbook.com/news/reports/q3-2026-european-vc-valuations-report', listing:true },
+  ],
+};
+const mdLink = (src, url) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(src)}</a>`;
+function mktList(L) {
+  const mk = typeof modelKey === 'function' ? modelKey() : S.model;
+  return `<ul class="md-list">${L.filter(x => !x.models || x.models.includes(mk)).map(x => {
+    let why = esc(x.why);
+    if (x.listing) {
+      const e = mdGet('exit_multiple', 'eu'), u = mdGet('exit_multiple', 'us');
+      if (e && u) why += ` Listed European B2B software trades at a median ${e.value.toFixed(1)}x next-year revenue (${mdLink(e.src.split(' (')[0], e.url)}, ${esc(e.date)}) against ${u.value.toFixed(1)}x for US software (${mdLink(u.src.split(':')[0], u.url)}, ${esc(u.date)}), so a European listing usually values the same company lower.`;
+    }
+    return `<li><strong>${esc(x.t)}.</strong> ${why} <span class="field-hint">Source: ${mdLink(x.src, x.url)}.</span></li>`;
+  }).join('')}</ul>`;
+}
+function marketRulesHTML() {
+  const m = mktInfo();
+  return `<div class="block-title" style="margin-top:20px">Rules to check: ${m.id === 'eu' ? 'a European startup' : 'a US startup'}</div>
+    <p class="field-hint">What changes with the market, with the official source of each point. Not legal or tax advice.</p>${mktList(MKT_RULES[m.id])}`;
+}
+function marketExitsHTML() {
+  const m = mktInfo();
+  return `<div class="block-title" style="margin-top:20px">Exit routes: ${m.id === 'eu' ? 'Europe' : 'United States'}</div>${mktList(MKT_EXITS[m.id])}`;
 }

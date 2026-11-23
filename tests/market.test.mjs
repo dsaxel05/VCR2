@@ -14,7 +14,29 @@ const nw = mkt => { fresh(); S = blankState(); S.example = true; loadNorthwind()
 const fed = MD_ITEMS.filter(it => it.feeds);
 ok('every figure that can feed a result has a source, a link and a date in each market where it has a value',
   fed.every(it => ['us', 'eu'].every(m => { const d = mdGet(it.id, m); return !d || (d.src && /^https:\/\//.test(d.url) && /^\d{4}/.test(d.date) && ['official', 'vc'].includes(d.kind)); })));
-ok('a figure with no trusted source says so', mdGet('round_pre_a', 'us') == null && /No verified source/.test(mdNote('round_pre_a', 'us')) && mdGet('exit_multiple', 'eu') == null && /built-in exit multiple/.test(mdNote('exit_multiple', 'eu')));
+ok('a figure with no trusted source says so', mdGet('round_pre_a', 'us') == null && /No verified source/.test(mdNote('round_pre_a', 'us')));
+S = blankState(); S.market = 'eu';
+ok('Europe: the European software index is shown but does not feed (not yet a trusted source), so the built-in multiple is used',
+  mdGet('exit_multiple').value === 2.1 && mdFeed('exit_multiple') == null && /not yet on VCR2’s list of trusted/.test(mdNote('exit_multiple')) && defaultExitMultiple() === 8);
+ok('Europe: the PitchBook pre-seed and seed median is shown in euros, never fed', mdGet('round_pre_seed').value === 4800000 && mdGet('round_pre_seed').kind === 'vc' && !MD_ITEMS.find(x => x.id === 'round_pre_seed').feeds);
+
+/* stages, checklist, rules and exit routes follow the market */
+S = blankState(); S.stage = 'seed';
+eq('US: the stage range is the dollar text', stageText(STAGES[1]), STAGES[1].s);
+S.market = 'eu';
+eq('Europe: the stage range is shown in euros at the ECB rate', stageText(STAGES[1]), money(250000 / 1.0992) + ' to ' + money(2000000 / 1.0992) + ' ARR');
+eq('Europe: the stage range used for the wrong-stage check is in euros', Math.round(stageRangeLocal('seed').hi), Math.round(2000000 / 1.0992));
+const cl = mk => { S = blankState(); S.stage = 'b'; S.market = mk; return checklistItems(true); };
+const clUs = cl('us'), clEu = cl('eu'), txt = (L, id) => (L.find(x => x.id === id) || {}).text;
+ok('US checklist: Delaware, 409A, Form D and QSBS', /Delaware/.test(txt(clUs, 'franchise_tax')) && /409A/.test(txt(clUs, 'val_409a')) && txt(clUs, 'form_d') && txt(clUs, 'qsbs') && !txt(clUs, 'fdi_screen'));
+ok('Europe checklist: no US-only items or wording, European items instead', !clEu.some(x => /Delaware|409A|Form D|QSBS|Federal and state/.test(x.text)) && /GDPR/.test(txt(clEu, 'privacy')) && /VAT/.test(txt(clEu, 'sales_tax')) && txt(clEu, 'fdi_screen') && !txt(clEu, 'form_d'));
+S = blankState(); S.stage = 'b'; S.market = 'eu'; S.model = 'ai_app';
+ok('Europe, AI application: the AI Act item and rule appear', checklistItems(true).some(x => x.id === 'ai_act') && /AI Act/.test(marketRulesHTML()) && !/DORA/.test(marketRulesHTML()));
+S.model = 'saas';
+ok('Europe, SaaS: no AI Act item', !checklistItems(true).some(x => x.id === 'ai_act') && !/AI Act/.test(marketRulesHTML()));
+ok('Europe: rules and exit routes cite their sources', /eur-lex\.europa\.eu/.test(marketRulesHTML()) && /139\/2004/.test(marketExitsHTML()) && /2\.1x next-year revenue/.test(marketExitsHTML()));
+S.market = 'us';
+ok('US: rules and exit routes cite their sources', /sec\.gov/.test(marketRulesHTML()) && /133\.9 million/.test(marketExitsHTML()) && /1202/.test(marketExitsHTML()) && !/GDPR \(/.test(marketRulesHTML()));
 
 /* United States */
 fresh(); S = blankState();
@@ -25,7 +47,7 @@ eq('US: the exit multiple left blank is the public-software median (4.7x, Cloude
 /* Europe */
 S.market = 'eu';
 eq('Europe: amounts in euros', [curSym(), money(4200000)], ['€', '€4.20M']);
-eq('Europe: the ECB rate converts the dollar thresholds', Math.round(fromUsd(10000000)), Math.round(10000000 / 1.0968));
+eq('Europe: the ECB rate converts the dollar thresholds', Math.round(fromUsd(10000000)), Math.round(10000000 / 1.0992));
 eq('Europe: no verified European exit multiple, so the built-in 8x is used', defaultExitMultiple(), 8);
 
 /* scoring: a dollar threshold is converted, the rest is untouched */
@@ -37,7 +59,7 @@ ok('the market enters the run hash', eu.hash !== us.hash);
 
 /* the next-stage bar of the simulation is converted too */
 fresh(); S = blankState(); S.example = true; loadNorthwind(); S.market = 'eu';
-eq('Europe: the next-stage ARR bar is $10M in euros', Math.round(projectionInputs(derive().D).milestone), Math.round(10000000 / 1.0968));
+eq('Europe: the next-stage ARR bar is $10M in euros', Math.round(projectionInputs(derive().D).milestone), Math.round(10000000 / 1.0992));
 
 /* precedence of the exit multiple: the investor, then the owner's Studio default, then the market, then built-in */
 fresh(); S = blankState(); S.example = true; loadNorthwind();

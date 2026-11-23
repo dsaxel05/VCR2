@@ -17,7 +17,7 @@ previous file is not published; the previous value is kept and the run asks for 
 Exit code: 0 the file changed and every figure passed (publish), 3 nothing changed, 2 a figure needs review (open a pull
 request), 1 a hard error (nothing is written).
 """
-import argparse, csv, io, json, pathlib, sys, urllib.request, datetime
+import argparse, csv, gzip, io, json, pathlib, sys, urllib.request, datetime
 
 UA = {'User-Agent': 'VCR2 market data job (+https://vcr2.app)'}
 MAX_MOVE = 0.25
@@ -27,7 +27,10 @@ TODAY = datetime.date.today().isoformat()
 def get(url, timeout=60):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read().decode('utf-8', 'replace')
+        body = r.read()
+    if body[:2] == b'\x1f\x8b':          # some servers (the ECB) send gzip even when it was not asked for
+        body = gzip.decompress(body)
+    return body.decode('utf-8', 'replace')
 
 
 def ecb_last(series):

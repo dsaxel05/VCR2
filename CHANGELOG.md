@@ -1,5 +1,16 @@
 # Changelog
 
+## v5.9.0: 2026-11-19
+
+**Market data, second part: what else changes between a US and a European startup.** See docs/MARKET-DATA.md.
+- **Rules to check** (Benchmarks tab), each with its official source, not legal advice. United States: Regulation D and Form D (SEC), state privacy laws (CCPA), CFIUS for foreign investors. Europe: GDPR fines (Article 83), the AI Act timeline for AI applications (high-risk rules from 2 December 2027), DORA for fintech (since 17 January 2025), the revised foreign investment screening regulation.
+- **Exit routes** (under the returns). United States: M&A and the HSR threshold ($133.9 million from 17 February 2026, FTC), the IPO drought (18 listings in Q3 2026, PitchBook-NVCA), QSBS tax relief (26 U.S.C. 1202: 50, 75, 100% after 3, 4, 5 years, up to $15 million). Europe: M&A and the EU merger thresholds, and the listing gap (European B2B software at 2.1x next-year revenue against 4.7x for US software).
+- **European figures**: the Multiples.vc European B2B SaaS Index (2.1x, 19 Nov 2026), shown for reference only because it is not on the list of trusted VC sources, so the built-in exit multiple stays in use for Europe; the PitchBook median pre-seed and seed pre-money in Europe (€4.8M, Q3 2026). Series A medians stay "no verified source": Carta and PitchBook give them only in their full reports.
+- **Stages in euros**: for a European startup the stage ARR ranges on the set-up page and the wrong-stage check are in euros at the ECB rate.
+- **Diligence checklist by market**: Europe replaces the US-only items (Delaware franchise tax, 409A, federal returns, sales tax, certificate of incorporation, GAAP) with European ones (company register, option valuation and tax treatment, VAT, articles and shareholders' agreement, local GAAP or IFRS, GDPR) and adds foreign investment screening, the AI Act (AI applications) and DORA (fintech). The US adds Form D and QSBS status. The owner's own wording still wins.
+- **Data job**: it now reads compressed answers (the ECB started sending them), so the euro area yield no longer fails.
+- Tests: tests/market.test.mjs 35 checks, tests/browser/market_test.py 23 checks.
+
 ## v5.8.0: 2026-11-18
 
 **Market data: the startup's market (United States or Europe) and sourced market figures, free and without a key.** The owner's three tiers: online with an AI key (Market intel on top), online without a key (a weekly data file published with the site), offline (a snapshot built into the page). See docs/MARKET-DATA.md.

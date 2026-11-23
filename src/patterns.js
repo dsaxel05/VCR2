@@ -253,10 +253,10 @@ function detectPatterns(ctx) {
       'Customers are buying more than they use. That reverses at renewal, when procurement looks at utilisation.',
       'What is utilisation for the accounts renewing in the next two quarters?');
 
-  const arr = f('arr_now'), st = STAGE_RANGE[S.stage];
+  const arr = f('arr_now'), st = typeof stageRangeLocal === 'function' ? stageRangeLocal(S.stage) : STAGE_RANGE[S.stage];
   if (arr != null && st && ((st.hi && arr > st.hi * pp('stage_mismatch', 'over')) || (st.lo && arr < st.lo / pp('stage_mismatch', 'under'))))
     add('amber', 'stage_mismatch', 'Graded against the wrong stage?',
-      [`ARR ${money(arr)}`, `${STAGES.find(x => x.id === S.stage).n} range ${STAGES.find(x => x.id === S.stage).s}`],
+      [`ARR ${money(arr)}`, `${STAGES.find(x => x.id === S.stage).n} range ${typeof stageText === 'function' ? stageText(STAGES.find(x => x.id === S.stage)) : STAGES.find(x => x.id === S.stage).s}`],
       'Stage sets every threshold. A company far outside the stage range is being held to the wrong bar.',
       null);
 
@@ -337,9 +337,9 @@ function detectPatterns(ctx) {
       'Who writes the core code today, what do they own, and are they vesting?');
   if (gb('funds_separate') === false || gb('valuation_409a') === false)
     add(gb('funds_separate') === false ? 'red' : 'amber', 'finance_hygiene', 'Finance and tax hygiene needs work',
-      [gb('funds_separate') === false ? 'company and personal money are mixed' : null, gb('valuation_409a') === false ? 'no current 409A behind option grants' : null],
+      [gb('funds_separate') === false ? 'company and personal money are mixed' : null, gb('valuation_409a') === false ? 'no current 409A or independent valuation behind option grants' : null],
       'These are fixable, but they are found in every diligence and delay closing. Commingled funds also make the historical numbers hard to rely on.',
-      'Can the books be cleaned up and a 409A commissioned before closing, and who owns that work?');
+      'Can the books be cleaned up and a 409A (or, in Europe, an independent valuation) commissioned before closing, and who owns that work?');
   const whyAsked = !HIDDEN_IDS.has('why_now') && SECTIONS.some(sec => visibleFields(sec).some(fl => fl.id === 'why_now'));
   if (whyAsked && !String(S.vals.why_now || '').trim() && (stageKey() === 'preseed' || stageKey() === 'seed') && ctx.sc && ctx.sc.coverage > 0.25)
     add('amber', 'why_now', 'No answer yet to “why now?”',
