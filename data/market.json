@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-19",
- "version": "2026-11-19",
+ "updated": "2026-11-23",
+ "version": "2026-11-23",
  "items": {
   "exit_multiple": {
    "us": {
@@ -76,8 +76,8 @@
   },
   "fx_usd": {
    "eu": {
-    "value": 1.0968,
-    "date": "2026-11-18",
+    "value": 1.0939,
+    "date": "2026-11-23",
     "src": "European Central Bank reference rate",
     "kind": "official",
     "url": "https://data.ecb.europa.eu/data/datasets/EXR/EXR.D.USD.EUR.SP00.A"
@@ -85,15 +85,15 @@
   },
   "risk_free_10y": {
    "eu": {
-    "value": 3.4246,
-    "date": "2026-11-17",
+    "value": 3.3608,
+    "date": "2026-11-20",
     "src": "ECB euro area yield curve (AAA), 10-year spot",
     "kind": "official",
     "url": "https://data.ecb.europa.eu/data/datasets/YC/YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y"
    },
    "us": {
-    "value": 5.07,
-    "date": "2026-11-18",
+    "value": 4.92,
+    "date": "2026-11-20",
     "src": "US Treasury daily par yield curve, 10-year",
     "kind": "official",
     "url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
