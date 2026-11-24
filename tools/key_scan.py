@@ -32,8 +32,21 @@ def git(*a):
     return subprocess.run(['git', *a], cwd=ROOT, capture_output=True).stdout
 
 
+# The one public browser key the site must carry: the Google Picker key declared in site.json (workspaces.google.apiKey).
+# Google restricts it to the Picker API and to https://vcr2.app/* (owner's decision, 2026-11-24). Only that exact value is
+# accepted; any other key-like string, including another AIza key, still fails the scan.
+def _public_picker_key():
+    try:
+        import json
+        k = (((json.loads((ROOT / 'site.json').read_text(encoding='utf-8')).get('workspaces') or {}).get('google') or {}).get('apiKey') or '')
+        return k.encode() if re.fullmatch(r'AIza[0-9A-Za-z_-]{35}', k) else None
+    except Exception:
+        return None
+PUBLIC_KEY = _public_picker_key()
+
+
 def scan_bytes(label, data, hits):
-    n = len(RX.findall(data))
+    n = len([m for m in RX.findall(data) if m != PUBLIC_KEY])
     if n: hits.append((label, n))
 
 

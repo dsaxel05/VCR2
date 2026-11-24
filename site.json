@@ -25,9 +25,9 @@
     "intake": "",
     "mailDomain": "",
     "google": {
-      "clientId": "",
-      "apiKey": "",
-      "appId": ""
+      "clientId": "609363044785-3pf64f24glo0t2s158s247la0oh1oiv6.apps.googleusercontent.com",
+      "apiKey": "AIzaSyA-T5OEWt18gZTQE9H1iLoMv3h3p67ODlw",
+      "appId": "609363044785"
     }
   }
 }
