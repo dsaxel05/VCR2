@@ -13,6 +13,20 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 RX = re.compile(rb'sk-[A-Za-z0-9_-]{20,}|github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|gsk_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----')
 BINARY = {'.woff', '.woff2', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.zip', '.xlsx', '.xlsm', '.pdf'}
 
+# Third-party binaries embedded as text (the OCR engine's WebAssembly), unchanged from their published package: skipped only while
+# their SHA-256 matches vendor/ocr/SHA256SUMS. Any change to them, or any other file, is scanned as usual.
+import hashlib
+def _verified_vendor():
+    out, sums = set(), ROOT / 'vendor' / 'ocr' / 'SHA256SUMS'
+    if not sums.exists(): return out
+    for line in sums.read_text(encoding='utf-8').splitlines():
+        parts = line.split()
+        if len(parts) == 2 and not line.startswith('#'):
+            f = ROOT / 'vendor' / 'ocr' / parts[1]
+            if f.is_file() and hashlib.sha256(f.read_bytes()).hexdigest() == parts[0]: out.add('vendor/ocr/' + parts[1])
+    return out
+VERIFIED = _verified_vendor()
+
 
 def git(*a):
     return subprocess.run(['git', *a], cwd=ROOT, capture_output=True).stdout
@@ -28,14 +42,14 @@ def main():
     files = [f for f in git('ls-files', '-z').split(b'\0') if f]
     for f in files:
         p = ROOT / f.decode('utf-8', 'replace')
-        if p.suffix.lower() in BINARY or not p.is_file(): continue
+        if p.suffix.lower() in BINARY or not p.is_file() or f.decode('utf-8', 'replace') in VERIFIED: continue
         scan_bytes(str(p.relative_to(ROOT)), p.read_bytes(), hits)
     counts['tracked files'] = len(files)
     built = [ROOT / 'index.html'] + sorted((ROOT / 'assets').rglob('*'))
     for p in built:
         if p.is_file() and p.suffix.lower() not in BINARY: scan_bytes('build: ' + str(p.relative_to(ROOT)), p.read_bytes(), hits)
     counts['build files'] = len(built)
-    hist = git('log', '--all', '-p', '--no-color')
+    hist = git('log', '--all', '-p', '--no-color', '--', '.', *[':(exclude)' + v for v in sorted(VERIFIED)])
     scan_bytes('git history', hist, hits)
     counts['commits'] = len(git('rev-list', '--all').split())
     if '--package' in sys.argv:

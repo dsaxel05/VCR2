@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-inX/OkoZdea9i+dJ/oYbwV5iya46ehSq4VDayFJvcLA=' https://apis.google.com https://www.gstatic.com; style-src 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com; img-src https: data:; font-src https://fonts.gstatic.com; frame-src https://docs.google.com https://drive.google.com https://accounts.google.com https://content.googleapis.com; connect-src https://www.googleapis.com https://content.googleapis.com https://apis.google.com; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta name="referrer" content="strict-origin" />
+<meta name="robots" content="noindex" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Choose in Google Drive</title>
+<style>body{font:16px system-ui,sans-serif;margin:30px;color:#1c2430;background:#fbf8f1}</style>
+</head>
+<body>
+<p id="m">Opening Google Drive…</p>
+<script>
+(function () {
+  var p = new URLSearchParams(location.hash.slice(1)), state = p.get('state') || '', kind = p.get('kind') || 'folder', bc = new BroadcastChannel('vcr2-picker'), done = false;
+  var say = function (t) { document.getElementById('m').textContent = t; };
+  if (!/^[A-Za-z0-9_-]{8,64}$/.test(state)) { say('This window was not opened by VCR2.'); return; }
+  var finish = function (msg) { if (done) return; done = true; msg.state = state; bc.postMessage(msg); setTimeout(function () { window.close(); }, 200); };
+  window.addEventListener('beforeunload', function () { if (!done) bc.postMessage({ state:state, cancel:true }); });
+  bc.onmessage = function (e) {
+    var d = e.data || {}; if (d.state !== state || !d.token) return;
+    var s = document.createElement('script'); s.src = 'https://apis.google.com/js/api.js';
+    s.onload = function () {
+      gapi.load('picker', function () {
+        var G = google.picker, view;
+        if (kind === 'folder') view = new G.DocsView(G.ViewId.FOLDERS).setIncludeFolders(true).setSelectFolderEnabled(true).setEnableDrives(true).setMimeTypes('application/vnd.google-apps.folder');
+        else if (kind === 'sheet') view = new G.DocsView(G.ViewId.SPREADSHEETS).setEnableDrives(true);
+        else view = new G.DocsView(G.ViewId.DOCUMENTS).setEnableDrives(true);
+        if (d.preselect && d.preselect.length && view.setFileIds) view.setFileIds(d.preselect.join(','));
+        var b = new G.PickerBuilder().addView(view).setOAuthToken(d.token).enableFeature(G.Feature.SUPPORT_DRIVES).setSize(860, 560)
+          .setTitle(kind === 'folder' ? 'Choose a folder for VCR2' : kind === 'sheet' ? 'Choose your master sheet' : 'Choose your memo template')
+          .setCallback(function (r) { if (r.action === G.Action.PICKED) finish({ picked:(r.docs || []).map(function (x) { return { id:x.id, name:x.name, url:x.url, mimeType:x.mimeType }; }) }); else if (r.action === G.Action.CANCEL) finish({ cancel:true }); });
+        if (d.apiKey) b.setDeveloperKey(d.apiKey); if (d.appId) b.setAppId(d.appId);
+        b.build().setVisible(true); say('Choose in the Google window.');
+      });
+    };
+    s.onerror = function () { say('Google Drive could not be reached.'); finish({ cancel:true }); };
+    document.head.appendChild(s);
+  };
+  bc.postMessage({ state:state, ready:true });
+})();
+</script>
+</body>
+</html>

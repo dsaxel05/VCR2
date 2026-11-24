@@ -22,6 +22,20 @@ VCR2 runs entirely in your browser. What you type, the files you drop and Smart 
 
 # Avis de confidentialité
 
+## Deal flow (workspaces)
+
+Deal flow (`flow.html`) reads decks in your browser, as the main page does. What leaves it, and only when you set it up:
+- **Google** (your choice, Settings, Google Drive and sheet): decks, reports, memos and LP documents go to your own Drive and your
+  master sheet. VCR2 asks for the narrowest Drive access (`drive.file`: the files it creates and the ones you pick). The access
+  token stays in the browser tab for its hour of life.
+- **The intake service** (a Cloudflare Worker run for this site): it holds a founder's form submission or a forwarded e-mail
+  until your team's browser reads it, then deletes it (14 days at most), relays your webhook, and sends the optional digest and
+  founder acknowledgement.
+- **Team workspaces** (signed in, when switched on): the workspace settings and, per company, the structured record (facts with
+  short quotes, scores, statuses, notes, votes) in your account's region, visible only to the workspace's members. Never the
+  decks or their text.
+- LP-facing exports contain only generic fields and pass an anonymization check before they can be exported.
+
 ## En invité (par défaut)
 VCR2 fonctionne entièrement dans votre navigateur. Ce que vous saisissez, les fichiers déposés et leur lecture par Smart fill, le registre clients, les contrôles, la simulation et le score restent sur votre appareil. La page charge sa propre configuration depuis le même site. Rien d'autre n'est envoyé, sauf si vous activez une fonction d'IA avec votre propre clé (seul le texte choisi part alors chez le fournisseur choisi).
 

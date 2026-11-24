@@ -1,0 +1,76 @@
+{
+ "a": {
+  "name": "Investor A (fake): European B2B fund",
+  "scorecard": "profit_durability",
+  "pipeline": "committee",
+  "storage": "google",
+  "thesis": {
+   "stages": [
+    "seed",
+    "a"
+   ],
+   "sectors": [
+    "fintech",
+    "ai",
+    "devtools",
+    "security",
+    "b2b_software"
+   ],
+   "geos": [
+    "europe"
+   ],
+   "models": [
+    "saas",
+    "ai_app",
+    "fintech"
+   ],
+   "roundMin": 1000000,
+   "roundMax": 12000000,
+   "exclusions": [
+    "crypto",
+    "gambling"
+   ],
+   "musts": [
+    {
+     "kind": "keyword",
+     "text": "B2B"
+    }
+   ]
+  }
+ },
+ "b": {
+  "name": "Investor B (fake): North American angel syndicate",
+  "scorecard": "seed_basics",
+  "pipeline": "intake",
+  "storage": "microsoft (later: stored in VCR2 only)",
+  "thesis": {
+   "stages": [
+    "preseed",
+    "seed"
+   ],
+   "sectors": [
+    "health",
+    "climate",
+    "edtech",
+    "ai"
+   ],
+   "geos": [
+    "north_america"
+   ],
+   "roundMin": 250000,
+   "roundMax": 3000000,
+   "exclusions": [
+    "defence",
+    "crypto"
+   ],
+   "musts": [
+    {
+     "kind": "metric",
+     "metric": "arr",
+     "op": ">=",
+     "value": 100000
+    }
+   ]
+  }
+ }
+}

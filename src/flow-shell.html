@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<!-- Deal flow (workspaces). Same rules as the main page: only this build's script blocks run (hashes), no inline handlers,
+     Trusted Types. connect-src adds Google's Drive, Sheets and Docs APIs, the account projects, the intake service and the
+     AI providers (Tier 1, the investor's own key, for optional pillar suggestions). Workers: blobs and the self-hosted OCR thread. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src @@SCRIPT_HASHES@@; script-src-elem @@SCRIPT_HASHES@@; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://www.googleapis.com https://sheets.googleapis.com https://docs.googleapis.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai @@FLOW_HOSTS@@; worker-src 'self' blob:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types vcr2" />
+<meta name="referrer" content="no-referrer" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VCR2 Deal flow</title>
+<meta name="description" content="VCR2 Deal flow: intake, thesis check, evidence-based scorecard, the investor's own master sheet and deal memos." />
+<link rel="icon" href="assets/logo/svg/seal-favicon.svg" type="image/svg+xml" />
+<meta name="color-scheme" content="light dark" />
+<meta name="robots" content="noindex" />
+<style>html{display:none}</style>
+<script>
+(function () { try { if (window.top === window.self) document.documentElement.style.display = 'block'; } catch (e) {}
+  if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1|\[::1\])$|\.(localhost|test)$/.test(location.hostname)) location.replace('https:' + location.href.slice(5));
+  try { var d = document.documentElement, ls = window.localStorage, s = {}; try { s = JSON.parse(ls.getItem('vcr2-look-style') || '{}') || {}; } catch (e) {}
+    d.setAttribute('data-direction', 'privatebank'); d.setAttribute('data-accent', /^(brass|garnet|emerald)$/.test(s.accent) ? s.accent : 'brass');
+    d.setAttribute('data-frame', s.frame === 'off' ? 'off' : 'on'); d.setAttribute('data-divider', s.divider === 'plain' ? 'plain' : 'diamond');
+    var tx = ls.getItem('vcr2-text') || 'normal'; d.setAttribute('data-text', /^(normal|large|xlarge)$/.test(tx) ? tx : 'normal');
+    var p = ls.getItem('vcr2-theme') || ls.getItem('vcr2-theme-default') || 'light';
+    d.setAttribute('data-theme', p === 'dark' || p === 'light' ? p : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  } catch (e) { document.documentElement.setAttribute('data-direction', 'privatebank'); document.documentElement.setAttribute('data-theme', 'light'); } })();
+</script>
+<style>
+/*@@CSS@@*/
+</style>
+</head>
+<body spellcheck="false" class="flow-body">
+<a class="skip-link" href="#fl-main">Skip to the content</a>
+<header class="fl-top" role="banner">
+  <a class="fl-brand" href="./" aria-label="VCR2, back to the analysis">
+    <img src="assets/logo/svg/seal-compact.svg" alt="" width="34" height="34">
+    <span class="fl-brand-name">VCR2</span><span class="fl-brand-sub">Deal flow</span>
+  </a>
+  <div class="fl-ws" id="fl-ws"></div>
+  <nav class="fl-tabs" id="fl-tabs" aria-label="Deal flow views">
+    <button type="button" class="fl-tab" data-click="flView" data-a="dash">Dashboard</button>
+    <button type="button" class="fl-tab" data-click="flView" data-a="triage">Weekly triage</button>
+    <button type="button" class="fl-tab" data-click="flView" data-a="add">Add companies</button>
+    <button type="button" class="fl-tab" data-click="flView" data-a="calib">Calibration</button>
+    <button type="button" class="fl-tab" data-click="flView" data-a="lp">LP data room</button>
+    <button type="button" class="fl-tab" data-click="flView" data-a="settings">Settings</button>
+    <button type="button" class="fl-tab" data-click="flView" data-a="help">Help</button>
+  </nav>
+  <div class="fl-who" id="fl-who"></div>
+</header>
+<main class="fl-main" id="fl-main" tabindex="-1">
+  <div id="fl-view" class="fl-view" aria-live="polite"></div>
+</main>
+<aside class="fl-drawer" id="fl-drawer" aria-label="Company" hidden></aside>
+<div class="fl-scrim" id="fl-scrim" data-click="flCloseDrawer" hidden></div>
+<footer class="fl-foot">© 2026 Axel De Sousa. All rights reserved. VCR2 is not investment advice. <a href="./">Back to the analysis</a></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/*@@JS@@*/
+</script>
+</body>
+</html>

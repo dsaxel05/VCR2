@@ -1,0 +1,873 @@
+[
+ {
+  "i": 0,
+  "name": "Ariori Labs",
+  "format": "pdf",
+  "files": [
+   "decks/ariori-labs-deck.pdf"
+  ],
+  "sector": "climate",
+  "geo": "in",
+  "stage": "Pre-seed",
+  "raise_m": 0.5,
+  "arr": 138000,
+  "domain": "ariorilabs.ai",
+  "email": "lucas@ariorilabs.ai"
+ },
+ {
+  "i": 1,
+  "name": "Falvelly",
+  "format": "pptx",
+  "files": [
+   "decks/falvelly-pitch.pptx"
+  ],
+  "sector": "hr",
+  "geo": "es",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 1277000,
+  "domain": "falvelly.co",
+  "email": "ines@falvelly.co"
+ },
+ {
+  "i": 2,
+  "name": "Mirmir Labs",
+  "format": "pdf",
+  "files": [
+   "decks/mirmir-labs-deck.pdf"
+  ],
+  "sector": "fintech",
+  "geo": "us",
+  "stage": "Series B",
+  "raise_m": 30,
+  "arr": 18276000,
+  "domain": "mirmirlabs.co",
+  "email": "amelie@mirmirlabs.co"
+ },
+ {
+  "i": 3,
+  "name": "Vellumio",
+  "format": "email",
+  "files": [
+   "email/vellumio.eml"
+  ],
+  "sector": "health",
+  "geo": "us2",
+  "stage": "Series A",
+  "raise_m": 9,
+  "arr": 3537000,
+  "domain": "vellumio.com",
+  "email": "jonas@vellumio.com"
+ },
+ {
+  "i": 4,
+  "name": "Corqua",
+  "format": "pdf",
+  "files": [
+   "decks/corqua-deck.pdf"
+  ],
+  "sector": "devtools",
+  "geo": "fr",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 3849000,
+  "domain": "corqua.ai",
+  "email": "maya@corqua.ai"
+ },
+ {
+  "i": 5,
+  "name": "Solpax Systems",
+  "format": "folder",
+  "files": [
+   "decks/solpax-systems/solpax-systems-deck.pdf",
+   "decks/solpax-systems/metrics-export.csv"
+  ],
+  "sector": "climate",
+  "geo": "in",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 1494000,
+  "domain": "solpaxsystems.com",
+  "email": "amelie@solpaxsystems.com"
+ },
+ {
+  "i": 6,
+  "name": "Soltra Labs",
+  "format": "pdf",
+  "files": [
+   "decks/soltra-labs-deck.pdf"
+  ],
+  "sector": "fintech",
+  "geo": "es",
+  "stage": "Series B",
+  "raise_m": 45,
+  "arr": 13990000,
+  "domain": "soltralabs.co",
+  "email": "zoe@soltralabs.co"
+ },
+ {
+  "i": 7,
+  "name": "Gridun Systems",
+  "format": "scan",
+  "files": [
+   "decks/gridun-systems-scan.pdf"
+  ],
+  "sector": "climate",
+  "geo": "uk",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 7612000,
+  "domain": "gridunsystems.ai",
+  "email": "felix@gridunsystems.ai"
+ },
+ {
+  "i": 8,
+  "name": "Mircor",
+  "format": "pdf",
+  "files": [
+   "decks/mircor-deck.pdf"
+  ],
+  "sector": "edtech",
+  "geo": "es",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 3668000,
+  "domain": "mircor.io",
+  "email": "lucas@mircor.io"
+ },
+ {
+  "i": 9,
+  "name": "Quanor",
+  "format": "incomplete",
+  "files": [
+   "decks/quanor-deck.pdf"
+  ],
+  "sector": "logistics",
+  "geo": "ca",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 4898000,
+  "domain": "quanor.co",
+  "email": "hugo@quanor.co"
+ },
+ {
+  "i": 10,
+  "name": "Talgri",
+  "format": "pdf",
+  "files": [
+   "decks/talgri-deck.pdf"
+  ],
+  "sector": "security",
+  "geo": "de",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 7769000,
+  "domain": "talgri.ai",
+  "email": "ines@talgri.ai"
+ },
+ {
+  "i": 11,
+  "name": "Trazen",
+  "format": "pptx",
+  "files": [
+   "decks/trazen-pitch.pptx"
+  ],
+  "sector": "fintech",
+  "geo": "de",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 7526000,
+  "domain": "trazen.com",
+  "email": "zoe@trazen.com"
+ },
+ {
+  "i": 12,
+  "name": "Falariio",
+  "format": "pdf",
+  "files": [
+   "decks/falariio-deck.pdf"
+  ],
+  "sector": "edtech",
+  "geo": "us",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 3281000,
+  "domain": "falariio.io",
+  "email": "karim@falariio.io"
+ },
+ {
+  "i": 13,
+  "name": "Mirari Labs",
+  "format": "folder",
+  "files": [
+   "decks/mirari-labs/mirari-labs-deck.pdf",
+   "decks/mirari-labs/metrics-export.csv"
+  ],
+  "sector": "crypto",
+  "geo": "nl",
+  "stage": "Series B",
+  "raise_m": 30,
+  "arr": 12506000,
+  "domain": "mirarilabs.com",
+  "email": "ines@mirarilabs.com"
+ },
+ {
+  "i": 14,
+  "name": "Corlumly",
+  "format": "pdf",
+  "files": [
+   "decks/corlumly-deck.pdf"
+  ],
+  "sector": "fintech",
+  "geo": "us2",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 1358000,
+  "domain": "corlumly.com",
+  "email": "jonas@corlumly.com"
+ },
+ {
+  "i": 15,
+  "name": "Hexmira",
+  "format": "png",
+  "files": [
+   "decks/hexmira-deck.png"
+  ],
+  "sector": "fintech",
+  "geo": "fr",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 1774000,
+  "domain": "hexmira.io",
+  "email": "felix@hexmira.io"
+ },
+ {
+  "i": 16,
+  "name": "Traariio",
+  "format": "pdf",
+  "files": [
+   "decks/traariio-deck.pdf"
+  ],
+  "sector": "ai",
+  "geo": "es",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 2498000,
+  "domain": "traariio.co",
+  "email": "jonas@traariio.co"
+ },
+ {
+  "i": 17,
+  "name": "Tranorio",
+  "format": "pptx",
+  "files": [
+   "decks/tranorio-pitch.pptx"
+  ],
+  "sector": "edtech",
+  "geo": "uk",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 3243000,
+  "domain": "tranorio.io",
+  "email": "priya@tranorio.io"
+ },
+ {
+  "i": 18,
+  "name": "Quacorly",
+  "format": "pdf",
+  "files": [
+   "decks/quacorly-deck.pdf"
+  ],
+  "sector": "crypto",
+  "geo": "de",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 1559000,
+  "domain": "quacorly.ai",
+  "email": "clara@quacorly.ai"
+ },
+ {
+  "i": 19,
+  "name": "Dunnor",
+  "format": "email",
+  "files": [
+   "email/dunnor.eml"
+  ],
+  "sector": "crypto",
+  "geo": "ca",
+  "stage": "Series A",
+  "raise_m": 9,
+  "arr": 5866000,
+  "domain": "dunnor.co",
+  "email": "zoe@dunnor.co"
+ },
+ {
+  "i": 20,
+  "name": "Oriquaio",
+  "format": "pdf",
+  "files": [
+   "decks/oriquaio-deck.pdf"
+  ],
+  "sector": "hr",
+  "geo": "uk",
+  "stage": "Pre-seed",
+  "raise_m": 0.5,
+  "arr": 160000,
+  "domain": "oriquaio.ai",
+  "email": "amelie@oriquaio.ai"
+ },
+ {
+  "i": 21,
+  "name": "Gribrily",
+  "format": "folder",
+  "files": [
+   "decks/gribrily/gribrily-deck.pdf",
+   "decks/gribrily/metrics-export.csv"
+  ],
+  "sector": "health",
+  "geo": "de",
+  "stage": "Seed",
+  "raise_m": 2.5,
+  "arr": 1724000,
+  "domain": "gribrily.co",
+  "email": "elena@gribrily.co"
+ },
+ {
+  "i": 22,
+  "name": "Paxtal Labs",
+  "format": "pdf",
+  "files": [
+   "decks/paxtal-labs-deck.pdf"
+  ],
+  "sector": "climate",
+  "geo": "fr",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 1174000,
+  "domain": "paxtallabs.ai",
+  "email": "tariq@paxtallabs.ai"
+ },
+ {
+  "i": 23,
+  "name": "Fallum",
+  "format": "scan",
+  "files": [
+   "decks/fallum-scan.pdf"
+  ],
+  "sector": "health",
+  "geo": "us2",
+  "stage": "Series B",
+  "raise_m": 45,
+  "arr": 29591000,
+  "domain": "fallum.co",
+  "email": "marc@fallum.co"
+ },
+ {
+  "i": 24,
+  "name": "Hexkel Systems",
+  "format": "pdf",
+  "files": [
+   "decks/hexkel-systems-deck.pdf"
+  ],
+  "sector": "climate",
+  "geo": "us",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 976000,
+  "domain": "hexkelsystems.io",
+  "email": "omar@hexkelsystems.io"
+ },
+ {
+  "i": 25,
+  "name": "Faltally",
+  "format": "pptx",
+  "files": [
+   "decks/faltally-pitch.pptx"
+  ],
+  "sector": "ai",
+  "geo": "de",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 682000,
+  "domain": "faltally.com",
+  "email": "theo@faltally.com"
+ },
+ {
+  "i": 26,
+  "name": "Hexhexio",
+  "format": "pdf",
+  "files": [
+   "decks/hexhexio-deck.pdf"
+  ],
+  "sector": "devtools",
+  "geo": "fr",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 5697000,
+  "domain": "hexhexio.io",
+  "email": "priya@hexhexio.io"
+ },
+ {
+  "i": 27,
+  "name": "Hextra Labs",
+  "format": "email",
+  "files": [
+   "email/hextra-labs.eml"
+  ],
+  "sector": "security",
+  "geo": "nl",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 812000,
+  "domain": "hextralabs.io",
+  "email": "nora@hextralabs.io"
+ },
+ {
+  "i": 28,
+  "name": "Orimirly",
+  "format": "pdf",
+  "files": [
+   "decks/orimirly-deck.pdf"
+  ],
+  "sector": "climate",
+  "geo": "nl",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 438000,
+  "domain": "orimirly.ai",
+  "email": "jonas@orimirly.ai"
+ },
+ {
+  "i": 29,
+  "name": "Grisolio",
+  "format": "folder",
+  "files": [
+   "decks/grisolio/grisolio-deck.pdf",
+   "decks/grisolio/metrics-export.csv"
+  ],
+  "sector": "crypto",
+  "geo": "ca",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 3995000,
+  "domain": "grisolio.com",
+  "email": "marc@grisolio.com"
+ },
+ {
+  "i": 30,
+  "name": "Velgri Labs",
+  "format": "pdf",
+  "files": [
+   "decks/velgri-labs-deck.pdf"
+  ],
+  "sector": "edtech",
+  "geo": "ca",
+  "stage": "Seed",
+  "raise_m": 2.5,
+  "arr": 1737000,
+  "domain": "velgrilabs.ai",
+  "email": "marc@velgrilabs.ai"
+ },
+ {
+  "i": 31,
+  "name": "Grikel",
+  "format": "incomplete",
+  "files": [
+   "decks/grikel-deck.pdf"
+  ],
+  "sector": "climate",
+  "geo": "ca",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 2937000,
+  "domain": "grikel.co",
+  "email": "amelie@grikel.co"
+ },
+ {
+  "i": 32,
+  "name": "Lumtal Labs",
+  "format": "pdf",
+  "files": [
+   "decks/lumtal-labs-deck.pdf"
+  ],
+  "sector": "climate",
+  "geo": "ca",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 7880000,
+  "domain": "lumtallabs.ai",
+  "email": "lucas@lumtallabs.ai"
+ },
+ {
+  "i": 33,
+  "name": "Corzenio",
+  "format": "pptx",
+  "files": [
+   "decks/corzenio-pitch.pptx"
+  ],
+  "sector": "security",
+  "geo": "se",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 5982000,
+  "domain": "corzenio.com",
+  "email": "omar@corzenio.com"
+ },
+ {
+  "i": 34,
+  "name": "Quafal Labs",
+  "format": "pdf",
+  "files": [
+   "decks/quafal-labs-deck.pdf"
+  ],
+  "sector": "fintech",
+  "geo": "se",
+  "stage": "Seed",
+  "raise_m": 2.5,
+  "arr": 880000,
+  "domain": "quafallabs.co",
+  "email": "karim@quafallabs.co"
+ },
+ {
+  "i": 35,
+  "name": "Faldunio",
+  "format": "pptx",
+  "files": [
+   "decks/faldunio-pitch.pptx"
+  ],
+  "sector": "climate",
+  "geo": "us",
+  "stage": "Pre-seed",
+  "raise_m": 1.2,
+  "arr": 3000,
+  "domain": "faldunio.ai",
+  "email": "amelie@faldunio.ai"
+ },
+ {
+  "i": 36,
+  "name": "Veltally",
+  "format": "pdf",
+  "files": [
+   "decks/veltally-deck.pdf"
+  ],
+  "sector": "fintech",
+  "geo": "in",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 1303000,
+  "domain": "veltally.ai",
+  "email": "elena@veltally.ai"
+ },
+ {
+  "i": 37,
+  "name": "Kelbri Systems",
+  "format": "folder",
+  "files": [
+   "decks/kelbri-systems/kelbri-systems-deck.pdf",
+   "decks/kelbri-systems/metrics-export.csv"
+  ],
+  "sector": "ai",
+  "geo": "es",
+  "stage": "Series B",
+  "raise_m": 20,
+  "arr": 29083000,
+  "domain": "kelbrisystems.io",
+  "email": "zoe@kelbrisystems.io"
+ },
+ {
+  "i": 38,
+  "name": "Mirdunio",
+  "format": "email",
+  "files": [
+   "email/mirdunio.eml"
+  ],
+  "sector": "hr",
+  "geo": "us2",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 7859000,
+  "domain": "mirdunio.ai",
+  "email": "lena@mirdunio.ai"
+ },
+ {
+  "i": 39,
+  "name": "Arifal",
+  "format": "pptx",
+  "files": [
+   "decks/arifal-pitch.pptx"
+  ],
+  "sector": "hr",
+  "geo": "de",
+  "stage": "Seed",
+  "raise_m": 2.5,
+  "arr": 433000,
+  "domain": "arifal.co",
+  "email": "felix@arifal.co"
+ },
+ {
+  "i": 40,
+  "name": "Travela",
+  "format": "pdf",
+  "files": [
+   "decks/travela-deck.pdf"
+  ],
+  "sector": "logistics",
+  "geo": "in",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 552000,
+  "domain": "travela.co",
+  "email": "elena@travela.co"
+ },
+ {
+  "i": 41,
+  "name": "Vercora",
+  "format": "pptx",
+  "files": [
+   "decks/vercora-pitch.pptx"
+  ],
+  "sector": "crypto",
+  "geo": "uk",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 503000,
+  "domain": "vercora.ai",
+  "email": "tariq@vercora.ai"
+ },
+ {
+  "i": 42,
+  "name": "Norori Systems",
+  "format": "pdf",
+  "files": [
+   "decks/norori-systems-deck.pdf"
+  ],
+  "sector": "fintech",
+  "geo": "es",
+  "stage": "Pre-seed",
+  "raise_m": 0.5,
+  "arr": 93000,
+  "domain": "nororisystems.co",
+  "email": "felix@nororisystems.co"
+ },
+ {
+  "i": 43,
+  "name": "Traori Labs",
+  "format": "pptx",
+  "files": [
+   "decks/traori-labs-pitch.pptx"
+  ],
+  "sector": "hr",
+  "geo": "de",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 1457000,
+  "domain": "traorilabs.com",
+  "email": "marc@traorilabs.com"
+ },
+ {
+  "i": 44,
+  "name": "Keloria",
+  "format": "incomplete",
+  "files": [
+   "decks/keloria-deck.pdf"
+  ],
+  "sector": "logistics",
+  "geo": "ca",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 371000,
+  "domain": "keloria.ai",
+  "email": "hugo@keloria.ai"
+ },
+ {
+  "i": 45,
+  "name": "Kellumly",
+  "format": "folder",
+  "files": [
+   "decks/kellumly/kellumly-deck.pdf",
+   "decks/kellumly/metrics-export.csv"
+  ],
+  "sector": "edtech",
+  "geo": "fr",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 6278000,
+  "domain": "kellumly.ai",
+  "email": "sofia@kellumly.ai"
+ },
+ {
+  "i": 46,
+  "name": "Mirvera",
+  "format": "pdf",
+  "files": [
+   "decks/mirvera-deck.pdf"
+  ],
+  "sector": "edtech",
+  "geo": "in",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 1554000,
+  "domain": "mirvera.co",
+  "email": "hugo@mirvera.co"
+ },
+ {
+  "i": 47,
+  "name": "Grivel Labs",
+  "format": "pptx",
+  "files": [
+   "decks/grivel-labs-pitch.pptx"
+  ],
+  "sector": "hr",
+  "geo": "us",
+  "stage": "Series A",
+  "raise_m": 6,
+  "arr": 3529000,
+  "domain": "grivellabs.co",
+  "email": "felix@grivellabs.co"
+ },
+ {
+  "i": 48,
+  "name": "Arihexa",
+  "format": "pdf",
+  "files": [
+   "decks/arihexa-deck.pdf"
+  ],
+  "sector": "hr",
+  "geo": "uk",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 2683000,
+  "domain": "arihexa.ai",
+  "email": "theo@arihexa.ai"
+ },
+ {
+  "i": 49,
+  "name": "Falkel",
+  "format": "pptx",
+  "files": [
+   "decks/falkel-pitch.pptx"
+  ],
+  "sector": "crypto",
+  "geo": "uk",
+  "stage": "Seed",
+  "raise_m": 2.5,
+  "arr": 334000,
+  "domain": "falkel.com",
+  "email": "maya@falkel.com"
+ },
+ {
+  "i": 50,
+  "name": "Taltal",
+  "format": "email",
+  "files": [
+   "email/taltal.eml"
+  ],
+  "sector": "hr",
+  "geo": "us",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 848000,
+  "domain": "taltal.co",
+  "email": "amelie@taltal.co"
+ },
+ {
+  "i": 51,
+  "name": "Arital Systems",
+  "format": "pptx",
+  "files": [
+   "decks/arital-systems-pitch.pptx"
+  ],
+  "sector": "ai",
+  "geo": "us",
+  "stage": "Seed",
+  "raise_m": 3.5,
+  "arr": 1053000,
+  "domain": "aritalsystems.co",
+  "email": "nora@aritalsystems.co"
+ },
+ {
+  "i": 52,
+  "name": "Soldunly",
+  "format": "pdf",
+  "files": [
+   "decks/soldunly-deck.pdf"
+  ],
+  "sector": "edtech",
+  "geo": "uk",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 5160000,
+  "domain": "soldunly.com",
+  "email": "priya@soldunly.com"
+ },
+ {
+  "i": 53,
+  "name": "Grinorly",
+  "format": "folder",
+  "files": [
+   "decks/grinorly/grinorly-deck.pdf",
+   "decks/grinorly/metrics-export.csv"
+  ],
+  "sector": "health",
+  "geo": "uk",
+  "stage": "Series B",
+  "raise_m": 45,
+  "arr": 16490000,
+  "domain": "grinorly.com",
+  "email": "karim@grinorly.com"
+ },
+ {
+  "i": 54,
+  "name": "Quadunio",
+  "format": "pdf",
+  "files": [
+   "decks/quadunio-deck.pdf"
+  ],
+  "sector": "crypto",
+  "geo": "es",
+  "stage": "Series A",
+  "raise_m": 12,
+  "arr": 6426000,
+  "domain": "quadunio.co",
+  "email": "theo@quadunio.co"
+ },
+ {
+  "i": 55,
+  "name": "Mirzen Systems",
+  "format": "pptx",
+  "files": [
+   "decks/mirzen-systems-pitch.pptx"
+  ],
+  "sector": "fintech",
+  "geo": "fr",
+  "stage": "Seed",
+  "raise_m": 1.5,
+  "arr": 1662000,
+  "domain": "mirzensystems.io",
+  "email": "nora@mirzensystems.io"
+ },
+ {
+  "i": 100,
+  "name": "Ariori Labs",
+  "format": "dup-same-file",
+  "files": [
+   "duplicates/ariori-labs-deck.pdf"
+  ]
+ },
+ {
+  "i": 101,
+  "name": "Falvelly",
+  "format": "dup-same-company",
+  "files": [
+   "duplicates/falvelly-v2-final.pdf"
+  ]
+ },
+ {
+  "i": 102,
+  "name": "Mirmir Labs",
+  "format": "dup-same-domain",
+  "files": [
+   "duplicates/update-q4.pptx"
+  ]
+ }
+]

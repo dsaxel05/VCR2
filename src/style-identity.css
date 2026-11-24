@@ -432,6 +432,8 @@ th, .tbl-wrap { position: relative; }
 .sb-nav { flex: 1 1 auto; min-height: 8rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-4) transparent; }
 .sb-footer { flex: 0 0 auto; max-height: 46%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: var(--sp-1) var(--sp-2) var(--sp-2); border-top: 1px solid var(--line-2); }
 .sb-links { display: flex; flex-direction: column; }
+/* Deal flow and About share one line, so the footer is no taller and the evidence sections keep their room */
+.sb-pair { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; } .sb-pair a.nav-item { text-decoration: none; color: inherit; }
 .sb-footer .nav-item { min-height: 2.125rem; margin: 0; width: 100%; }
 .sb-footer .sb-more > summary { padding: 0 var(--sp-2); }
 .sb-data .nav-item { font-size: 0.8125rem; }

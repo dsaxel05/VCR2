@@ -1,0 +1,4 @@
+# The OCR engine as published on npm (tesseract.js-core 5.1.1), unchanged. tools/key_scan.py skips a file listed here only
+# while its SHA-256 matches: its embedded WebAssembly happens to contain "AKIA" followed by 16 capitals (the shape of a cloud key).
+8f04aa0cc81e7bde33f80e92fa01a7a665f0b4884d098acf5de9c7104a11dfaa  tesseract-core-lstm.wasm.js
+ce20eda9533cbed1e6c2b4276fbae1e0adc61b6754b5513084be601787b457cf  tesseract-core-simd-lstm.wasm.js

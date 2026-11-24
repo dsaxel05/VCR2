@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-C/j7GxRSqDeSgkTnZzaA1HOC/bMHe/vmV13J/5Kyg2s='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta name="referrer" content="no-referrer" />
+<meta name="robots" content="noindex" />
+<title>Connecting Google…</title>
+<style>body{font:16px system-ui,sans-serif;margin:40px;color:#1c2430;background:#fbf8f1}</style>
+</head>
+<body>
+<p id="m">Connecting Google… you can close this window if it stays open.</p>
+<script>
+(function () {
+  var h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
+  var r = { state:h.get('state') || q.get('state') || '', access_token:h.get('access_token') || '', expires_in:h.get('expires_in') || '', scope:h.get('scope') || '', error:h.get('error') || q.get('error') || '' };
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  if (!/^[A-Za-z0-9_-]{8,64}$/.test(r.state)) { document.getElementById('m').textContent = 'This window was not opened by VCR2. You can close it.'; return; }
+  try { var bc = new BroadcastChannel('vcr2-oauth'); bc.postMessage(r); bc.close(); } catch (e) {}
+  try { localStorage.setItem('vcr2-oauth-result', JSON.stringify(r)); setTimeout(function () { try { localStorage.removeItem('vcr2-oauth-result'); } catch (e) {} }, 4000); } catch (e) {}
+  document.getElementById('m').textContent = r.error ? 'Google said: ' + r.error + '. You can close this window.' : 'Connected. This window closes itself.';
+  setTimeout(function () { window.close(); }, 600);
+})();
+</script>
+</body>
+</html>

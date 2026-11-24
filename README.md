@@ -83,6 +83,15 @@ No account, no API key. To use your own data, choose **Start an assessment** and
 | **An owner Studio** | The owner of the site can change everything that decides how a company is judged (healthy ranges, answer scores, weights, defaults, red-flag triggers, check tolerances), add fields, metrics, checks, deal-breakers, questions, benchmarks, checklist items and business models, and rename or switch off anything built in. Then publish to the live site. No code. [How it works](docs/STUDIO.md) |
 | **Output you can use** | A ranked question list, a ready-to-send founder email, a data-room request list, a print-ready **IC memo (PDF)**, Markdown, and a JSON export anyone can re-open. |
 
+### New in v6.0: Deal flow
+
+- **For an investment team's whole flow of companies** ([docs/WORKSPACES.md](docs/WORKSPACES.md)): a founder form for your website and a private forwarding address per workspace; folders of decks and your company spreadsheet imported in one go; duplicates merged; every deck checked against your thesis (In / Borderline / Out, each reason with its source, missing information turned into questions), image-only decks read with OCR in your browser.
+- **Your scorecard, scored from the evidence**: the "Profitability & Durability" template or your own pillars and weights; the engine scores what the evidence supports, with sources; people score the rest in one click.
+- **Your Google Workspace**: decks and reports filed in your Drive, your master Google Sheet kept up to date without ever overwriting your formulas or your team's cells, deal memos as Google Docs.
+- **From first call to IC**: your process stages with checklists, your committee's voting rules, votes recorded with the IC memo.
+- **For your LPs**: a due diligence process document and an anonymized pipeline, with a check that blocks any export that could identify a company.
+- Integration: JSON export and a signed webhook ([docs/workspace-integration.md](docs/workspace-integration.md)).
+
 ### New in v5.2
 
 - **Optional accounts and a personal library.** Sign in (Google, Microsoft, Apple, Yahoo, GitHub, LinkedIn, X, Facebook, an email link or email and password) to keep every analysis in your own account and reopen it on any device: autosave, versions with a diff, conflicts between devices resolved by you, export, and an optional **Vault mode** that encrypts analyses in your browser. Signing in is never required: as a guest, nothing leaves your browser. Signed in, the structured analysis (never your documents, their text or your customer ledger) is stored in your account. See [docs/ACCOUNTS.md](docs/ACCOUNTS.md) and [docs/PRIVACY.md](docs/PRIVACY.md).

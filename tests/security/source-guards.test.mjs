@@ -63,13 +63,15 @@ console.log('Source guards');
   const allowed = { innerHTML: 1, outerHTML: 1, parseFromString: 1, worker: 1 };   // exactly one each, all in core.js, all fed through the policy
   for (const [k, re] of Object.entries(sinkRe)) {
     const inSrc = findAll(re, SRC), want = allowed[k] || 0;
-    ok(`${k}: ${want ? 'only the helper in src/core.js' : 'never used'}`, inSrc.length === want && (!want || inSrc[0].startsWith('src/core.js:')), inSrc);
+    /* Deal flow adds one worker: the self-hosted OCR thread (src/ws-ocr.js), started through the same policy */
+    if (k === 'worker') ok('worker: the helper in src/core.js and the OCR thread in src/ws-ocr.js, nothing else', inSrc.length === 2 && inSrc.some(x => x.startsWith('src/core.js:')) && inSrc.some(x => x.startsWith('src/ws-ocr.js:')) && /new Worker\(TT \? TT\.createScriptURL\(u\) : u\)/.test(SRC['src/ws-ocr.js']), inSrc);
+    else ok(`${k}: ${want ? 'only the helper in src/core.js' : 'never used'}`, inSrc.length === want && (!want || inSrc[0].startsWith('src/core.js:')), inSrc);
     const inBuilt = findAll(re, { 'index.html': INDEX });
     ok(`${k}: the built page matches the source (${want} use)`, inBuilt.length === want, inBuilt);
   }
   const core = SRC['src/core.js'];
   ok('the helper passes HTML through the vcr2 policy (htmlOf) before innerHTML, outerHTML and the DOMParser', /\.innerHTML\s*=\s*htmlOf\(/.test(core) && /\.outerHTML\s*=\s*htmlOf\(/.test(core) && /parseFromString\(\s*htmlOf\(/.test(core));
-  ok("the worker is started only from a blob URL through the policy's createScriptURL", /new Worker\(\s*TT \? TT\.createScriptURL\(/.test(core) && /createScriptURL:\s*u\s*=>\s*\{\s*if \(!\/\^blob:\/\.test\(u\)\)\s*throw/.test(core));
+  ok("a worker starts only from a blob URL or the self-hosted OCR thread, through the policy's createScriptURL", /new Worker\(\s*TT \? TT\.createScriptURL\(/.test(core) && /createScriptURL:\s*u\s*=>\s*\{\s*if \(!\/\^blob:\/\.test\(u\) && u !== new URL\('vendor\/ocr\/vcr2-ocr\.js', location\.href\)\.href\)\s*throw/.test(core));
   ok("exactly one Trusted Types policy is created, named 'vcr2'", (core.match(/createPolicy\(/g) || []).length === 1 && /createPolicy\('vcr2'/.test(core) && findAll(/createPolicy\s*\(/, SRC).length === 1);
   const policyNames = [...core.matchAll(/createPolicy\('([^']+)'/g)].map(m => m[1]);
   ok('the policy does not rewrite the string (createHTML returns it unchanged)', /createHTML:\s*s\s*=>\s*s\b/.test(core), policyNames);
@@ -112,6 +114,22 @@ console.log('Source guards');
   ok('index.html: script-src hashes equal the SHA-256 of every inline script block', JSON.stringify([...(d['script-src'] || [])].sort()) === JSON.stringify(want), [d['script-src'], want]);
 }
 
+/* 4b. Deal flow's own page keeps the same strict policy; only the Google Workspace APIs and the intake service are added */
+{
+  const FLOW = fs.existsSync(path.join(ROOT, 'flow.html')) ? read('flow.html') : '';
+  const m = FLOW.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/), d = {};
+  (m ? m[1] : '').split(';').map(x => x.trim()).filter(Boolean).forEach(x => { const [k, ...v] = x.split(/\s+/); d[k] = v; });
+  ok('flow.html: a policy is set', !!m);
+  ok('flow.html: scripts only by hash, no inline handlers, no eval', (d['script-src'] || []).length > 0 && (d['script-src'] || []).every(x => /^'sha256-/.test(x)) && JSON.stringify(d['script-src-attr']) === JSON.stringify(["'none'"]) && !/unsafe-eval/.test(Object.values(d).flat().join(' ')));
+  ok('flow.html: Trusted Types required, only the vcr2 policy', JSON.stringify(d['require-trusted-types-for']) === JSON.stringify(["'script'"]) && JSON.stringify(d['trusted-types']) === JSON.stringify(['vcr2']));
+  ok("flow.html: frames, objects, forms and base 'none'", ['default-src', 'object-src', 'frame-src', 'base-uri', 'form-action'].every(k => JSON.stringify(d[k]) === JSON.stringify(["'none'"])));
+  const allowedHosts = ["'self'", 'https://www.googleapis.com', 'https://sheets.googleapis.com', 'https://docs.googleapis.com', 'https://api.anthropic.com', 'https://api.openai.com', 'https://generativelanguage.googleapis.com', 'https://api.groq.com', 'https://openrouter.ai'];
+  const extra = (d['connect-src'] || []).filter(h => !allowedHosts.includes(h));
+  ok('flow.html: connect-src is the site, Google Workspace APIs, the AI hosts, the account projects and the intake service only', extra.every(h => /^https:\/\/[a-z0-9-]{3,63}\.supabase\.co$/.test(h) || /^https:\/\/[a-z0-9.-]+$/.test(h)) && extra.length <= 3, extra);
+  const blocks = [...FLOW.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(x => "'sha256-" + crypto.createHash('sha256').update(x[1], 'utf8').digest('base64') + "'").sort();
+  ok('flow.html: the hashes are those of its own script blocks', JSON.stringify([...(d['script-src'] || [])].sort()) === JSON.stringify(blocks));
+}
+
 /* 6. Browser storage: only the documented keys */
 {
   const KEYS = new Set([
@@ -122,8 +140,10 @@ console.log('Source guards');
     'vcr2-intel',                                                               // Market intel results (this browser only, per company, the last 10)
     'vcr2-sf-aliases',                                                          // Smart fill labels a visitor taught (this browser only, never published)
     'vcr2-theme', 'vcr2-theme-default', 'vcr2-text', 'vcr2-text-default', 'vcr2-look', 'vcr2-look-style', 'vcr2-sidebar',   // theme, text size, look, sidebar
+    'vcr2-handoff', 'vcr2-ws-last', 'vcr2-google-token', 'vcr2-oauth-result',   // Deal flow: one company handed to the main page (read once, removed), the last workspace opened, the Google access token (this tab, one hour), the sign-in window's answer (removed within seconds)
   ]);
-  const OTHER_NAMES = new Set(['vcr2-assessment' /* download file name */, 'vcr2-gh-token' /* only removed: an old Studio token is wiped, never written */, 'vcr2' /* the Trusted Types policy */, 'vcr2-vault' /* the Vault check text, encrypted to test a key */]);
+  const OTHER_NAMES = new Set(['vcr2-assessment' /* download file name */, 'vcr2-gh-token' /* only removed: an old Studio token is wiped, never written */, 'vcr2' /* the Trusted Types policy */, 'vcr2-vault' /* the Vault check text, encrypted to test a key */,
+    'vcr2-oauth', 'vcr2-picker' /* Deal flow: same-site message channels of the Google windows */, 'vcr2-google' /* the Google window's name */, 'vcr2-workspaces' /* Deal flow's IndexedDB database */]);
   const found = new Map();
   for (const [name, text] of Object.entries(ALL)) {
     for (const [n, l] of codeLines(name, text)) for (const m of l.matchAll(/['"`](vcr\d(?:-[a-z0-9]+)*)['"`]/g)) if (!found.has(m[1])) found.set(m[1], `${name}:${n}`);
@@ -139,7 +159,7 @@ console.log('Source guards');
     if (!/^'[^']+'$/.test(a) && !/^[A-Z][A-Z_]*$/.test(a) && a !== 'k') dyn.push(`${name}:${n} ${a}`);
   }
   ok('storage calls use a literal, an UPPER_CASE key constant, or the key variable of the two helpers that loop over documented keys', dyn.length === 0, dyn);
-  ok('no IndexedDB, cookies or other persistent stores are opened', findAll(/indexedDB\.open|document\.cookie\s*=/).length === 0, findAll(/indexedDB\.open|document\.cookie\s*=/));
+  ok('no cookies; IndexedDB only for Deal flow\'s workspaces kept in this browser (src/ws-store.js), never on the main page', findAll(/document\.cookie\s*=/).length === 0 && JSON.stringify(findAll(/indexedDB\.open/)) === JSON.stringify(findAll(/indexedDB\.open/, { 'src/ws-store.js':SRC['src/ws-store.js'] })) && findAll(/indexedDB\.open/).length === 1 && !/indexedDB/.test(INDEX), findAll(/indexedDB\.open|document\.cookie\s*=/));
 }
 
 /* 7. Every action name in the markup exists in the dispatcher (a typo would be a dead button) */
@@ -152,9 +172,20 @@ console.log('Source guards');
   try { tables = vm.runInNewContext(code + '\n;({ CALLS, ACTIONS })', vm.createContext(g)); } catch (e) { err = String(e); }
   ok('src/actions.js loads and defines CALLS and ACTIONS', !!tables, err);
   const names = new Set(tables ? [...Object.keys(tables.CALLS), ...Object.keys(tables.ACTIONS)] : []);
-  const used = new Map();
+  const used = new Map(), flowUsed = new Map();
+  /* Deal flow (flow.html) has its own dispatcher, FLOW_CALLS (src/flow-boot.js, extended in src/ws-lpui.js): its markup is checked against it */
+  const FLOW_FILES = name => /^src\/(ws-[a-z]+\.js|flow-[a-z]+\.(js|html))$/.test(name);
+  const flowNames = new Set(['closeModal']);
+  for (const f of ['src/flow-boot.js', 'src/ws-lpui.js']) { const m = (SRC[f] || '').match(/(?:const FLOW_CALLS = \{|Object\.assign\(FLOW_CALLS, \{)([\s\S]*?)\}\)?;/); if (m) m[1].replace(/flSyncSheet:\(\) => flSyncSheet\(false\)/, 'flSyncSheet').split(',').map(x => x.trim()).filter(x => /^[A-Za-z]+$/.test(x)).forEach(x => flowNames.add(x)); }
   for (const [name, text] of Object.entries(SRC)) {
-    if (name === 'src/actions.js') continue;
+    if (!FLOW_FILES(name)) continue;
+    for (const [n, l] of codeLines(name, text)) for (const m of l.matchAll(/data-(click|change|input)="([A-Za-z]+)"/g)) flowUsed.set(m[1] + ':' + m[2], `${name}:${n}`);
+  }
+  const flowUnknown = [...flowUsed].filter(([k]) => !flowNames.has(k.split(':')[1]));
+  ok(`Deal flow: all ${flowUsed.size} event/action pairs in its markup are in FLOW_CALLS`, flowUsed.size > 40 && flowUnknown.length === 0, flowUnknown);
+  ok('Deal flow: the dispatcher never looks a function up on window', !/window\s*\[|globalThis\s*\[/.test(SRC['src/flow-boot.js']));
+  for (const [name, text] of Object.entries(SRC)) {
+    if (name === 'src/actions.js' || FLOW_FILES(name)) continue;
     for (const [n, l] of codeLines(name, text)) for (const m of l.matchAll(/data-(click|change|input|keydown|toggle)="([A-Za-z]+)"/g)) used.set(m[1] + ':' + m[2], `${name}:${n}`);
   }
   const unknown = [...used].filter(([k]) => !names.has(k.split(':')[1]));

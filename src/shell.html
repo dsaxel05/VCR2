@@ -95,7 +95,8 @@
     <div class="sb-footer" id="sb-footer">
       <div class="sb-links">
       <button type="button" class="nav-item lib-link" data-click="goLibrary"><span class="nav-dot"></span><span class="nav-label">Library &amp; benchmarks</span><span class="nav-count" id="lib-count">0</span></button>
-      <button type="button" class="nav-item lib-link" data-click="showPage" data-a="about"><span class="nav-dot"></span><span class="nav-label">About</span></button>
+      <div class="sb-pair">@@FLOW_LINK@@
+      <button type="button" class="nav-item lib-link" data-click="showPage" data-a="about"><span class="nav-dot"></span><span class="nav-label">About</span></button></div>
       <button type="button" class="nav-item lib-link studio-link" id="studio-link" style="display:none" data-click="goStudio"><span class="nav-dot"></span><span class="nav-label">Owner Studio</span></button>
       </div>
       <details class="sb-more sb-ai">
@@ -216,6 +217,7 @@
           <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:odds</span><h2 class="feat-title">Runway odds, not a runway number</h2><p class="feat-desc">A seeded Monte Carlo gives the chance of reaching next-stage metrics before the cash runs out, and how much capital that takes at 80% confidence.</p></div>
           <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:deal</span><h2 class="feat-title">Deal maths to the exit</h2><p class="feat-desc">Pool shuffle, SAFE and note conversion, a term-sheet review against market standard, VC Method and First Chicago returns, and a full liquidation waterfall.</p></div>
           <div class="feat-card"><span class="feat-icon" aria-hidden="true">ICON:library</span><h2 class="feat-title">Learns from your deals</h2><p class="feat-desc">Save runs and import comparables to see percentiles against your own deal flow, and recalibrate the healthy ranges on it.</p></div>
+          @@FLOW_CARD@@
         </section>
 
         <div class="intro-more">

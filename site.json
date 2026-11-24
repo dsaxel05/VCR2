@@ -17,5 +17,17 @@
         "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwb3Jyb3RwbWZraW9jaHV1eGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MDExNTYsImV4cCI6MjExMDE3NzE1Nn0.5pahKZT7HCWG_2Pq26yWIGgvO0UgBMhgNpjMY2vEe5Q"
       }
     ]
+  },
+  "workspaces": {
+    "about": "Deal flow (docs/WORKSPACES.md). enabled: the menu link and the home-page card. teams: team workspaces in the account projects, only after the workspace migration ran in both. intake: the intake service address (https://..., no path). mailDomain: the domain of the forwarding addresses. google: the web client id, the Picker API key (public, restricted to this site) and the project number. Empty values: that part says it is not set up yet.",
+    "enabled": true,
+    "teams": false,
+    "intake": "",
+    "mailDomain": "",
+    "google": {
+      "clientId": "",
+      "apiKey": "",
+      "appId": ""
+    }
   }
 }

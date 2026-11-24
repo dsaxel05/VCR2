@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-CIH3millq1L2mpkJeo8F97mfhDsnlG69ovtufNL3bd8='; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types 'none'" />
+<meta name="referrer" content="no-referrer" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Send your deck</title>
+<style>
+:root { --bg:#fbf8f1; --text:#1c2430; --line:#d9cfbb; --brand:#0e3b34; --gold:#a8843c; --err:#9b2c2c; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --bg:#13181f; --text:#ece6da; --line:#3a4350; --brand:#3f8f7f; --gold:#c9a45a; --err:#e08a8a; } }
+* { box-sizing: border-box; } body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 Georgia, 'Times New Roman', serif; }
+main { max-width:620px; margin:0 auto; padding:22px 18px 34px; }
+h1 { font-weight:400; font-size:1.7rem; margin:0 0 4px; } .sub { opacity:.8; margin:0 0 18px; font-size:.95rem; }
+label { display:block; margin:12px 0 4px; font:600 .88rem system-ui, sans-serif; }
+input, textarea, select { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:transparent; color:inherit; font:15px system-ui, sans-serif; }
+textarea { min-height:90px; } .row { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; } @media (max-width:520px) { .row { grid-template-columns:1fr; } }
+.check { display:flex; gap:8px; align-items:flex-start; font:400 .85rem system-ui, sans-serif; margin-top:14px; } .check input { width:auto; margin-top:3px; }
+button { margin-top:18px; width:100%; padding:12px; border:0; border-radius:999px; background:var(--brand); color:#fff; font:600 1rem system-ui, sans-serif; cursor:pointer; }
+button:disabled { opacity:.6; cursor:default; } .msg { margin-top:14px; font:15px system-ui, sans-serif; } .err { color:var(--err); }
+.hp { position:absolute; left:-9999px; } .foot { margin-top:22px; font:12px system-ui, sans-serif; opacity:.7; border-top:1px solid var(--line); padding-top:10px; }
+.seal { display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--gold); margin-right:6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="t">Send us your deck</h1>
+  <p class="sub" id="s">A few details and your deck (PDF or PowerPoint, 15 MB at most). We read every submission.</p>
+  <form id="f" novalidate>
+    <div class="row"><div><label for="company">Company *</label><input id="company" maxlength="120" required autocomplete="organization"></div>
+    <div><label for="website">Website</label><input id="website" maxlength="200" inputmode="url" placeholder="https://"></div></div>
+    <div class="row"><div><label for="founder">Your name *</label><input id="founder" maxlength="120" required autocomplete="name"></div>
+    <div><label for="email">Your e-mail *</label><input id="email" type="email" maxlength="254" required autocomplete="email"></div></div>
+    <div class="row"><div><label for="stage">Stage</label><select id="stage"><option value="">Choose</option><option value="preseed">Pre-seed</option><option value="seed">Seed</option><option value="a">Series A</option><option value="b">Series B or later</option></select></div>
+    <div><label for="raise">Amount you are raising</label><input id="raise" maxlength="40" placeholder="e.g. 2,000,000"></div></div>
+    <label for="deck">Deck *</label><input id="deck" type="file" accept=".pdf,.pptx,.key,.docx,.png,.jpg,.jpeg">
+    <label for="link">Or a link to your deck</label><input id="link" maxlength="400" inputmode="url" placeholder="https://">
+    <label for="message">Anything else</label><textarea id="message" maxlength="3000"></textarea>
+    <input class="hp" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="check"><input type="checkbox" id="consent"> <span>I agree that the investor receives this deck and these details to review my company. They are kept by the investor, not published.</span></label>
+    <button type="submit" id="go">Send</button>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </form>
+  <p class="foot"><span class="seal" aria-hidden="true"></span>Sent securely with VCR2. Your deck goes only to this investor.</p>
+</main>
+<script>
+(function () {
+  var INTAKE = '', q = new URLSearchParams(location.search), form = q.get('f') || '';
+  var $ = function (id) { return document.getElementById(id); }, say = function (t, bad) { var m = $('msg'); m.textContent = t; m.className = 'msg' + (bad ? ' err' : ''); };
+  if (!/^[a-z0-9]{8,40}$/.test(form) || !/^https:\/\//.test(INTAKE)) { say('This form link is not complete. Ask the investor for the right link.', true); $('go').disabled = true; return; }
+  fetch(INTAKE + '/v1/form/' + form, { credentials:'omit', referrerPolicy:'no-referrer' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.name) { $('t').textContent = 'Send your deck to ' + j.name; document.title = 'Send your deck to ' + j.name; } }).catch(function () {});
+  $('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = $('deck').files[0], link = $('link').value.trim();
+    if (!$('company').value.trim() || !$('founder').value.trim() || !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test($('email').value.trim())) { say('Please fill in the company, your name and a valid e-mail.', true); return; }
+    if (!f && !/^https:\/\//.test(link)) { say('Attach your deck or paste a link to it.', true); return; }
+    if (f && f.size > 15 * 1024 * 1024) { say('The deck is larger than 15 MB: compress it or send a link.', true); return; }
+    if (!$('consent').checked) { say('Please tick the box to agree to send your deck.', true); return; }
+    $('go').disabled = true; say('Sending…');
+    var send = function (files) {
+      var body = JSON.stringify({ website_url_confirm:$('hp').value, meta:{ company:$('company').value, founder:$('founder').value, email:$('email').value.trim(), website:$('website').value, stage:$('stage').value, raise:$('raise').value, deckLink:link, message:$('message').value, consent:true }, files:files });
+      fetch(INTAKE + '/v1/submit/' + form, { method:'POST', headers:{ 'content-type':'application/json' }, body:body, credentials:'omit', referrerPolicy:'no-referrer' })
+        .then(function (r) { if (r.ok) { $('f').reset(); say('Thank you. Your deck was sent.'); } else return r.json().then(function (j) { throw new Error(j && j.error); }); })
+        .catch(function (err) { $('go').disabled = false; say(err && err.message === 'too_many' ? 'Too many submissions from your network: try again in an hour.' : 'It could not be sent. Try again, or send a link instead.', true); });
+    };
+    if (!f) { send([]); return; }
+    var rd = new FileReader();
+    rd.onload = function () { var u8 = new Uint8Array(rd.result), s = '', i; for (i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768)); send([{ name:f.name, type:f.type, b64:btoa(s) }]); };
+    rd.onerror = function () { $('go').disabled = false; say('The file could not be read.', true); };
+    rd.readAsArrayBuffer(f);
+  });
+})();
+</script>
+</body>
+</html>

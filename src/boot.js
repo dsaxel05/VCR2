@@ -296,6 +296,22 @@ function eraseAll() {
   const route = () => { if (typeof location === 'undefined') return; if (/^#studio\b/i.test(location.hash || '')) openStudio(); else if (/^#about\b/i.test(location.hash || '')) showPage('about'); };
   if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('hashchange', route);
   route();
+  /* Deal flow hands one company over ("Open the full analysis"): its inputs and their sources, read once and removed. */
+  try {
+    const q = new URLSearchParams(location.search), ID = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
+    if (q.get('handoff') === '1') {
+      const h = JSON.parse(localStorage.getItem('vcr2-handoff') || 'null'); localStorage.removeItem('vcr2-handoff');
+      const pick = (o, f) => Object.fromEntries(Object.entries(o && typeof o === 'object' ? o : {}).filter(([k]) => ID.test(k)).slice(0, 400).map(([k, v]) => [k, f(v)]));
+      if (h && Date.now() - h.at < 6e5) {
+        S = Object.assign(blankState(), { name:String(h.name || '').slice(0, 120), stage:STAGES.some(s => s.id === h.stage) ? h.stage : 'seed', model:MODELS.some(m => m.id === h.model) ? h.model : 'saas', market:h.market === 'eu' ? 'eu' : 'us',
+          vals:pick(h.vals, v => String(v).slice(0, 200)), bools:pick(h.bools, v => !!v), sel:pick(h.sel, v => String(v).slice(0, 80)), evid:pick(h.evid, v => String(v).slice(0, 20)),
+          prov:pick(h.prov, p => ({ src:'smartfill', file:String(p && p.file || '').slice(0, 120), loc:String(p && p.loc || '').slice(0, 80), line:String(p && p.line || '').slice(0, 160), conf:String(p && p.conf || '').slice(0, 10) })) });
+        saveDraft(); buildStages(); buildTypes(); buildNav(); renderIntakeStatus(); updateProgress(); CFG_READY.then(() => runAnalysis());
+      }
+      history.replaceState(null, '', location.pathname);
+    }
+    if (q.get('signin') === '1') { history.replaceState(null, '', location.pathname); setTimeout(() => { if (acctAvailable()) acctOpen(); }, 400); }
+  } catch (e) {}
 })();
 
 /* ── The demo video on the home page ──

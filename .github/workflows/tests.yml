@@ -27,7 +27,7 @@ jobs:
       - name: index.html is a fresh build of src/
         run: |
           python build.py
-          git diff --exit-code -- index.html || { echo "::error::index.html is out of date: run python build.py and commit it"; exit 1; }
+          git diff --exit-code -- index.html flow.html submit.html oauth.html picker.html || { echo "::error::a built page is out of date: run python build.py and commit it"; exit 1; }
       - name: Engine, archetype, property and configuration tests
         run: |
           for f in tests/*.test.mjs tests/security/*.test.mjs; do echo "== $f"; node "$f" || exit 1; done

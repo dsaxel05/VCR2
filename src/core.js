@@ -33,7 +33,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ESC_MAP[c])
    Callers escape their own text with esc(); the policy itself only marks the string as app-made. */
 const TT = globalThis.trustedTypes && trustedTypes.createPolicy('vcr2', {
   createHTML: s => s,
-  createScriptURL: u => { if (!/^blob:/.test(u)) throw new TypeError('Only a blob may start a worker'); return u; }
+  createScriptURL: u => { if (!/^blob:/.test(u) && u !== new URL('vendor/ocr/vcr2-ocr.js', location.href).href) throw new TypeError('Only a blob or the OCR thread may start a worker'); return u; }
 });
 const htmlOf = s => TT ? TT.createHTML(s) : s;
 const setHTML = (el, s, outer) => { if (outer) el.outerHTML = htmlOf(s); else el.innerHTML = htmlOf(s); };
@@ -2282,7 +2282,7 @@ const PROVIDERS = {
   openai:     { needsKey:true,  name:'OpenAI',       hint:'platform.openai.com', ph:'sk-proj-…',
                 url:'https://api.openai.com/v1/chat/completions', model:'gpt-4o' },
   gemini:     { needsKey:true,  name:'Gemini',       hint:'aistudio.google.com', ph:'AIza…',
-                url:'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', model:'gemini-2.0-flash' },
+                url:'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent', model:'gemini-3.8-flash' },
   groq:       { needsKey:true,  name:'Groq',         hint:'console.groq.com', ph:'gsk_…',
                 url:'https://api.groq.com/openai/v1/chat/completions', model:'llama-3.3-70b-versatile' },
   openrouter: { needsKey:true,  name:'OpenRouter',   hint:'openrouter.ai/keys', ph:'sk-or-v1-…',
