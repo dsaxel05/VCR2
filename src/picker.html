@@ -26,12 +26,19 @@
     var s = document.createElement('script'); s.src = 'https://apis.google.com/js/api.js';
     s.onload = function () {
       gapi.load('picker', function () {
-        var G = google.picker, view;
-        if (kind === 'folder') view = new G.DocsView(G.ViewId.FOLDERS).setIncludeFolders(true).setSelectFolderEnabled(true).setEnableDrives(true).setMimeTypes('application/vnd.google-apps.folder');
-        else if (kind === 'sheet') view = new G.DocsView(G.ViewId.SPREADSHEETS).setEnableDrives(true);
-        else view = new G.DocsView(G.ViewId.DOCUMENTS).setEnableDrives(true);
-        if (d.preselect && d.preselect.length && view.setFileIds) view.setFileIds(d.preselect.join(','));
-        var b = new G.PickerBuilder().addView(view).setOAuthToken(d.token).enableFeature(G.Feature.SUPPORT_DRIVES).setSize(860, 560)
+        var G = google.picker;
+        /* two tabs: the person's own Drive (My Drive, shared with me) first, then shared drives */
+        var mk = function (shared) {
+          var v;
+          if (kind === 'folder') { v = new G.DocsView(G.ViewId.FOLDERS).setIncludeFolders(true).setSelectFolderEnabled(true).setMimeTypes('application/vnd.google-apps.folder'); if (!shared) v.setParent('root'); }
+          else v = new G.DocsView(kind === 'sheet' ? G.ViewId.SPREADSHEETS : G.ViewId.DOCUMENTS);
+          if (shared) v.setEnableDrives(true);
+          if (v.setLabel) v.setLabel(shared ? 'Shared drives' : 'My Drive');
+          return v;
+        };
+        var mine = mk(false), shared = mk(true);
+        if (d.preselect && d.preselect.length && mine.setFileIds) mine.setFileIds(d.preselect.join(','));
+        var b = new G.PickerBuilder().addView(mine).addView(shared).setOAuthToken(d.token).enableFeature(G.Feature.SUPPORT_DRIVES).setSize(860, 560)
           .setTitle(kind === 'folder' ? 'Choose a folder for VCR2' : kind === 'sheet' ? 'Choose your master sheet' : 'Choose your memo template')
           .setCallback(function (r) { if (r.action === G.Action.PICKED) finish({ picked:(r.docs || []).map(function (x) { return { id:x.id, name:x.name, url:x.url, mimeType:x.mimeType }; }) }); else if (r.action === G.Action.CANCEL) finish({ cancel:true }); });
         if (d.apiKey) b.setDeveloperKey(d.apiKey); if (d.appId) b.setAppId(d.appId);
