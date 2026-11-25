@@ -187,7 +187,7 @@ function sfCandidates(doc, cls, fields, opts) {
   const docCcy = counts[ccy] ? ccy : 'USD';
   const byId = new Map(fields.map(f => [f.id, f]));
   const head0 = doc.blocks.slice(0, 6).map(b => b.text || '').join(' ');
-  const head0f = sfFold(head0), docScale = /\$\s?in millions|in \$?\s?millions|\(\$\s?m(illions)?\)|en millions/i.test(head0) || sfLRaw('millions').test(head0f) ? 1e6 : /\$\s?in thousands|in \$?\s?thousands|en milliers/i.test(head0) || sfLRaw('thousands').test(head0f) ? 1e3 : 1;
+  const head0f = sfFold(head0), docScale = /\$\s?in millions|in (?:[$€£]\s?|(?:usd|eur|gbp|chf|cad|aud|jpy|sek|nok|dkk|pln|inr|sgd)\s)?millions|\(\$\s?m(illions)?\)|en millions/i.test(head0) || sfLRaw('millions').test(head0f) ? 1e6 : /\$\s?in thousands|in (?:[$€£]\s?|(?:usd|eur|gbp|chf|cad|aud|jpy|sek|nok|dkk|pln|inr|sgd)\s)?thousands|en milliers/i.test(head0) || sfLRaw('thousands').test(head0f) ? 1e3 : 1;
   let curHead = '';
   const add = (fld, value, c) => {
     if (!fld || fld.d.skip) return;
@@ -210,7 +210,7 @@ function sfCandidates(doc, cls, fields, opts) {
   const tableCands = (b, bi) => {
     const rows = b.rows; if (!rows.length) return;
     const all = rows.map(r => r.join(' ')).join(' '), scaleText = (doc.blocks[bi - 1] && doc.blocks[bi - 1].text || '') + ' ' + rows.slice(0, 4).map(r => r.join(' ')).join(' ') + ' ' + (b.hints.sheet || '');
-    const scaleF = sfFold(scaleText), scale = /in thousands|\(000s?\)|\$ ?000|\$k\b|en milliers|k€|€k|thousands\)/i.test(scaleText) || sfLRaw('thousands').test(scaleF) ? 1e3 : /in millions|\(\$m\)|\$mm|en millions/i.test(scaleText) || sfLRaw('millions').test(scaleF) ? 1e6 : docScale;
+    const scaleF = sfFold(scaleText), scale = /in (?:[$€£]\s?|(?:usd|eur|gbp|chf|cad|aud|jpy|sek|nok|dkk|pln|inr|sgd)\s)?thousands|\(000s?\)|\$ ?000|\$k\b|en milliers|k€|€k|thousands\)/i.test(scaleText) || sfLRaw('thousands').test(scaleF) ? 1e3 : /in (?:[$€£]\s?|(?:usd|eur|gbp|chf|cad|aud|jpy|sek|nok|dkk|pln|inr|sgd)\s)?millions|\(\$m\)|\$mm|en millions/i.test(scaleText) || sfLRaw('millions').test(scaleF) ? 1e6 : docScale;
     if (b.hints.hidden) return;
     const isNum = c => sfNumbers(c, { locale }).length === 1 && (/^[^A-Za-z]*\d[^A-Za-z]*(%|x|k|m|bn|mm|days|months)?[^A-Za-z]*$/i.test(c) || SF_NUM_CELL.test(sfFold(c)));
     const isPeriod = c => /^((fy|cy)\s?'?\d{2,4}[a-z]?|(19|20)\d\d([a-z]| ?\(?[a-z ]+\)?)?|[qt][1-4]\s?'?\d{2,4}|[1-4]t\s?'?\d{2,4}|h[12]\s?'?\d{2,4}|[a-zà-ÿ]{3,10}\.?[- ]?'?\d{2,4}|ltm.*|ttm.*|actual.*|forecast.*|budget.*|plan.*|real.*|ist.*|presupuesto.*|previsi.*|prognose.*|or[cç]amento.*|begroting.*|consuntivo.*)$/i.test(String(c).trim());
@@ -367,7 +367,7 @@ function sfChoiceKV(f, l, v, b, add) {
     add(f, val, d);
   } else if (f.t === 'select') {
     const opt = sfOption(f, V); if (opt) add(f, opt, d);
-  } else if (f.t === 'txt' && v.length < 80) add(f, v.trim(), Object.assign({}, d, { struct:0.9 }));
+  } else if (f.t === 'txt' && v.length < 80) add(f, v.trim().replace(/[.;,:!]+$/, ''), Object.assign({}, d, { struct:0.9 }));   /* "Main rival: Fathomio." gives Fathomio */
 }
 const SF_OPTION_WORDS = { 'Broad-based weighted average':/broad/, 'Narrow-based weighted average':/narrow/, 'Full ratchet':/ratchet/, 'Type II':/type ii\b|type 2\b/, 'Type I':/type i\b|type 1\b/,
   'In progress':/in progress|underway|engaged an auditor/, 'Audited':/audited|auditor.s report/, 'Reviewed':/review(ed)? report|reviewed by/, 'Compiled':/compil/ };

@@ -27,6 +27,26 @@ async def run(b, vp, theme, label):
     await pg.evaluate("() => { CFG.settings.smartfill = { enabled:true }; _sfDict = null; showPage('intake'); renderIntakeStatus(); }")
     dz = await pg.evaluate("() => { const d = $id('sf-drop'); return d && [d.getAttribute('role'), d.tabIndex, !!d.getAttribute('aria-describedby'), $id('sf-read').disabled]; }")
     check(f'{label}: the drop zone is a keyboard button with a description; Read is disabled until files are added', dz == ['button', 0, True, True], dz)
+    # the real ways in: a drag and drop on the zone (also after the block is redrawn), a click that opens the file chooser, Enter
+    DROP = """(n) => { const dt = new DataTransfer(); dt.items.add(new File(['Total ARR: $1.2M'], n, { type:'text/plain' })); const dz = $id('sf-drop');
+      const over = new DragEvent('dragover', { dataTransfer:dt, bubbles:true, cancelable:true }); dz.dispatchEvent(over);
+      dz.dispatchEvent(new DragEvent('drop', { dataTransfer:dt, bubbles:true, cancelable:true })); return over.defaultPrevented; }"""
+    check(f'{label}: dragging over the zone is accepted (the browser does not open the file instead)', await pg.evaluate(DROP, 'dropped-1.txt'))
+    await pg.wait_for_timeout(150)
+    check(f'{label}: a file dropped on the zone is added', await pg.evaluate("() => SFS.files.map(f => f.name).join()") == 'dropped-1.txt', await pg.evaluate("() => SFS.files.map(f => f.name)"))
+    await pg.evaluate(DROP, 'dropped-2.txt'); await pg.wait_for_timeout(150)
+    check(f'{label}: the zone still works after the block was redrawn', await pg.evaluate("() => SFS.files.length") == 2, await pg.evaluate("() => SFS.files.map(f => f.name)"))
+    async with pg.expect_file_chooser(timeout=3000) as fc:
+        await pg.click('#sf-drop')
+    await (await fc.value).set_files(str(FX / 'security-md.md')); await pg.wait_for_timeout(150)
+    check(f'{label}: clicking the zone opens the file chooser and adds the chosen file', await pg.evaluate("() => SFS.files.length") == 3)
+    async with pg.expect_file_chooser(timeout=3000) as fc:
+        await pg.focus('#sf-drop'); await pg.keyboard.press('Enter')
+    check(f'{label}: Enter on the zone opens the file chooser', bool(await fc.value))
+    missed = await pg.evaluate("""() => { const dt = new DataTransfer(); dt.items.add(new File(['x'], 'missed.txt')); const ev = new DragEvent('drop', { dataTransfer:dt, bubbles:true, cancelable:true });
+      document.querySelector('.block-title').dispatchEvent(ev); return ev.defaultPrevented; }""")
+    check(f'{label}: a file dropped next to the zone does not make the browser leave VCR2', missed)
+    await pg.evaluate("() => sfForget()")
     data = {f: base64.b64encode((FX / f).read_bytes()).decode() for f in FILES}
     await pg.evaluate(ADD, data)
     check(f'{label}: one chip per file', await pg.evaluate("() => document.querySelectorAll('.sf-chip').length") == len(FILES))

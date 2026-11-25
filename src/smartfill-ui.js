@@ -50,6 +50,7 @@ function renderSfIntake() {
       </div>
       <div class="intake-box sf-guide" id="sf-guide">${sfGuideHTML()}</div>
     </div>`);
+  sfWireDrop();
 }
 const SF_TYPE_NAME = id => (sfGuide().find(g => g.id === id) || { name:id === 'unknown' ? 'Not recognised' : id }).name;
 function sfChipHTML(f, i) {
@@ -117,27 +118,43 @@ function sfAddFiles(list) {
   }
   SFS.resolved = null; renderSfIntake();
 }
-async function sfEntries(items) {   /* a dropped folder: every file inside, depth first, up to the file limit */
+async function sfEntries(entries) {   /* a dropped folder: every file inside, depth first, up to the file limit */
   const out = [], walk = async e => {
     if (!e || out.length >= SF_LIMIT.files) return;
     if (e.isFile) { await new Promise(r => e.file(f => { out.push(f); r(); }, r)); return; }
     if (e.isDirectory) { const rd = e.createReader(); let batch; do { batch = await new Promise(r => rd.readEntries(r, () => r([]))); for (const x of batch) await walk(x); } while (batch.length && out.length < SF_LIMIT.files); }
   };
-  for (const it of items) await walk(it.webkitGetAsEntry ? it.webkitGetAsEntry() : null);
+  for (const it of entries) await walk(it);
   return out;
 }
+/* files dropped: a folder is walked; read the entries before any await, the browser empties dataTransfer after the event */
+async function sfOnDrop(e) {
+  const dt = e.dataTransfer; if (!dt) return;
+  const items = dt.items ? [...dt.items].filter(x => x.kind === 'file') : [], entries = items.map(x => x.webkitGetAsEntry ? x.webkitGetAsEntry() : null), files = [...(dt.files || [])];
+  sfAddFiles(entries.some(x => x && x.isDirectory) ? await sfEntries(entries) : files);
+}
+const sfHasFiles = e => !!(e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files'));
+/* wired after every redraw (the block is rebuilt, so is the zone). Once for the page: a file dropped anywhere in the Smart fill
+   block counts as dropped on the zone, and a file dropped elsewhere never makes the browser open it and leave VCR2. */
+let _sfGuard = false;
 function sfWireDrop() {
+  if (!_sfGuard) {
+    _sfGuard = true;
+    document.addEventListener('dragover', e => { if (sfHasFiles(e)) e.preventDefault(); });
+    document.addEventListener('drop', e => {
+      if (!sfHasFiles(e) || e.defaultPrevented) { if (sfHasFiles(e)) e.preventDefault(); return; }
+      e.preventDefault();
+      const t = e.target && e.target.closest ? e.target : null;
+      if (t && t.closest('#sf-intake') && sfEnabled()) sfOnDrop(e);
+    });
+  }
   const dz = $id('sf-drop'); if (!dz || dz.dataset.wired) return; dz.dataset.wired = '1';
   const pick = () => { const i = document.createElement('input'); i.type = 'file'; i.multiple = true; i.onchange = () => sfAddFiles(i.files); i.click(); };
   dz.addEventListener('click', pick);
   dz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
-  dz.addEventListener('drop', async e => {
-    const items = e.dataTransfer.items ? [...e.dataTransfer.items].filter(x => x.kind === 'file') : [];
-    const folder = items.some(x => x.webkitGetAsEntry && x.webkitGetAsEntry() && x.webkitGetAsEntry().isDirectory);
-    sfAddFiles(folder ? await sfEntries(items) : e.dataTransfer.files);
-  });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); sfOnDrop(e); });
 }
 
 /* ── read: one file after the other, yielding between them so the page stays responsive; Cancel stops after the current file ── */

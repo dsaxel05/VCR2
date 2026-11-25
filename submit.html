@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-CIH3millq1L2mpkJeo8F97mfhDsnlG69ovtufNL3bd8='; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-+BD1gmzclOgFoS0/nOY87ENpLHduGiADAznrOhbVXZo='; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src https://intake.vcr2.app; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types 'none'" />
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex" />
@@ -47,7 +47,7 @@ button:disabled { opacity:.6; cursor:default; } .msg { margin-top:14px; font:15p
 </main>
 <script>
 (function () {
-  var INTAKE = '', q = new URLSearchParams(location.search), form = q.get('f') || '';
+  var INTAKE = 'https://intake.vcr2.app', q = new URLSearchParams(location.search), form = q.get('f') || '';
   var $ = function (id) { return document.getElementById(id); }, say = function (t, bad) { var m = $('msg'); m.textContent = t; m.className = 'msg' + (bad ? ' err' : ''); };
   if (!/^[a-z0-9]{8,40}$/.test(form) || !/^https:\/\//.test(INTAKE)) { say('This form link is not complete. Ask the investor for the right link.', true); $('go').disabled = true; return; }
   fetch(INTAKE + '/v1/form/' + form, { credentials:'omit', referrerPolicy:'no-referrer' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.name) { $('t').textContent = 'Send your deck to ' + j.name; document.title = 'Send your deck to ' + j.name; } }).catch(function () {});

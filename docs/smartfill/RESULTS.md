@@ -26,7 +26,7 @@ Time per document: median 1 ms, 95th percentile 6 ms, slowest 21 ms. Hostile fil
 <!-- /readers -->
 
 <!-- engine-dev -->
-## Engine, set dev (seed 7), 2026-11-12, commit 8ec1a13
+## Engine, set dev (seed 7), 2026-11-25, commit 4b5073c
 
 140 documents (8 HTML read in Chromium). Codes: R1 unknown label or not found, R2 wrong period or value, R3 decoy filled, R4 unit or scale, R5 reader failure, R6 structure or extra field, R7 right value at too low a tier.
 
@@ -34,12 +34,12 @@ Time per document: median 1 ms, 95th percentile 6 ms, slowest 21 ms. Hostile fil
 |---|---|---|
 | High-tier precision | 588/588 (100.0%) | 98% or better |
 | Medium-tier precision | 405/405 (100.0%) | 90% or better |
-| Recall (High and Medium, plus Low where the gold is Low) | 1058/1072 (98.7%) | 92% clean, 75% messy |
+| Recall (High and Medium, plus Low where the gold is Low) | 1071/1072 (99.9%) | 92% clean, 75% messy |
 | Decoys filled (must_not_fill) | 0 of 1077 proposals | 0.5% or less |
 | Wrong values per 100 High fields | 0.0 | 1 or less |
 | Ledgers recognised | 6/6 | all |
 | Same proposals in reverse order | yes | yes |
-| Time per document (read and extract) | median 15 ms, 95th percentile 40 ms | 400 ms, 1.5 s |
+| Time per document (read and extract) | median 11 ms, 95th percentile 28 ms | 400 ms, 1.5 s |
 | Requests to any other site (HTML in Chromium) | 0 | 0 |
 
 Failures by code: {"R1":1}
@@ -50,7 +50,7 @@ Failures by code: {"R1":1}
 |---|---|---|---|
 | High | 588 | 588 | 100.0% |
 | Medium | 405 | 405 | 100.0% |
-| Low | 84 | 65 | 77.4% |
+| Low | 84 | 78 | 92.9% |
 
 ### By format
 
@@ -71,7 +71,7 @@ Failures by code: {"R1":1}
 | tsv | 24 | 24 (100.0%) | 0 |
 | txt | 57 | 57 (100.0%) | 0 |
 | xlsm | 23 | 23 (100.0%) | 0 |
-| xlsx | 152 | 139 (91.4%) | 0 |
+| xlsx | 152 | 152 (100.0%) | 0 |
 
 ### By document type
 
@@ -85,7 +85,7 @@ Failures by code: {"R1":1}
 | headcount | 20 | 20 (100.0%) | 0 |
 | json | 35 | 35 (100.0%) | 0 |
 | market | 63 | 63 (100.0%) | 0 |
-| model | 336 | 323 (96.1%) | 0 |
+| model | 336 | 336 (100.0%) | 0 |
 | receivables | 8 | 8 (100.0%) | 0 |
 | security | 90 | 90 (100.0%) | 0 |
 | termsheet | 145 | 145 (100.0%) | 0 |
@@ -95,20 +95,20 @@ Failures by code: {"R1":1}
 
 | Section | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
-| capital | 134 | 131 (97.8%) | 0 |
+| capital | 134 | 134 (100.0%) | 0 |
 | claims | 160 | 159 (99.4%) | 0 |
 | deal | 199 | 199 (100.0%) | 0 |
 | govern | 105 | 105 (100.0%) | 0 |
-| gtm | 58 | 57 (98.3%) | 0 |
+| gtm | 58 | 58 (100.0%) | 0 |
 | market | 87 | 87 (100.0%) | 0 |
-| revenue | 269 | 260 (96.7%) | 0 |
+| revenue | 269 | 269 (100.0%) | 0 |
 | team | 60 | 60 (100.0%) | 0 |
 
 ### By mutation (fuzz set: shuffle and decoys, European numbers, unseen synonyms)
 
 | Mutation | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
-| base | 1072 | 1058 (98.7%) | 0 |
+| base | 1072 | 1071 (99.9%) | 0 |
 
 ### By trap
 
@@ -117,24 +117,24 @@ Failures by code: {"R1":1}
 | ageing buckets | 8 | 8 (100.0%) | 0 |
 | competitor or market figure | 180 | 179 (99.4%) | 0 |
 | footnote that changes a definition | 180 | 179 (99.4%) | 0 |
-| forecast or plan columns | 336 | 323 (96.1%) | 0 |
+| forecast or plan columns | 336 | 336 (100.0%) | 0 |
 | granted versus unallocated pool | 74 | 74 (100.0%) | 0 |
-| gross versus net burn | 428 | 415 (97.0%) | 0 |
-| hidden stale sheet | 336 | 323 (96.1%) | 0 |
+| gross versus net burn | 428 | 428 (100.0%) | 0 |
+| hidden stale sheet | 336 | 336 (100.0%) | 0 |
 | including clauses | 145 | 145 (100.0%) | 0 |
 | industry benchmark | 63 | 63 (100.0%) | 0 |
-| margin with and without customer success | 336 | 323 (96.1%) | 0 |
+| margin with and without customer success | 336 | 336 (100.0%) | 0 |
 | negation | 90 | 90 (100.0%) | 0 |
-| negatives in parentheses | 336 | 323 (96.1%) | 0 |
-| net new versus new-logo ARR | 336 | 323 (96.1%) | 0 |
+| negatives in parentheses | 336 | 336 (100.0%) | 0 |
+| net new versus new-logo ARR | 336 | 336 (100.0%) | 0 |
 | older period | 3 | 3 (100.0%) | 0 |
 | opening balance | 6 | 6 (100.0%) | 0 |
-| prior-year column | 336 | 323 (96.1%) | 0 |
+| prior-year column | 336 | 336 (100.0%) | 0 |
 | prior-year figure in a sentence | 92 | 92 (100.0%) | 0 |
 | restricted cash | 6 | 6 (100.0%) | 0 |
 | rounding ($15.6M) | 180 | 179 (99.4%) | 0 |
 | target or goal | 272 | 271 (99.6%) | 0 |
-| thousands scale row | 336 | 323 (96.1%) | 0 |
+| thousands scale row | 336 | 336 (100.0%) | 0 |
 
 ### By layout (where the value was found)
 
@@ -330,51 +330,51 @@ Failures by code: {"R1":438}
 <!-- /engine-fuzz -->
 
 <!-- engine-heldout -->
-## Engine, set heldout (seed 1009), 2026-11-12, commit 8ec1a13
+## Engine, set heldout (seed 1009), 2026-11-25, commit 4b5073c
 
 140 documents (8 HTML read in Chromium). Codes: R1 unknown label or not found, R2 wrong period or value, R3 decoy filled, R4 unit or scale, R5 reader failure, R6 structure or extra field, R7 right value at too low a tier.
 
 | Measure | Measured | Target (dev) |
 |---|---|---|
-| High-tier precision | 355/355 (100.0%) | 98% or better |
-| Medium-tier precision | 284/284 (100.0%) | 90% or better |
-| Recall (High and Medium, plus Low where the gold is Low) | 648/802 (80.8%) | 92% clean, 75% messy |
-| Decoys filled (must_not_fill) | 0 of 654 proposals | 0.5% or less |
+| High-tier precision | 384/384 (100.0%) | 98% or better |
+| Medium-tier precision | 351/351 (100.0%) | 90% or better |
+| Recall (High and Medium, plus Low where the gold is Low) | 753/802 (93.9%) | 92% clean, 75% messy |
+| Decoys filled (must_not_fill) | 0 of 759 proposals | 0.5% or less |
 | Wrong values per 100 High fields | 0.0 | 1 or less |
 | Ledgers recognised | 6/6 | all |
 | Same proposals in reverse order | yes | yes |
-| Time per document (read and extract) | median 15 ms, 95th percentile 38 ms | 400 ms, 1.5 s |
+| Time per document (read and extract) | median 10 ms, 95th percentile 26 ms | 400 ms, 1.5 s |
 | Requests to any other site (HTML in Chromium) | 0 | 0 |
 
-Failures by code: {"R1":154}
+Failures by code: {"R1":49}
 
 ### Tier reliability
 
 | Predicted tier | Proposals | Correct | Observed precision |
 |---|---|---|---|
-| High | 355 | 355 | 100.0% |
-| Medium | 284 | 284 | 100.0% |
-| Low | 15 | 9 | 60.0% |
+| High | 384 | 384 | 100.0% |
+| Medium | 351 | 351 | 100.0% |
+| Low | 24 | 18 | 75.0% |
 
 ### By format
 
 | Format | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
 | csv | 63 | 61 (96.8%) | 0 |
-| docx | 35 | 25 (71.4%) | 0 |
-| eml | 33 | 23 (69.7%) | 0 |
-| htm | 14 | 8 (57.1%) | 0 |
-| html | 34 | 22 (64.7%) | 0 |
+| docx | 35 | 33 (94.3%) | 0 |
+| eml | 33 | 28 (84.8%) | 0 |
+| htm | 14 | 12 (85.7%) | 0 |
+| html | 34 | 30 (88.2%) | 0 |
 | json | 21 | 21 (100.0%) | 0 |
-| md | 74 | 44 (59.5%) | 0 |
-| ods | 76 | 75 (98.7%) | 0 |
-| odt | 28 | 21 (75.0%) | 0 |
-| pdf | 130 | 105 (80.8%) | 0 |
-| pptx | 42 | 24 (57.1%) | 0 |
-| rtf | 37 | 28 (75.7%) | 0 |
-| tsv | 25 | 21 (84.0%) | 0 |
-| txt | 44 | 27 (61.4%) | 0 |
-| xlsm | 27 | 25 (92.6%) | 0 |
+| md | 74 | 65 (87.8%) | 0 |
+| ods | 76 | 76 (100.0%) | 0 |
+| odt | 28 | 26 (92.9%) | 0 |
+| pdf | 130 | 124 (95.4%) | 0 |
+| pptx | 42 | 36 (85.7%) | 0 |
+| rtf | 37 | 34 (91.9%) | 0 |
+| tsv | 25 | 23 (92.0%) | 0 |
+| txt | 44 | 39 (88.6%) | 0 |
+| xlsm | 27 | 27 (100.0%) | 0 |
 | xlsx | 119 | 118 (99.2%) | 0 |
 
 ### By document type
@@ -382,98 +382,98 @@ Failures by code: {"R1":154}
 | Type | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
 | audited | 3 | 3 (100.0%) | 0 |
-| bank | 6 | 0 (0.0%) | 0 |
+| bank | 6 | 6 (100.0%) | 0 |
 | captable | 99 | 99 (100.0%) | 0 |
 | crm | 15 | 10 (66.7%) | 0 |
-| deck | 168 | 96 (57.1%) | 0 |
-| headcount | 10 | 5 (50.0%) | 0 |
+| deck | 168 | 144 (85.7%) | 0 |
+| headcount | 10 | 10 (100.0%) | 0 |
 | json | 21 | 21 (100.0%) | 0 |
-| market | 21 | 7 (33.3%) | 0 |
+| market | 21 | 21 (100.0%) | 0 |
 | model | 240 | 240 (100.0%) | 0 |
 | receivables | 8 | 8 (100.0%) | 0 |
 | security | 27 | 27 (100.0%) | 0 |
-| termsheet | 88 | 68 (77.3%) | 0 |
-| update | 96 | 64 (66.7%) | 0 |
+| termsheet | 88 | 84 (95.5%) | 0 |
+| update | 96 | 80 (83.3%) | 0 |
 
 ### By field family (form section)
 
 | Section | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
-| capital | 117 | 79 (67.5%) | 0 |
-| claims | 176 | 128 (72.7%) | 0 |
-| deal | 160 | 116 (72.5%) | 0 |
+| capital | 117 | 101 (86.3%) | 0 |
+| claims | 176 | 152 (86.4%) | 0 |
+| deal | 160 | 156 (97.5%) | 0 |
 | govern | 42 | 42 (100.0%) | 0 |
 | gtm | 22 | 17 (77.3%) | 0 |
-| market | 21 | 7 (33.3%) | 0 |
+| market | 21 | 21 (100.0%) | 0 |
 | revenue | 214 | 214 (100.0%) | 0 |
-| team | 50 | 45 (90.0%) | 0 |
+| team | 50 | 50 (100.0%) | 0 |
 
 ### By mutation (fuzz set: shuffle and decoys, European numbers, unseen synonyms)
 
 | Mutation | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
-| base | 802 | 648 (80.8%) | 0 |
+| base | 802 | 753 (93.9%) | 0 |
 
 ### By trap
 
 | Trap (documents that carry it) | Gold fields | Found | Wrong at High or Medium |
 |---|---|---|---|
 | ageing buckets | 8 | 8 (100.0%) | 0 |
-| competitor or market figure | 168 | 96 (57.1%) | 0 |
-| footnote that changes a definition | 168 | 96 (57.1%) | 0 |
+| competitor or market figure | 168 | 144 (85.7%) | 0 |
+| footnote that changes a definition | 168 | 144 (85.7%) | 0 |
 | forecast or plan columns | 240 | 240 (100.0%) | 0 |
 | granted versus unallocated pool | 99 | 99 (100.0%) | 0 |
-| gross versus net burn | 336 | 304 (90.5%) | 0 |
+| gross versus net burn | 336 | 320 (95.2%) | 0 |
 | hidden stale sheet | 240 | 240 (100.0%) | 0 |
-| including clauses | 88 | 68 (77.3%) | 0 |
-| industry benchmark | 21 | 7 (33.3%) | 0 |
+| including clauses | 88 | 84 (95.5%) | 0 |
+| industry benchmark | 21 | 21 (100.0%) | 0 |
 | margin with and without customer success | 240 | 240 (100.0%) | 0 |
 | negation | 27 | 27 (100.0%) | 0 |
 | negatives in parentheses | 240 | 240 (100.0%) | 0 |
 | net new versus new-logo ARR | 240 | 240 (100.0%) | 0 |
 | older period | 3 | 3 (100.0%) | 0 |
-| opening balance | 6 | 0 (0.0%) | 0 |
+| opening balance | 6 | 6 (100.0%) | 0 |
 | prior-year column | 240 | 240 (100.0%) | 0 |
-| prior-year figure in a sentence | 96 | 64 (66.7%) | 0 |
-| restricted cash | 6 | 0 (0.0%) | 0 |
-| rounding ($15.6M) | 168 | 96 (57.1%) | 0 |
-| target or goal | 264 | 160 (60.6%) | 0 |
+| prior-year figure in a sentence | 96 | 80 (83.3%) | 0 |
+| restricted cash | 6 | 6 (100.0%) | 0 |
+| rounding ($15.6M) | 168 | 144 (85.7%) | 0 |
+| target or goal | 264 | 224 (84.8%) | 0 |
 | thousands scale row | 240 | 240 (100.0%) | 0 |
 
 ### By layout (where the value was found)
 
 | Layout | Proposals | Wrong at High or Medium |
 |---|---|---|
-| clause | 28 | 0 |
+| clause | 20 | 0 |
 | computed | 52 | 0 |
-| kv | 64 | 0 |
-| sentence | 171 | 0 |
-| table | 339 | 0 |
+| kv | 107 | 0 |
+| sentence | 230 | 0 |
+| table | 350 | 0 |
 
 ### The 20 worst failures
 
 | Code | File | Field | Detail |
 |---|---|---|---|
-| R1 | c00-casnor-logistics/deck-final-v7.pptx | stated_customers | not proposed (gold 19, High, at slide 2) |
 | R1 | c00-casnor-logistics/deck-final-v7.pptx | stated_tam | not proposed (gold 30000000000, High, at slide 3) |
-| R1 | c00-casnor-logistics/deck-final-v7.pptx | round_size | not proposed (gold 1800000, Medium, at slide 4) |
-| R1 | c00-casnor-logistics/investor-update.eml | cash_on_hand | not proposed (gold 1102000, Medium, at p) |
 | R1 | c00-casnor-logistics/investor-update.eml | gross_burn | not proposed (gold 145000, Medium, at p) |
-| R1 | c00-casnor-logistics/bank-statement.pdf | cash_on_hand | not proposed (gold 1102000, High, at table) |
-| R1 | c01-brifen-analytics/Investor_Presentation.pdf | stated_customers | not proposed (gold 9, High, at slide 2) |
 | R1 | c01-brifen-analytics/Investor_Presentation.pdf | stated_tam | not proposed (gold 30000000000, High, at slide 3) |
-| R1 | c01-brifen-analytics/Investor_Presentation.pdf | round_size | not proposed (gold 900000, Medium, at slide 4) |
-| R1 | c01-brifen-analytics/Monthly_Update.md | cash_on_hand | not proposed (gold 5117000, Medium, at p) |
 | R1 | c01-brifen-analytics/Monthly_Update.md | gross_burn | not proposed (gold 188000, Medium, at p) |
-| R1 | c01-brifen-analytics/Series_Term_Sheet.docx | round_size | not proposed (gold 900000, High, at p) |
-| R1 | c02-dorlum-works/deck-final-v7.pdf | stated_customers | not proposed (gold 9, High, at slide 2) |
 | R1 | c02-dorlum-works/deck-final-v7.pdf | stated_tam | not proposed (gold 12000000000, High, at slide 3) |
-| R1 | c02-dorlum-works/deck-final-v7.pdf | round_size | not proposed (gold 1700000, Medium, at slide 4) |
-| R1 | c02-dorlum-works/Monthly_Update.txt | cash_on_hand | not proposed (gold 4245000, Medium, at p) |
 | R1 | c02-dorlum-works/Monthly_Update.txt | gross_burn | not proposed (gold 266000, Medium, at p) |
 | R1 | c02-dorlum-works/CRM_Opportunities.csv | pipeline_coverage | not proposed (gold 4, High, at KPIs) |
-| R1 | c02-dorlum-works/market-notes.md | primary_competitor | not proposed (gold "Fathomio", High, at p) |
-| R1 | c02-dorlum-works/market-notes.md | target_accounts | not proposed (gold 27028, High, at p) |
+| R1 | c03-bripax-labs/company-overview.md | stated_tam | not proposed (gold 30000000000, High, at slide 3) |
+| R1 | c03-bripax-labs/Monthly_Update.docx | gross_burn | not proposed (gold 217000, Medium, at p) |
+| R1 | c03-bripax-labs/term-sheet.pdf | new_participating | not proposed (gold true, High, at p) |
+| R1 | c04-lumdor-bio/deck-final-v7.pptx | stated_tam | not proposed (gold 2000000000, High, at slide 3) |
+| R1 | c04-lumdor-bio/Monthly_Update.eml | gross_burn | not proposed (gold 341000, Medium, at p) |
+| R1 | c05-dorkal-works/pitch-deck.txt | stated_tam | not proposed (gold 12000000000, Low, at slide 3) |
+| R1 | c05-dorkal-works/cfo-reply.odt | gross_burn | not proposed (gold 388000, Low, at p) |
+| R1 | c05-dorkal-works/term-sheet.rtf | new_participating | not proposed (gold true, High, at p) |
+| R1 | c06-fenvel-logistics/Investor_Presentation.html | stated_tam | not proposed (gold 4500000000, High, at slide 3) |
+| R1 | c06-fenvel-logistics/Monthly_Update.docx | gross_burn | not proposed (gold 408000, Medium, at p) |
+| R1 | c07-brizen-analytics/Investor_Presentation.htm | stated_tam | not proposed (gold 8000000000, High, at slide 3) |
+| R1 | c07-brizen-analytics/cfo-reply.eml | gross_burn | not proposed (gold 317000, Medium, at p) |
+| R1 | c07-brizen-analytics/term-sheet.md | new_participating | not proposed (gold true, High, at p) |
 <!-- /engine-heldout -->
 
 <!-- adversarial -->
@@ -524,3 +524,135 @@ Failures by code: {"R1":154}
 
 Ledger (month headers in each language) recognised and read with the same 13 form values as the English file; monthly financials read with the same 5 form values; 14 number phrasings, 7 dates without figures, 10 month headers. English and French corpus unchanged (dev 1,058/1,072; held out 648/802, was 645; 100% precision).
 <!-- /languages -->
+
+<!-- engine-blind2611 -->
+## Engine, set blind2611 (seed 2611), 2026-11-25, commit 4b5073c
+
+140 documents (8 HTML read in Chromium). Codes: R1 unknown label or not found, R2 wrong period or value, R3 decoy filled, R4 unit or scale, R5 reader failure, R6 structure or extra field, R7 right value at too low a tier.
+
+| Measure | Measured | Target (dev) |
+|---|---|---|
+| High-tier precision | 606/606 (100.0%) | 98% or better |
+| Medium-tier precision | 398/398 (100.0%) | 90% or better |
+| Recall (High and Medium, plus Low where the gold is Low) | 1082/1086 (99.6%) | 92% clean, 75% messy |
+| Decoys filled (must_not_fill) | 0 of 1088 proposals | 0.5% or less |
+| Wrong values per 100 High fields | 0.0 | 1 or less |
+| Ledgers recognised | 6/6 | all |
+| Same proposals in reverse order | yes | yes |
+| Time per document (read and extract) | median 11 ms, 95th percentile 26 ms | 400 ms, 1.5 s |
+| Requests to any other site (HTML in Chromium) | 0 | 0 |
+
+Failures by code: {"R1":4}
+
+### Tier reliability
+
+| Predicted tier | Proposals | Correct | Observed precision |
+|---|---|---|---|
+| High | 606 | 606 | 100.0% |
+| Medium | 398 | 398 | 100.0% |
+| Low | 84 | 78 | 92.9% |
+
+### By format
+
+| Format | Gold fields | Found | Wrong at High or Medium |
+|---|---|---|---|
+| csv | 70 | 70 (100.0%) | 0 |
+| docx | 64 | 64 (100.0%) | 0 |
+| eml | 40 | 40 (100.0%) | 0 |
+| htm | 16 | 16 (100.0%) | 0 |
+| html | 50 | 50 (100.0%) | 0 |
+| json | 35 | 35 (100.0%) | 0 |
+| md | 102 | 102 (100.0%) | 0 |
+| ods | 110 | 110 (100.0%) | 0 |
+| odt | 52 | 52 (100.0%) | 0 |
+| pdf | 183 | 179 (97.8%) | 0 |
+| pptx | 44 | 44 (100.0%) | 0 |
+| rtf | 57 | 57 (100.0%) | 0 |
+| tsv | 27 | 27 (100.0%) | 0 |
+| txt | 58 | 58 (100.0%) | 0 |
+| xlsm | 30 | 30 (100.0%) | 0 |
+| xlsx | 148 | 148 (100.0%) | 0 |
+
+### By document type
+
+| Type | Gold fields | Found | Wrong at High or Medium |
+|---|---|---|---|
+| audited | 3 | 3 (100.0%) | 0 |
+| bank | 6 | 6 (100.0%) | 0 |
+| captable | 87 | 87 (100.0%) | 0 |
+| crm | 20 | 20 (100.0%) | 0 |
+| deck | 180 | 179 (99.4%) | 0 |
+| headcount | 20 | 20 (100.0%) | 0 |
+| json | 35 | 35 (100.0%) | 0 |
+| market | 63 | 63 (100.0%) | 0 |
+| model | 336 | 336 (100.0%) | 0 |
+| receivables | 8 | 8 (100.0%) | 0 |
+| security | 90 | 90 (100.0%) | 0 |
+| termsheet | 146 | 143 (97.9%) | 0 |
+| update | 92 | 92 (100.0%) | 0 |
+
+### By field family (form section)
+
+| Section | Gold fields | Found | Wrong at High or Medium |
+|---|---|---|---|
+| capital | 138 | 138 (100.0%) | 0 |
+| claims | 160 | 159 (99.4%) | 0 |
+| deal | 209 | 206 (98.6%) | 0 |
+| govern | 105 | 105 (100.0%) | 0 |
+| gtm | 58 | 58 (100.0%) | 0 |
+| market | 87 | 87 (100.0%) | 0 |
+| revenue | 269 | 269 (100.0%) | 0 |
+| team | 60 | 60 (100.0%) | 0 |
+
+### By mutation (fuzz set: shuffle and decoys, European numbers, unseen synonyms)
+
+| Mutation | Gold fields | Found | Wrong at High or Medium |
+|---|---|---|---|
+| base | 1086 | 1082 (99.6%) | 0 |
+
+### By trap
+
+| Trap (documents that carry it) | Gold fields | Found | Wrong at High or Medium |
+|---|---|---|---|
+| ageing buckets | 8 | 8 (100.0%) | 0 |
+| competitor or market figure | 180 | 179 (99.4%) | 0 |
+| footnote that changes a definition | 180 | 179 (99.4%) | 0 |
+| forecast or plan columns | 336 | 336 (100.0%) | 0 |
+| granted versus unallocated pool | 87 | 87 (100.0%) | 0 |
+| gross versus net burn | 428 | 428 (100.0%) | 0 |
+| hidden stale sheet | 336 | 336 (100.0%) | 0 |
+| including clauses | 146 | 143 (97.9%) | 0 |
+| industry benchmark | 63 | 63 (100.0%) | 0 |
+| margin with and without customer success | 336 | 336 (100.0%) | 0 |
+| negation | 90 | 90 (100.0%) | 0 |
+| negatives in parentheses | 336 | 336 (100.0%) | 0 |
+| net new versus new-logo ARR | 336 | 336 (100.0%) | 0 |
+| older period | 3 | 3 (100.0%) | 0 |
+| opening balance | 6 | 6 (100.0%) | 0 |
+| prior-year column | 336 | 336 (100.0%) | 0 |
+| prior-year figure in a sentence | 92 | 92 (100.0%) | 0 |
+| restricted cash | 6 | 6 (100.0%) | 0 |
+| rounding ($15.6M) | 180 | 179 (99.4%) | 0 |
+| target or goal | 272 | 271 (99.6%) | 0 |
+| thousands scale row | 336 | 336 (100.0%) | 0 |
+
+### By layout (where the value was found)
+
+| Layout | Proposals | Wrong at High or Medium |
+|---|---|---|
+| clause | 149 | 0 |
+| computed | 57 | 0 |
+| kv | 312 | 0 |
+| sentence | 71 | 0 |
+| table | 436 | 0 |
+| tile | 63 | 0 |
+
+### The 20 worst failures
+
+| Code | File | Field | Detail |
+|---|---|---|---|
+| R1 | c01-veltam-grid/Investor_Presentation.pdf | stated_arr | not proposed (gold 200000, Medium, at slide 2) |
+| R1 | c03-lumlum-health/term-sheet.pdf | cumulative_dividends | not proposed (gold false, High, at Dividends) |
+| R1 | c03-lumlum-health/term-sheet.pdf | information_rights | not proposed (gold true, High, at Information rights) |
+| R1 | c19-merrho-bio/Series_Term_Sheet.pdf | information_rights | not proposed (gold true, High, at Information rights) |
+<!-- /engine-blind2611 -->

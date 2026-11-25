@@ -126,9 +126,14 @@ step below), `intake` (the intake service address), `mailDomain`, `google.client
    the OAuth consent screen add the scope `.../auth/drive.file`; on the web client add the JavaScript origin
    `https://vcr2.app` and the redirect URI `https://vcr2.app/oauth.html`; create an API key restricted to the Picker API and
    to `https://vcr2.app/*`. Put the client id, the API key and the project number in `site.json`.
-2. **Cloudflare**: create the KV namespace `vcr2-intake`, deploy `worker/` (Workers, Create, paste `worker/intake.mjs`, bind
-   the KV namespace as `INTAKE`, add the variables of `worker/wrangler.toml`, add the cron), attach the custom domain
-   `intake.vcr2.app`; Email Routing on `vcr2.app`: catch-all address, action "Send to a Worker", `vcr2-intake`.
+2. **Cloudflare** (done for vcr2.app on 2026-11-25): create the KV namespace `vcr2-intake`, deploy `worker/` (Workers,
+   Create, paste `worker/intake.mjs`, bind the KV namespace as `INTAKE`, add the variables of `worker/wrangler.toml`, add the
+   cron), attach the custom domain `intake.vcr2.app`. E-mail: in Email Routing, Settings, Subdomains, add the subdomain
+   `in.vcr2.app` (its MX records are added for it alone), then set the catch-all rule to "Send to a Worker", `vcr2-intake`,
+   and switch it on. Forwarding addresses look like `ws-xxxxxxxxxx@in.vcr2.app`; the bare domain keeps no mail server, so
+   a mailbox on `vcr2.app` itself is never affected (if one is set up later with Cloudflare Email Routing, give it its own
+   address rule, because the catch-all would otherwise send unknown addresses to the Worker, which refuses them).
+   Then `site.json`: `intake` `https://intake.vcr2.app`, `mailDomain` `in.vcr2.app`.
 3. **E-mails** (digest and founder acknowledgement, optional): a free Resend account, the domain verified with its DNS
    records on Cloudflare, the API key as the Worker secret `RESEND_API_KEY`.
 4. **Team workspaces**: run `supabase/migrations/20261123120000_workspaces.sql` in the SQL editor of both Supabase projects,

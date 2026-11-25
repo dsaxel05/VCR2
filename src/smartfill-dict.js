@@ -21,16 +21,16 @@ services_pct|services revenue share;non recurring revenue share;professional ser
 pct_annual|annual contracts share;arr on annual terms;annual or longer contracts|contrats annuels||0,100|
 deferred_revenue|deferred revenue;deferred revenue balance;unearned revenue;contract liabilities;deferred revenue closing balance|produits constatés d avance;revenus différés||0,5e9|
 ar_over_90|receivables over 90 days;ar over 90 days;over 90 days;91+ days;90+ days|créances à plus de 90 jours||0,5e9|
-cash_on_hand|cash;cash and equivalents;cash and cash equivalents;cash balance;cash on hand;bank balance;available balance;available balance excluding restricted cash;ending balance;closing balance;ending cash;closing cash;cash as of|trésorerie;disponibilités;solde de trésorerie|burn;flow;restricted;collateral;target;opening;12 months ago;cash burn;consumption;monthly;per month;outflow;deferred;revenue;receivable;receivables|0,5e10|
+cash_on_hand|cash;cash and equivalents;cash and cash equivalents;cash balance;cash on hand;bank balance;available balance;available balance excluding restricted cash;ending balance;closing balance;ending cash;closing cash;cash as of;in the bank;cash in the bank;money in the bank;operating account|trésorerie;disponibilités;solde de trésorerie|burn;flow;restricted;collateral;target;opening;12 months ago;cash burn;consumption;monthly;per month;outflow;deferred;revenue;receivable;receivables|0,5e10|
 net_burn|net burn;monthly net burn;net burn rate;net cash burn;burn;cash burn;net burn (monthly average);monthly burn|consommation nette de trésorerie;consommation nette;burn net|gross;multiple;target|0,5e8|
-gross_burn|gross burn;gross burn rate;gross monthly burn;total cash expenses;monthly opex|consommation brute;burn brut|net;multiple|0,5e8|
+gross_burn|gross burn;gross burn rate;gross monthly burn;total cash expenses;monthly opex;gross spend;gross spending;total spend per month|consommation brute;burn brut|net;multiple|0,5e8|
 total_raised|total raised;total equity raised;capital raised to date;raised to date;total funding|total levé;fonds levés||0,5e10|
 pre_money|pre-money at last round;last round pre-money;previous pre-money|valorisation pré-money du dernier tour|offered;this round|0,1e11|m=last round;previous;prior round;dernier tour
 safes_outstanding|safes outstanding;safe principal;safes;safe amount;principal|safes en cours||0,1e9|m=safe
 notes_principal|convertible notes outstanding;note principal;notes principal;principal|obligations convertibles||0,1e9|m=note;notes;lender;bridge
 debt_outstanding|venture debt;debt outstanding;loan balance;term loan|dette||0,1e10|
 months_since_round|months since last round|mois depuis le dernier tour||0,240|
-customers_now|customers;paying customers;active customers;customer count;number of customers;logos;clients|clients;nombre de clients;clients payants|success;satisfaction;support;acquisition;lifetime;per customer;target;goal;competitor;12 months ago;prior year;new customers;lost;churned;concentration;top;receipts;payments;account;research;survey|1,1e8|c=stated_customers;p=customers_12mo
+customers_now|customers;paying customers;active customers;customer count;number of customers;logos;clients;organisations;organizations;paying organisations;paying organizations;organisations now pay for the platform;organizations now pay for the platform|clients;nombre de clients;clients payants|success;satisfaction;support;acquisition;lifetime;per customer;target;goal;competitor;12 months ago;prior year;new customers;lost;churned;concentration;top;receipts;payments;account;research;survey|1,1e8|c=stated_customers;p=customers_12mo
 customers_12mo|customers 12 months ago;customers a year ago;customers last year;opening customers|clients il y a 12 mois||1,1e8|
 logos_lost_l12|logos lost;logos churned;customers lost;churned customers;logo churn;logos churned ltm|clients perdus|arr;rate;%|0,1e7|
 top1_pct|largest customer share;top customer share;largest customer % of arr;top 1 customer|premier client||0,100|
@@ -42,13 +42,13 @@ sm_spend_prior_q|s&m spend last quarter;sales and marketing last quarter||headco
 new_arr_prior_q|net new arr last quarter;net new arr quarter;net new arr q||ltm;12 months|0,1e10|m=quarter;q1;q2;q3;q4
 win_rate|win rate;close rate;win rate (last 12 months);win rate on qualified opportunities|taux de conversion;taux de réussite|against;vs;versus;head to head|0,100|
 sales_cycle|sales cycle;median sales cycle;average sales cycle;days to close;time to close|cycle de vente||1,1000|
-pipeline_coverage|pipeline coverage;coverage;pipeline coverage ratio|couverture du pipeline||0,50|
+pipeline_coverage|pipeline coverage;coverage;pipeline coverage ratio;coverage of next-quarter target;coverage of next quarter target;coverage of target;pipeline to target|couverture du pipeline||0,50|
 quota_attainment|quota attainment;reps at quota;reps at or above quota;attainment|atteinte des quotas||0,300|
 pct_paid|paid acquisition share;new arr from paid|acquisition payante||0,100|
 headcount_now|headcount;team;employees;fte;ftes;team size;people;staff;total headcount|effectif;salariés;équipe|engineering;sales;12 months ago;open roles;cost;per employee;per fte;arr per|1,1e6|p=headcount_12mo
 headcount_12mo|headcount 12 months ago;team a year ago|effectif il y a 12 mois||1,1e6|
 headcount_eng|engineering;engineering headcount;engineers;r&d headcount|ingénierie;ingénieurs|departures;cost|0,1e5|
-headcount_sales|sales;sales headcount;sales & marketing headcount;sales team|commerciaux|spend;marketing spend;cycle;win|0,1e5|
+headcount_sales|sales;sales headcount;sales & marketing headcount;sales team;go-to-market (sales);go-to-market;gtm;go to market|commerciaux|spend;marketing spend;cycle;win|0,1e5|
 avg_loaded_comp|average fully loaded cost per employee;loaded cost per employee;average loaded cost;cost per employee|coût moyen chargé par salarié||10000,2e6|
 founders_count|founders;number of founders|fondateurs||1,10|
 founder_max_equity|largest founder stake;founder ownership|participation du fondateur||0,100|
@@ -58,9 +58,9 @@ founder_departed|cofounder left|||||
 founders_years_together|years founders worked together||||0,60|n
 technical_founder|technical founder|||||n
 eng_departures_l12|engineering departures;engineers who left|départs ingénieurs||0,1e4|
-target_accounts|target accounts;icp accounts;accounts that match the icp;addressable accounts|comptes cibles||1,1e9|n
+target_accounts|target accounts;icp accounts;accounts that match the icp;addressable accounts;accounts fit our ideal customer profile;fit our ideal customer profile;accounts fit our icp;icp-fit accounts|comptes cibles||1,1e9|n
 reachable_pct|reachable through current channels;reachable;realistically reachable|atteignables||0,100|n
-primary_competitor|primary competitor;main competitor;closest competitor|principal concurrent||||n
+primary_competitor|primary competitor;main competitor;closest competitor;main rival;closest rival;biggest competitor;key competitor;main alternative|principal concurrent||||n
 win_rate_vs_primary|win rate against;win rate vs;head to head win rate|taux de victoire contre||0,100|n;m=against;vs;versus;head;contre
 pricing_move|pricing|prix|||n
 switching_cost|switching cost|coût de changement|||n
@@ -125,12 +125,12 @@ stated_acv|acv;average contract value|valeur moyenne des contrats||0,1e9|
 stated_tam|tam;total addressable market;addressable market|marché adressable;marché total adressable|growth;grew|1e6,1e14|
 stated_customers|customers as stated||||1,1e8|
 stated_take_rate|take rate|taux de commission||0,100|
-round_size|amount of financing;round size;raising;we are raising;raise;investment amount;new money|nous levons;montant de la levée|target;12 months|1e4,1e11|
+round_size|amount of financing;round size;raising;we are raising;raise;investment amount;new money;this round;of new capital;new capital;will invest;investors will invest;the investors will invest|nous levons;montant de la levée|target;12 months|1e4,1e11|
 round_pre_money|pre-money valuation;pre-money;pre money valuation|valorisation pré-money|last round;previous|1e5,1e12|
 our_check|our cheque||||x
 pool_target_post|option pool;unallocated option pool equal to;pool required post-money|pool d options||0,50|m=post-money;post money;pre-money valuation
-new_liq_pref|liquidation preference|préférence de liquidation||0,10|
-new_participating|participating|participatif||||
+new_liq_pref|liquidation preference;liquidation;preferred|préférence de liquidation||0,10|
+new_participating|participating;liquidation;liquidation preference|participatif||||
 new_part_cap|participation cap;capped at||||0,20|
 anti_dilution|anti-dilution|anti-dilution||||
 board_after|board of directors;board|conseil d administration||||

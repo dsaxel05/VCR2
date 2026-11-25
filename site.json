@@ -22,8 +22,8 @@
     "about": "Deal flow (docs/WORKSPACES.md). enabled: the menu link and the home-page card. teams: team workspaces in the account projects, only after the workspace migration ran in both. intake: the intake service address (https://..., no path). mailDomain: the domain of the forwarding addresses. google: the web client id, the Picker API key (public, restricted to this site) and the project number. Empty values: that part says it is not set up yet.",
     "enabled": true,
     "teams": false,
-    "intake": "",
-    "mailDomain": "",
+    "intake": "https://intake.vcr2.app",
+    "mailDomain": "in.vcr2.app",
     "google": {
       "clientId": "609363044785-3pf64f24glo0t2s158s247la0oh1oiv6.apps.googleusercontent.com",
       "apiKey": "AIzaSyA-T5OEWt18gZTQE9H1iLoMv3h3p67ODlw",

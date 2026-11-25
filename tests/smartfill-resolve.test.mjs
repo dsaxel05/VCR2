@@ -27,7 +27,12 @@ res = R.sfResolveAll(X(upd, lines('cfo-reply.md', 'Dear investors\nCash as of 20
 ok('two documents that agree raise it to High, and say so', row(res, 'cash_on_hand').tier === 'High' && /documents agree/.test(row(res, 'cash_on_hand').why.join(' ')), row(res, 'cash_on_hand'));
 const old = sheet('model-2024.xlsx', 'P&L', [['Metric', 'FY2024 (actual)'], ['Gross margin', '61%']]), cur = lines('update.md', 'Hi all\nStatement period: 2026-09\nNPS: 41');
 res = R.sfResolveAll(X(old, cur), 'saas');
-ok('a document much older than the newest one only suggests (Low)', row(res, 'gross_margin') && row(res, 'gross_margin').tier === 'Low' && /older document/.test(row(res, 'gross_margin').why.join(' ')), row(res, 'gross_margin'));
+ok('a figure from a much older document, that nothing newer gives, is listed but never ticked for you (Medium, "older document")', row(res, 'gross_margin') && row(res, 'gross_margin').tier === 'Medium' && /older document/.test(row(res, 'gross_margin').why.join(' ')), row(res, 'gross_margin'));
+res = R.sfResolveAll(X(old, lines('update-new.md', 'Hi all\nStatement period: 2026-09\nGross margin: 72%')), 'saas');
+ok('when a newer document gives the same figure, the old one only suggests (Low) and the newer one leads', row(res, 'gross_margin') && row(res, 'gross_margin').value === 72 && row(res, 'gross_margin').alts.some(a => a.value === 61 && a.tier === 'Low'), row(res, 'gross_margin'));
+const ledgerOnly = { file:'ledger.csv', cls:{ type:'ledger', role:'export' }, date:'2027-09', proposals:[] };
+res = R.sfResolveAll([...X(old), ledgerOnly], 'saas');
+ok('a document that gives no figure (a ledger) does not make the others old', row(res, 'gross_margin') && !/older document/.test((row(res, 'gross_margin').why || []).join(' ')), row(res, 'gross_margin'));
 const shuffled = X(bank, model, upd), straight = X(model, upd, bank);
 ok('the drop order never changes the result', JSON.stringify(R.sfResolveAll(shuffled, 'saas').rows.map(r => [r.field, r.value, r.tier, r.file])) === JSON.stringify(R.sfResolveAll(straight, 'saas').rows.map(r => [r.field, r.value, r.tier, r.file])));
 

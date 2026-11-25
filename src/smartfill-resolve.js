@@ -29,11 +29,21 @@ function sfResolveAll(extracts, model) {
   const newest = extracts.map(e => e.date || '').sort().pop() || '';
   const all = [];
   for (const e of extracts) for (const p of e.proposals) {
-    const c = Object.assign({}, p, { file:e.file, docType:e.cls.type, role:e.cls.role, date:e.date || '' });
-    if (newest && c.date && sfMonths(newest, c.date) > 6 && c.tier !== 'Low') { c.tier = 'Low'; c.why = (c.why || []).concat([`an older document (${c.date}, the newest is ${newest})`]); }
-    all.push(c);
+    all.push(Object.assign({}, p, { file:e.file, docType:e.cls.type, role:e.cls.role, date:e.date || '' }));
   }
   const groups = new Map(); for (const c of all) { if (!groups.has(c.field)) groups.set(c.field, []); groups.get(c.field).push(c); }
+  /* an old figure: only a suggestion (Low) when a newer document gives the same field; when nothing newer states it, it stays in
+     the list but is never ticked for you (Medium at most), so an old cap table is not buried because a recent update came with it.
+     "Newest" counts only documents that give figures (a ledger's last month does not make everything else old). */
+  const recent = extracts.filter(e => e.proposals.length).map(e => e.date || '').sort().pop() || '';
+  for (const cs of groups.values()) {
+    const latest = cs.map(c => c.date).filter(Boolean).sort().pop() || '';
+    for (const c of cs) {
+      if (c.tier === 'Low' || !c.date) continue;
+      if (latest && sfMonths(latest, c.date) > 6) { c.tier = 'Low'; c.why = (c.why || []).concat([`an older document (${c.date}; ${latest} gives this figure too)`]); }
+      else if (recent && sfMonths(recent, c.date) > 6) { if (c.tier === 'High') c.tier = 'Medium'; c.old = true; c.why = (c.why || []).concat([`an older document (${c.date}, the newest is ${recent}): check it is still current`]); }
+    }
+  }
   const rows = [], conflicts = [];
   for (const [id, cs] of [...groups.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1)) {
     const f = byId.get(id); if (!f) continue;

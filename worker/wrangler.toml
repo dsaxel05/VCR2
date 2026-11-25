@@ -4,15 +4,18 @@ main = "intake.mjs"
 compatibility_date = "2026-11-01"
 
 # The KV namespace that holds submissions for at most 14 days. Create it once in the Cloudflare dashboard
-# (Storage & Databases, KV, Create namespace "vcr2-intake") and paste its id below. The id is not a secret.
+# (Storage & Databases, KV, Create namespace "vcr2-intake"); its id is below. The id is not a secret.
 [[kv_namespaces]]
 binding = "INTAKE"
-id = "PASTE_THE_KV_NAMESPACE_ID_HERE"
+id = "83ac2dce539549e08491778be9d7e211"
 
 [vars]
-MAIL_DOMAIN = "vcr2.app"
+# Forwarding addresses live on the subdomain in.vcr2.app only (Email Routing subdomain + catch-all to this Worker),
+# so any mailbox on vcr2.app itself stays untouched.
+# Custom domain: intake.vcr2.app (attached in the dashboard: Workers, vcr2-intake, Domains).
+MAIL_DOMAIN = "in.vcr2.app"
 ALLOWED_ORIGINS = "https://vcr2.app"
-MAIL_FROM = "VCR2 <noreply@vcr2.app>"
+MAIL_FROM = "VCR2 <noreply@in.vcr2.app>"
 # RESEND_API_KEY is a secret: set it in the dashboard (Settings, Variables and Secrets), never here.
 
 # Weekly digests: checked every day at 07:00 UTC; each workspace's digest goes out on its chosen day.

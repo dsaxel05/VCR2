@@ -1,5 +1,23 @@
 # Changelog
 
+## v6.1.0: 2026-11-25
+
+- **Smart fill drop zone fixed**: dropping files on "Drop everything here", clicking it or pressing Enter did nothing, because the zone was never connected. It now takes files, a folder or a .zip by drag and drop, click or keyboard; a file dropped anywhere in the Smart fill block counts, and a file dropped elsewhere on the page never makes the browser open it and leave VCR2. Every drop zone on the page is now tested with real drag-and-drop events.
+- **Smart fill reads more ways of writing the same figure**: "This round: $1.8M of new capital", "The Investors will invest $900,000", "$1,102,000 in the bank", "gross spend $145k", "19 organisations now pay for the platform", "Main rival: Fathomio", "Go-to-market (sales)", "Liquidation: participating preferred, 1x", "All figures in GBP thousands" (a currency between "in" and "thousands" or "millions").
+- **Old documents**: a figure from a document more than 6 months older than the newest one is only a suggestion when a newer document gives the same figure. When nothing newer gives it, it is listed with an "older document" note but never ticked for you. A document that gives no figure (a customer ledger) no longer makes the others count as old. Before, an old cap table lost every value as soon as a recent update was dropped with it.
+- Text answers no longer keep the sentence's full stop ("Fathomio." became "Fathomio").
+- Measured on fictional data rooms (every company and number invented): the held-out set of 140 documents went from 80.8% to 93.9% of the values found, a new set of 140 from 97.2% to 99.6%, and the same 140 documents dropped company by company on the real page in a browser: 99.6%, all 140 read, no wrong value at any confidence level. Details in docs/smartfill/RESULTS.md.
+- **Deal flow forwarding address switched on**: each workspace gets its own address on in.vcr2.app (Cloudflare Email Routing to the free intake service at intake.vcr2.app); mail to vcr2.app itself is untouched. The founder form posts to the same service.
+
+## v6.0.2: 2026-11-25
+
+- **Google file picker**: the window to choose a folder, the master sheet or a memo template now opens on **My Drive**, with **Shared drives** in a second tab. Before, it showed shared drives only, so a folder in My Drive could not be chosen.
+
+## v6.0.1: 2026-11-24
+
+- **Google Workspace switched on for Deal flow**: Drive, Sheets, Docs and the Google file picker work on vcr2.app. Access is the narrowest Google offers ("files you use with this app"). The file picker's public key only works for the picker and only on https://vcr2.app; the key scan accepts that one declared key and still blocks any other.
+- Deal flow and About share one line in the sidebar, so the evidence sections keep their room.
+
 ## v6.0.0: 2026-11-24
 
 **Deal flow: VCR2 for an investment team's whole flow of companies, from the first deck to the investment committee and the LP data room.** A new page (`flow.html`, menu **Deal flow**), for any investor (funds, angels, syndicates, accelerators): every rule, folder, column, stage and template is set per workspace. Nothing is analysed on a server; decks stay in the browser and the investor's own Google Drive. See docs/WORKSPACES.md.
